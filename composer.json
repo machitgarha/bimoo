@@ -1,0 +1,16 @@
+{
+    "name": "machitgarha/bimoo",
+    "description": "Moodle declaration stubs for static analysis",
+    "type": "library",
+    "license": "Apache License 2.0",
+    "authors": [
+        {
+            "name": "Mohammad Amin Chitgarha",
+            "email": "machitgarha@outlook.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "php-stubs/generator": "^0.6.0"
+    }
+}
