@@ -1,3 +1,7 @@
 [
-    "/lib/*.php"
+    "/lib/moodlelib.php",
+    "/lib/outputcomponents.php",
+    "/lib/pagelib.php",
+    "/lib/setuplib.php",
+    "/lib/dml/mysqli_native_moodle_database.php"
 ]
