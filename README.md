@@ -36,6 +36,7 @@ Every Moodle version older than latest supported is followed in a separate branc
 
 ## To-Do
 
+-   Add `bin/generate.sh` to do the job automatically.
 -   Use GitHub Actions to automate the process. The workflow would be, cloning the repository of Moodle, switching to the latest stable version, run the generator for a list of predefined paths and files, commit the changes and push it back.
 
 ## Contributions
