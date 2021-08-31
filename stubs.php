@@ -1,6 +1,1641 @@
 <?php
 
 /**
+ * Information about a course that is cached in the course table 'modinfo' field (and then in
+ * memory) in order to reduce the need for other database queries.
+ *
+ * This includes information about the course-modules and the sections on the course. It can also
+ * include dynamic data that has been updated for the current user.
+ *
+ * Use {@link get_fast_modinfo()} to retrieve the instance of the object for particular course
+ * and particular user.
+ *
+ * @property-read int $courseid Course ID
+ * @property-read int $userid User ID
+ * @property-read array $sections Array from section number (e.g. 0) to array of course-module IDs in that
+ *     section; this only includes sections that contain at least one course-module
+ * @property-read cm_info[] $cms Array from course-module instance to cm_info object within this course, in
+ *     order of appearance
+ * @property-read cm_info[][] $instances Array from string (modname) => int (instance id) => cm_info object
+ * @property-read array $groups Groups that the current user belongs to. Calculated on the first request.
+ *     Is an array of grouping id => array of group id => group id. Includes grouping id 0 for 'all groups'
+ */
+class course_modinfo
+{
+    /** @var int Maximum time the course cache building lock can be held */
+    const COURSE_CACHE_LOCK_EXPIRY = 180;
+    /** @var int Time to wait for the course cache building lock before throwing an exception */
+    const COURSE_CACHE_LOCK_WAIT = 60;
+    /**
+     * List of fields from DB table 'course' that are cached in MUC and are always present in course_modinfo::$course
+     * @var array
+     */
+    public static $cachedfields = array('shortname', 'fullname', 'format', 'enablecompletion', 'groupmode', 'groupmodeforce', 'cacherev');
+    /**
+     * For convenience we store the course object here as it is needed in other parts of code
+     * @var stdClass
+     */
+    private $course;
+    /**
+     * Array of section data from cache
+     * @var section_info[]
+     */
+    private $sectioninfo;
+    /**
+     * User ID
+     * @var int
+     */
+    private $userid;
+    /**
+     * Array from int (section num, e.g. 0) => array of int (course-module id); this list only
+     * includes sections that actually contain at least one course-module
+     * @var array
+     */
+    private $sections;
+    /**
+     * Array from int (cm id) => cm_info object
+     * @var cm_info[]
+     */
+    private $cms;
+    /**
+     * Array from string (modname) => int (instance id) => cm_info object
+     * @var cm_info[][]
+     */
+    private $instances;
+    /**
+     * Groups that the current user belongs to. This value is calculated on first
+     * request to the property or function.
+     * When set, it is an array of grouping id => array of group id => group id.
+     * Includes grouping id 0 for 'all groups'.
+     * @var int[][]
+     */
+    private $groups;
+    /**
+     * List of class read-only properties and their getter methods.
+     * Used by magic functions __get(), __isset(), __empty()
+     * @var array
+     */
+    private static $standardproperties = array('courseid' => 'get_course_id', 'userid' => 'get_user_id', 'sections' => 'get_sections', 'cms' => 'get_cms', 'instances' => 'get_instances', 'groups' => 'get_groups_all');
+    /**
+     * Magic method getter
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+    }
+    /**
+     * Magic method for function isset()
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function __isset($name)
+    {
+    }
+    /**
+     * Magic method for function empty()
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function __empty($name)
+    {
+    }
+    /**
+     * Magic method setter
+     *
+     * Will display the developer warning when trying to set/overwrite existing property.
+     *
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+    }
+    /**
+     * Returns course object that was used in the first {@link get_fast_modinfo()} call.
+     *
+     * It may not contain all fields from DB table {course} but always has at least the following:
+     * id,shortname,fullname,format,enablecompletion,groupmode,groupmodeforce,cacherev
+     *
+     * @return stdClass
+     */
+    public function get_course()
+    {
+    }
+    /**
+     * @return int Course ID
+     */
+    public function get_course_id()
+    {
+    }
+    /**
+     * @return int User ID
+     */
+    public function get_user_id()
+    {
+    }
+    /**
+     * @return array Array from section number (e.g. 0) to array of course-module IDs in that
+     *   section; this only includes sections that contain at least one course-module
+     */
+    public function get_sections()
+    {
+    }
+    /**
+     * @return cm_info[] Array from course-module instance to cm_info object within this course, in
+     *   order of appearance
+     */
+    public function get_cms()
+    {
+    }
+    /**
+     * Obtains a single course-module object (for a course-module that is on this course).
+     * @param int $cmid Course-module ID
+     * @return cm_info Information about that course-module
+     * @throws moodle_exception If the course-module does not exist
+     */
+    public function get_cm($cmid)
+    {
+    }
+    /**
+     * Obtains all module instances on this course.
+     * @return cm_info[][] Array from module name => array from instance id => cm_info
+     */
+    public function get_instances()
+    {
+    }
+    /**
+     * Returns array of localised human-readable module names used in this course
+     *
+     * @param bool $plural if true returns the plural form of modules names
+     * @return array
+     */
+    public function get_used_module_names($plural = \false)
+    {
+    }
+    /**
+     * Obtains all instances of a particular module on this course.
+     * @param $modname Name of module (not full frankenstyle) e.g. 'label'
+     * @return cm_info[] Array from instance id => cm_info for modules on this course; empty if none
+     */
+    public function get_instances_of($modname)
+    {
+    }
+    /**
+     * Groups that the current user belongs to organised by grouping id. Calculated on the first request.
+     * @return int[][] array of grouping id => array of group id => group id. Includes grouping id 0 for 'all groups'
+     */
+    private function get_groups_all()
+    {
+    }
+    /**
+     * Returns groups that the current user belongs to on the course. Note: If not already
+     * available, this may make a database query.
+     * @param int $groupingid Grouping ID or 0 (default) for all groups
+     * @return int[] Array of int (group id) => int (same group id again); empty array if none
+     */
+    public function get_groups($groupingid = 0)
+    {
+    }
+    /**
+     * Gets all sections as array from section number => data about section.
+     * @return section_info[] Array of section_info objects organised by section number
+     */
+    public function get_section_info_all()
+    {
+    }
+    /**
+     * Gets data about specific numbered section.
+     * @param int $sectionnumber Number (not id) of section
+     * @param int $strictness Use MUST_EXIST to throw exception if it doesn't
+     * @return section_info Information for numbered section or null if not found
+     */
+    public function get_section_info($sectionnumber, $strictness = \IGNORE_MISSING)
+    {
+    }
+    /**
+     * Static cache for generated course_modinfo instances
+     *
+     * @see course_modinfo::instance()
+     * @see course_modinfo::clear_instance_cache()
+     * @var course_modinfo[]
+     */
+    protected static $instancecache = array();
+    /**
+     * Timestamps (microtime) when the course_modinfo instances were last accessed
+     *
+     * It is used to remove the least recent accessed instances when static cache is full
+     *
+     * @var float[]
+     */
+    protected static $cacheaccessed = array();
+    /**
+     * Clears the cache used in course_modinfo::instance()
+     *
+     * Used in {@link get_fast_modinfo()} when called with argument $reset = true
+     * and in {@link rebuild_course_cache()}
+     *
+     * @param null|int|stdClass $courseorid if specified removes only cached value for this course
+     */
+    public static function clear_instance_cache($courseorid = \null)
+    {
+    }
+    /**
+     * Returns the instance of course_modinfo for the specified course and specified user
+     *
+     * This function uses static cache for the retrieved instances. The cache
+     * size is limited by MAX_MODINFO_CACHE_SIZE. If instance is not found in
+     * the static cache or it was created for another user or the cacherev validation
+     * failed - a new instance is constructed and returned.
+     *
+     * Used in {@link get_fast_modinfo()}
+     *
+     * @param int|stdClass $courseorid object from DB table 'course' (must have field 'id'
+     *     and recommended to have field 'cacherev') or just a course id
+     * @param int $userid User id to populate 'availble' and 'uservisible' attributes of modules and sections.
+     *     Set to 0 for current user (default). Set to -1 to avoid calculation of dynamic user-depended data.
+     * @return course_modinfo
+     */
+    public static function instance($courseorid, $userid = 0)
+    {
+    }
+    /**
+     * Constructs based on course.
+     * Note: This constructor should not usually be called directly.
+     * Use get_fast_modinfo($course) instead as this maintains a cache.
+     * @param stdClass $course course object, only property id is required.
+     * @param int $userid User ID
+     * @throws moodle_exception if course is not found
+     */
+    public function __construct($course, $userid)
+    {
+    }
+    /**
+     * This method can not be used anymore.
+     *
+     * @see course_modinfo::build_course_cache()
+     * @deprecated since 2.6
+     */
+    public static function build_section_cache($courseid)
+    {
+    }
+    /**
+     * Builds a list of information about sections on a course to be stored in
+     * the course cache. (Does not include information that is already cached
+     * in some other way.)
+     *
+     * @param stdClass $course Course object (must contain fields
+     * @return array Information about sections, indexed by section number (not id)
+     */
+    protected static function build_course_section_cache($course)
+    {
+    }
+    /**
+     * Gets a lock for rebuilding the cache of a single course.
+     *
+     * Caller must release the returned lock.
+     *
+     * This is used to ensure that the cache rebuild doesn't happen multiple times in parallel.
+     * This function will wait up to 1 minute for the lock to be obtained. If the lock cannot
+     * be obtained, it throws an exception.
+     *
+     * @param int $courseid Course id
+     * @return \core\lock\lock Lock (must be released!)
+     * @throws moodle_exception If the lock cannot be obtained
+     */
+    protected static function get_course_cache_lock($courseid)
+    {
+    }
+    /**
+     * Builds and stores in MUC object containing information about course
+     * modules and sections together with cached fields from table course.
+     *
+     * @param stdClass $course object from DB table course. Must have property 'id'
+     *     but preferably should have all cached fields.
+     * @return stdClass object with all cached keys of the course plus fields modinfo and sectioncache.
+     *     The same object is stored in MUC
+     * @throws moodle_exception if course is not found (if $course object misses some of the
+     *     necessary fields it is re-requested from database)
+     */
+    public static function build_course_cache($course)
+    {
+    }
+    /**
+     * Called to build course cache when there is already a lock obtained.
+     *
+     * @param stdClass $course object from DB table course
+     * @param \core\lock\lock $lock Lock object - not actually used, just there to indicate you have a lock
+     * @return stdClass Course object that has been stored in MUC
+     */
+    protected static function inner_build_course_cache($course, \core\lock\lock $lock)
+    {
+    }
+}
+/**
+ * Data about a single module on a course. This contains most of the fields in the course_modules
+ * table, plus additional data when required.
+ *
+ * The object can be accessed by core or any plugin (i.e. course format, block, filter, etc.) as
+ * get_fast_modinfo($courseorid)->cms[$coursemoduleid]
+ * or
+ * get_fast_modinfo($courseorid)->instances[$moduletype][$instanceid]
+ *
+ * There are three stages when activity module can add/modify data in this object:
+ *
+ * <b>Stage 1 - during building the cache.</b>
+ * Allows to add to the course cache static user-independent information about the module.
+ * Modules should try to include only absolutely necessary information that may be required
+ * when displaying course view page. The information is stored in application-level cache
+ * and reset when {@link rebuild_course_cache()} is called or cache is purged by admin.
+ *
+ * Modules can implement callback XXX_get_coursemodule_info() returning instance of object
+ * {@link cached_cm_info}
+ *
+ * <b>Stage 2 - dynamic data.</b>
+ * Dynamic data is user-dependent, it is stored in request-level cache. To reset this cache
+ * {@link get_fast_modinfo()} with $reset argument may be called.
+ *
+ * Dynamic data is obtained when any of the following properties/methods is requested:
+ * - {@link cm_info::$url}
+ * - {@link cm_info::$name}
+ * - {@link cm_info::$onclick}
+ * - {@link cm_info::get_icon_url()}
+ * - {@link cm_info::$uservisible}
+ * - {@link cm_info::$available}
+ * - {@link cm_info::$availableinfo}
+ * - plus any of the properties listed in Stage 3.
+ *
+ * Modules can implement callback <b>XXX_cm_info_dynamic()</b> and inside this callback they
+ * are allowed to use any of the following set methods:
+ * - {@link cm_info::set_available()}
+ * - {@link cm_info::set_name()}
+ * - {@link cm_info::set_no_view_link()}
+ * - {@link cm_info::set_user_visible()}
+ * - {@link cm_info::set_on_click()}
+ * - {@link cm_info::set_icon_url()}
+ * - {@link cm_info::override_customdata()}
+ * Any methods affecting view elements can also be set in this callback.
+ *
+ * <b>Stage 3 (view data).</b>
+ * Also user-dependend data stored in request-level cache. Second stage is created
+ * because populating the view data can be expensive as it may access much more
+ * Moodle APIs such as filters, user information, output renderers and we
+ * don't want to request it until necessary.
+ * View data is obtained when any of the following properties/methods is requested:
+ * - {@link cm_info::$afterediticons}
+ * - {@link cm_info::$content}
+ * - {@link cm_info::get_formatted_content()}
+ * - {@link cm_info::$extraclasses}
+ * - {@link cm_info::$afterlink}
+ *
+ * Modules can implement callback <b>XXX_cm_info_view()</b> and inside this callback they
+ * are allowed to use any of the following set methods:
+ * - {@link cm_info::set_after_edit_icons()}
+ * - {@link cm_info::set_after_link()}
+ * - {@link cm_info::set_content()}
+ * - {@link cm_info::set_extra_classes()}
+ *
+ * @property-read int $id Course-module ID - from course_modules table
+ * @property-read int $instance Module instance (ID within module table) - from course_modules table
+ * @property-read int $course Course ID - from course_modules table
+ * @property-read string $idnumber 'ID number' from course-modules table (arbitrary text set by user) - from
+ *    course_modules table
+ * @property-read int $added Time that this course-module was added (unix time) - from course_modules table
+ * @property-read int $visible Visible setting (0 or 1; if this is 0, students cannot see/access the activity) - from
+ *    course_modules table
+ * @property-read int $visibleoncoursepage Visible on course page setting - from course_modules table, adjusted to
+ *    whether course format allows this module to have the "stealth" mode
+ * @property-read int $visibleold Old visible setting (if the entire section is hidden, the previous value for
+ *    visible is stored in this field) - from course_modules table
+ * @property-read int $groupmode Group mode (one of the constants NOGROUPS, SEPARATEGROUPS, or VISIBLEGROUPS) - from
+ *    course_modules table. Use {@link cm_info::$effectivegroupmode} to find the actual group mode that may be forced by course.
+ * @property-read int $groupingid Grouping ID (0 = all groupings)
+ * @property-read bool $coursegroupmodeforce Indicates whether the course containing the module has forced the groupmode
+ *    This means that cm_info::$groupmode should be ignored and cm_info::$coursegroupmode be used instead
+ * @property-read int $coursegroupmode Group mode (one of the constants NOGROUPS, SEPARATEGROUPS, or VISIBLEGROUPS) - from
+ *    course table - as specified for the course containing the module
+ *    Effective only if {@link cm_info::$coursegroupmodeforce} is set
+ * @property-read int $effectivegroupmode Effective group mode for this module (one of the constants NOGROUPS, SEPARATEGROUPS,
+ *    or VISIBLEGROUPS). This can be different from groupmode set for the module if the groupmode is forced for the course.
+ *    This value will always be NOGROUPS if module type does not support group mode.
+ * @property-read int $indent Indent level on course page (0 = no indent) - from course_modules table
+ * @property-read int $completion Activity completion setting for this activity, COMPLETION_TRACKING_xx constant - from
+ *    course_modules table
+ * @property-read mixed $completiongradeitemnumber Set to the item number (usually 0) if completion depends on a particular
+ *    grade of this activity, or null if completion does not depend on a grade - from course_modules table
+ * @property-read int $completionview 1 if 'on view' completion is enabled, 0 otherwise - from course_modules table
+ * @property-read int $completionexpected Set to a unix time if completion of this activity is expected at a
+ *    particular time, 0 if no time set - from course_modules table
+ * @property-read string $availability Availability information as JSON string or null if none -
+ *    from course_modules table
+ * @property-read int $showdescription Controls whether the description of the activity displays on the course main page (in
+ *    addition to anywhere it might display within the activity itself). 0 = do not show
+ *    on main page, 1 = show on main page.
+ * @property-read string $extra (deprecated) Extra HTML that is put in an unhelpful part of the HTML when displaying this module in
+ *    course page - from cached data in modinfo field. Deprecated, replaced by ->extraclasses and ->onclick
+ * @property-read string $icon Name of icon to use - from cached data in modinfo field
+ * @property-read string $iconcomponent Component that contains icon - from cached data in modinfo field
+ * @property-read string $modname Name of module e.g. 'forum' (this is the same name as the module's main database
+ *    table) - from cached data in modinfo field
+ * @property-read int $module ID of module type - from course_modules table
+ * @property-read string $name Name of module instance for display on page e.g. 'General discussion forum' - from cached
+ *    data in modinfo field
+ * @property-read int $sectionnum Section number that this course-module is in (section 0 = above the calendar, section 1
+ *    = week/topic 1, etc) - from cached data in modinfo field
+ * @property-read int $section Section id - from course_modules table
+ * @property-read array $conditionscompletion Availability conditions for this course-module based on the completion of other
+ *    course-modules (array from other course-module id to required completion state for that
+ *    module) - from cached data in modinfo field
+ * @property-read array $conditionsgrade Availability conditions for this course-module based on course grades (array from
+ *    grade item id to object with ->min, ->max fields) - from cached data in modinfo field
+ * @property-read array $conditionsfield Availability conditions for this course-module based on user fields
+ * @property-read bool $available True if this course-module is available to students i.e. if all availability conditions
+ *    are met - obtained dynamically
+ * @property-read string $availableinfo If course-module is not available to students, this string gives information about
+ *    availability which can be displayed to students and/or staff (e.g. 'Available from 3
+ *    January 2010') for display on main page - obtained dynamically
+ * @property-read bool $uservisible True if this course-module is available to the CURRENT user (for example, if current user
+ *    has viewhiddenactivities capability, they can access the course-module even if it is not
+ *    visible or not available, so this would be true in that case)
+ * @property-read context_module $context Module context
+ * @property-read string $modfullname Returns a localised human-readable name of the module type - calculated on request
+ * @property-read string $modplural Returns a localised human-readable name of the module type in plural form - calculated on request
+ * @property-read string $content Content to display on main (view) page - calculated on request
+ * @property-read moodle_url $url URL to link to for this module, or null if it doesn't have a view page - calculated on request
+ * @property-read string $extraclasses Extra CSS classes to add to html output for this activity on main page - calculated on request
+ * @property-read string $onclick Content of HTML on-click attribute already escaped - calculated on request
+ * @property-read mixed $customdata Optional custom data stored in modinfo cache for this activity, or null if none
+ * @property-read string $afterlink Extra HTML code to display after link - calculated on request
+ * @property-read string $afterediticons Extra HTML code to display after editing icons (e.g. more icons) - calculated on request
+ * @property-read bool $deletioninprogress True if this course module is scheduled for deletion, false otherwise.
+ */
+class cm_info implements \IteratorAggregate
+{
+    /**
+     * State: Only basic data from modinfo cache is available.
+     */
+    const STATE_BASIC = 0;
+    /**
+     * State: In the process of building dynamic data (to avoid recursive calls to obtain_dynamic_data())
+     */
+    const STATE_BUILDING_DYNAMIC = 1;
+    /**
+     * State: Dynamic data is available too.
+     */
+    const STATE_DYNAMIC = 2;
+    /**
+     * State: In the process of building view data (to avoid recursive calls to obtain_view_data())
+     */
+    const STATE_BUILDING_VIEW = 3;
+    /**
+     * State: View data (for course page) is available.
+     */
+    const STATE_VIEW = 4;
+    /**
+     * Parent object
+     * @var course_modinfo
+     */
+    private $modinfo;
+    /**
+     * Level of information stored inside this object (STATE_xx constant)
+     * @var int
+     */
+    private $state;
+    /**
+     * Course-module ID - from course_modules table
+     * @var int
+     */
+    private $id;
+    /**
+     * Module instance (ID within module table) - from course_modules table
+     * @var int
+     */
+    private $instance;
+    /**
+     * 'ID number' from course-modules table (arbitrary text set by user) - from
+     * course_modules table
+     * @var string
+     */
+    private $idnumber;
+    /**
+     * Time that this course-module was added (unix time) - from course_modules table
+     * @var int
+     */
+    private $added;
+    /**
+     * This variable is not used and is included here only so it can be documented.
+     * Once the database entry is removed from course_modules, it should be deleted
+     * here too.
+     * @var int
+     * @deprecated Do not use this variable
+     */
+    private $score;
+    /**
+     * Visible setting (0 or 1; if this is 0, students cannot see/access the activity) - from
+     * course_modules table
+     * @var int
+     */
+    private $visible;
+    /**
+     * Visible on course page setting - from course_modules table
+     * @var int
+     */
+    private $visibleoncoursepage;
+    /**
+     * Old visible setting (if the entire section is hidden, the previous value for
+     * visible is stored in this field) - from course_modules table
+     * @var int
+     */
+    private $visibleold;
+    /**
+     * Group mode (one of the constants NONE, SEPARATEGROUPS, or VISIBLEGROUPS) - from
+     * course_modules table
+     * @var int
+     */
+    private $groupmode;
+    /**
+     * Grouping ID (0 = all groupings)
+     * @var int
+     */
+    private $groupingid;
+    /**
+     * Indent level on course page (0 = no indent) - from course_modules table
+     * @var int
+     */
+    private $indent;
+    /**
+     * Activity completion setting for this activity, COMPLETION_TRACKING_xx constant - from
+     * course_modules table
+     * @var int
+     */
+    private $completion;
+    /**
+     * Set to the item number (usually 0) if completion depends on a particular
+     * grade of this activity, or null if completion does not depend on a grade - from
+     * course_modules table
+     * @var mixed
+     */
+    private $completiongradeitemnumber;
+    /**
+     * 1 if 'on view' completion is enabled, 0 otherwise - from course_modules table
+     * @var int
+     */
+    private $completionview;
+    /**
+     * Set to a unix time if completion of this activity is expected at a
+     * particular time, 0 if no time set - from course_modules table
+     * @var int
+     */
+    private $completionexpected;
+    /**
+     * Availability information as JSON string or null if none - from course_modules table
+     * @var string
+     */
+    private $availability;
+    /**
+     * Controls whether the description of the activity displays on the course main page (in
+     * addition to anywhere it might display within the activity itself). 0 = do not show
+     * on main page, 1 = show on main page.
+     * @var int
+     */
+    private $showdescription;
+    /**
+     * Extra HTML that is put in an unhelpful part of the HTML when displaying this module in
+     * course page - from cached data in modinfo field
+     * @deprecated This is crazy, don't use it. Replaced by ->extraclasses and ->onclick
+     * @var string
+     */
+    private $extra;
+    /**
+     * Name of icon to use - from cached data in modinfo field
+     * @var string
+     */
+    private $icon;
+    /**
+     * Component that contains icon - from cached data in modinfo field
+     * @var string
+     */
+    private $iconcomponent;
+    /**
+     * Name of module e.g. 'forum' (this is the same name as the module's main database
+     * table) - from cached data in modinfo field
+     * @var string
+     */
+    private $modname;
+    /**
+     * ID of module - from course_modules table
+     * @var int
+     */
+    private $module;
+    /**
+     * Name of module instance for display on page e.g. 'General discussion forum' - from cached
+     * data in modinfo field
+     * @var string
+     */
+    private $name;
+    /**
+     * Section number that this course-module is in (section 0 = above the calendar, section 1
+     * = week/topic 1, etc) - from cached data in modinfo field
+     * @var int
+     */
+    private $sectionnum;
+    /**
+     * Section id - from course_modules table
+     * @var int
+     */
+    private $section;
+    /**
+     * Availability conditions for this course-module based on the completion of other
+     * course-modules (array from other course-module id to required completion state for that
+     * module) - from cached data in modinfo field
+     * @var array
+     */
+    private $conditionscompletion;
+    /**
+     * Availability conditions for this course-module based on course grades (array from
+     * grade item id to object with ->min, ->max fields) - from cached data in modinfo field
+     * @var array
+     */
+    private $conditionsgrade;
+    /**
+     * Availability conditions for this course-module based on user fields
+     * @var array
+     */
+    private $conditionsfield;
+    /**
+     * True if this course-module is available to students i.e. if all availability conditions
+     * are met - obtained dynamically
+     * @var bool
+     */
+    private $available;
+    /**
+     * If course-module is not available to students, this string gives information about
+     * availability which can be displayed to students and/or staff (e.g. 'Available from 3
+     * January 2010') for display on main page - obtained dynamically
+     * @var string
+     */
+    private $availableinfo;
+    /**
+     * True if this course-module is available to the CURRENT user (for example, if current user
+     * has viewhiddenactivities capability, they can access the course-module even if it is not
+     * visible or not available, so this would be true in that case)
+     * @var bool
+     */
+    private $uservisible;
+    /**
+     * True if this course-module is visible to the CURRENT user on the course page
+     * @var bool
+     */
+    private $uservisibleoncoursepage;
+    /**
+     * @var moodle_url
+     */
+    private $url;
+    /**
+     * @var string
+     */
+    private $content;
+    /**
+     * @var bool
+     */
+    private $contentisformatted;
+    /**
+     * @var string
+     */
+    private $extraclasses;
+    /**
+     * @var moodle_url full external url pointing to icon image for activity
+     */
+    private $iconurl;
+    /**
+     * @var string
+     */
+    private $onclick;
+    /**
+     * @var mixed
+     */
+    private $customdata;
+    /**
+     * @var string
+     */
+    private $afterlink;
+    /**
+     * @var string
+     */
+    private $afterediticons;
+    /**
+     * @var bool representing the deletion state of the module. True if the mod is scheduled for deletion.
+     */
+    private $deletioninprogress;
+    /**
+     * List of class read-only properties and their getter methods.
+     * Used by magic functions __get(), __isset(), __empty()
+     * @var array
+     */
+    private static $standardproperties = array('url' => 'get_url', 'content' => 'get_content', 'extraclasses' => 'get_extra_classes', 'onclick' => 'get_on_click', 'customdata' => 'get_custom_data', 'afterlink' => 'get_after_link', 'afterediticons' => 'get_after_edit_icons', 'modfullname' => 'get_module_type_name', 'modplural' => 'get_module_type_name_plural', 'id' => \false, 'added' => \false, 'availability' => \false, 'available' => 'get_available', 'availableinfo' => 'get_available_info', 'completion' => \false, 'completionexpected' => \false, 'completiongradeitemnumber' => \false, 'completionview' => \false, 'conditionscompletion' => \false, 'conditionsfield' => \false, 'conditionsgrade' => \false, 'context' => 'get_context', 'course' => 'get_course_id', 'coursegroupmode' => 'get_course_groupmode', 'coursegroupmodeforce' => 'get_course_groupmodeforce', 'effectivegroupmode' => 'get_effective_groupmode', 'extra' => \false, 'groupingid' => \false, 'groupmembersonly' => 'get_deprecated_group_members_only', 'groupmode' => \false, 'icon' => \false, 'iconcomponent' => \false, 'idnumber' => \false, 'indent' => \false, 'instance' => \false, 'modname' => \false, 'module' => \false, 'name' => 'get_name', 'score' => \false, 'section' => \false, 'sectionnum' => \false, 'showdescription' => \false, 'uservisible' => 'get_user_visible', 'visible' => \false, 'visibleoncoursepage' => \false, 'visibleold' => \false, 'deletioninprogress' => \false);
+    /**
+     * List of methods with no arguments that were public prior to Moodle 2.6.
+     *
+     * They can still be accessed publicly via magic __call() function with no warnings
+     * but are not listed in the class methods list.
+     * For the consistency of the code it is better to use corresponding properties.
+     *
+     * These methods be deprecated completely in later versions.
+     *
+     * @var array $standardmethods
+     */
+    private static $standardmethods = array(
+        // Following methods are not recommended to use because there have associated read-only properties.
+        'get_url',
+        'get_content',
+        'get_extra_classes',
+        'get_on_click',
+        'get_custom_data',
+        'get_after_link',
+        'get_after_edit_icons',
+        // Method obtain_dynamic_data() should not be called from outside of this class but it was public before Moodle 2.6.
+        'obtain_dynamic_data',
+    );
+    /**
+     * Magic method to call functions that are now declared as private but were public in Moodle before 2.6.
+     * These private methods can not be used anymore.
+     *
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
+     * @throws coding_exception
+     */
+    public function __call($name, $arguments)
+    {
+    }
+    /**
+     * Magic method getter
+     *
+     * @param string $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+    }
+    /**
+     * Implementation of IteratorAggregate::getIterator(), allows to cycle through properties
+     * and use {@link convert_to_array()}
+     *
+     * @return ArrayIterator
+     */
+    public function getIterator()
+    {
+    }
+    /**
+     * Magic method for function isset()
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function __isset($name)
+    {
+    }
+    /**
+     * Magic method for function empty()
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function __empty($name)
+    {
+    }
+    /**
+     * Magic method setter
+     *
+     * Will display the developer warning when trying to set/overwrite property.
+     *
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+    }
+    /**
+     * @return bool True if this module has a 'view' page that should be linked to in navigation
+     *   etc (note: modules may still have a view.php file, but return false if this is not
+     *   intended to be linked to from 'normal' parts of the interface; this is what label does).
+     */
+    public function has_view()
+    {
+    }
+    /**
+     * Gets the URL to link to for this module.
+     *
+     * This method is normally called by the property ->url, but can be called directly if
+     * there is a case when it might be called recursively (you can't call property values
+     * recursively).
+     *
+     * @return moodle_url URL to link to for this module, or null if it doesn't have a view page
+     */
+    public function get_url()
+    {
+    }
+    /**
+     * Obtains content to display on main (view) page.
+     * Note: Will collect view data, if not already obtained.
+     * @return string Content to display on main page below link, or empty string if none
+     */
+    private function get_content()
+    {
+    }
+    /**
+     * Returns the content to display on course/overview page, formatted and passed through filters
+     *
+     * if $options['context'] is not specified, the module context is used
+     *
+     * @param array|stdClass $options formatting options, see {@link format_text()}
+     * @return string
+     */
+    public function get_formatted_content($options = array())
+    {
+    }
+    /**
+     * Getter method for property $name, ensures that dynamic data is obtained.
+     *
+     * This method is normally called by the property ->name, but can be called directly if there
+     * is a case when it might be called recursively (you can't call property values recursively).
+     *
+     * @return string
+     */
+    public function get_name()
+    {
+    }
+    /**
+     * Returns the name to display on course/overview page, formatted and passed through filters
+     *
+     * if $options['context'] is not specified, the module context is used
+     *
+     * @param array|stdClass $options formatting options, see {@link format_string()}
+     * @return string
+     */
+    public function get_formatted_name($options = array())
+    {
+    }
+    /**
+     * Note: Will collect view data, if not already obtained.
+     * @return string Extra CSS classes to add to html output for this activity on main page
+     */
+    private function get_extra_classes()
+    {
+    }
+    /**
+     * @return string Content of HTML on-click attribute. This string will be used literally
+     * as a string so should be pre-escaped.
+     */
+    private function get_on_click()
+    {
+    }
+    /**
+     * Getter method for property $customdata, ensures that dynamic data is retrieved.
+     *
+     * This method is normally called by the property ->customdata, but can be called directly if there
+     * is a case when it might be called recursively (you can't call property values recursively).
+     *
+     * @return mixed Optional custom data stored in modinfo cache for this activity, or null if none
+     */
+    public function get_custom_data()
+    {
+    }
+    /**
+     * Note: Will collect view data, if not already obtained.
+     * @return string Extra HTML code to display after link
+     */
+    private function get_after_link()
+    {
+    }
+    /**
+     * Note: Will collect view data, if not already obtained.
+     * @return string Extra HTML code to display after editing icons (e.g. more icons)
+     */
+    private function get_after_edit_icons()
+    {
+    }
+    /**
+     * @param moodle_core_renderer $output Output render to use, or null for default (global)
+     * @return moodle_url Icon URL for a suitable icon to put beside this cm
+     */
+    public function get_icon_url($output = \null)
+    {
+    }
+    /**
+     * @param string $textclasses additionnal classes for grouping label
+     * @return string An empty string or HTML grouping label span tag
+     */
+    public function get_grouping_label($textclasses = '')
+    {
+    }
+    /**
+     * Returns a localised human-readable name of the module type
+     *
+     * @param bool $plural return plural form
+     * @return string
+     */
+    public function get_module_type_name($plural = \false)
+    {
+    }
+    /**
+     * Returns a localised human-readable name of the module type in plural form - calculated on request
+     *
+     * @return string
+     */
+    private function get_module_type_name_plural()
+    {
+    }
+    /**
+     * @return course_modinfo Modinfo object that this came from
+     */
+    public function get_modinfo()
+    {
+    }
+    /**
+     * Returns the section this module belongs to
+     *
+     * @return section_info
+     */
+    public function get_section_info()
+    {
+    }
+    /**
+     * Returns course object that was used in the first {@link get_fast_modinfo()} call.
+     *
+     * It may not contain all fields from DB table {course} but always has at least the following:
+     * id,shortname,fullname,format,enablecompletion,groupmode,groupmodeforce,cacherev
+     *
+     * If the course object lacks the field you need you can use the global
+     * function {@link get_course()} that will save extra query if you access
+     * current course or frontpage course.
+     *
+     * @return stdClass
+     */
+    public function get_course()
+    {
+    }
+    /**
+     * Returns course id for which the modinfo was generated.
+     *
+     * @return int
+     */
+    private function get_course_id()
+    {
+    }
+    /**
+     * Returns group mode used for the course containing the module
+     *
+     * @return int one of constants NOGROUPS, SEPARATEGROUPS, VISIBLEGROUPS
+     */
+    private function get_course_groupmode()
+    {
+    }
+    /**
+     * Returns whether group mode is forced for the course containing the module
+     *
+     * @return bool
+     */
+    private function get_course_groupmodeforce()
+    {
+    }
+    /**
+     * Returns effective groupmode of the module that may be overwritten by forced course groupmode.
+     *
+     * @return int one of constants NOGROUPS, SEPARATEGROUPS, VISIBLEGROUPS
+     */
+    private function get_effective_groupmode()
+    {
+    }
+    /**
+     * @return context_module Current module context
+     */
+    private function get_context()
+    {
+    }
+    /**
+     * Returns itself in the form of stdClass.
+     *
+     * The object includes all fields that table course_modules has and additionally
+     * fields 'name', 'modname', 'sectionnum' (if requested).
+     *
+     * This can be used as a faster alternative to {@link get_coursemodule_from_id()}
+     *
+     * @param bool $additionalfields include additional fields 'name', 'modname', 'sectionnum'
+     * @return stdClass
+     */
+    public function get_course_module_record($additionalfields = \false)
+    {
+    }
+    // Set functions
+    ////////////////
+    /**
+     * Sets content to display on course view page below link (if present).
+     * @param string $content New content as HTML string (empty string if none)
+     * @param bool $isformatted Whether user content is already passed through format_text/format_string and should not
+     *    be formatted again. This can be useful when module adds interactive elements on top of formatted user text.
+     * @return void
+     */
+    public function set_content($content, $isformatted = \false)
+    {
+    }
+    /**
+     * Sets extra classes to include in CSS.
+     * @param string $extraclasses Extra classes (empty string if none)
+     * @return void
+     */
+    public function set_extra_classes($extraclasses)
+    {
+    }
+    /**
+     * Sets the external full url that points to the icon being used
+     * by the activity. Useful for external-tool modules (lti...)
+     * If set, takes precedence over $icon and $iconcomponent
+     *
+     * @param moodle_url $iconurl full external url pointing to icon image for activity
+     * @return void
+     */
+    public function set_icon_url(\moodle_url $iconurl)
+    {
+    }
+    /**
+     * Sets value of on-click attribute for JavaScript.
+     * Note: May not be called from _cm_info_view (only _cm_info_dynamic).
+     * @param string $onclick New onclick attribute which should be HTML-escaped
+     *   (empty string if none)
+     * @return void
+     */
+    public function set_on_click($onclick)
+    {
+    }
+    /**
+     * Overrides the value of an element in the customdata array.
+     *
+     * @param string $name The key in the customdata array
+     * @param mixed $value The value
+     */
+    public function override_customdata($name, $value)
+    {
+    }
+    /**
+     * Sets HTML that displays after link on course view page.
+     * @param string $afterlink HTML string (empty string if none)
+     * @return void
+     */
+    public function set_after_link($afterlink)
+    {
+    }
+    /**
+     * Sets HTML that displays after edit icons on course view page.
+     * @param string $afterediticons HTML string (empty string if none)
+     * @return void
+     */
+    public function set_after_edit_icons($afterediticons)
+    {
+    }
+    /**
+     * Changes the name (text of link) for this module instance.
+     * Note: May not be called from _cm_info_view (only _cm_info_dynamic).
+     * @param string $name Name of activity / link text
+     * @return void
+     */
+    public function set_name($name)
+    {
+    }
+    /**
+     * Turns off the view link for this module instance.
+     * Note: May not be called from _cm_info_view (only _cm_info_dynamic).
+     * @return void
+     */
+    public function set_no_view_link()
+    {
+    }
+    /**
+     * Sets the 'uservisible' flag. This can be used (by setting false) to prevent access and
+     * display of this module link for the current user.
+     * Note: May not be called from _cm_info_view (only _cm_info_dynamic).
+     * @param bool $uservisible
+     * @return void
+     */
+    public function set_user_visible($uservisible)
+    {
+    }
+    /**
+     * Sets the 'available' flag and related details. This flag is normally used to make
+     * course modules unavailable until a certain date or condition is met. (When a course
+     * module is unavailable, it is still visible to users who have viewhiddenactivities
+     * permission.)
+     *
+     * When this is function is called, user-visible status is recalculated automatically.
+     *
+     * The $showavailability flag does not really do anything any more, but is retained
+     * for backward compatibility. Setting this to false will cause $availableinfo to
+     * be ignored.
+     *
+     * Note: May not be called from _cm_info_view (only _cm_info_dynamic).
+     * @param bool $available False if this item is not 'available'
+     * @param int $showavailability 0 = do not show this item at all if it's not available,
+     *   1 = show this item greyed out with the following message
+     * @param string $availableinfo Information about why this is not available, or
+     *   empty string if not displaying
+     * @return void
+     */
+    public function set_available($available, $showavailability = 0, $availableinfo = '')
+    {
+    }
+    /**
+     * Some set functions can only be called from _cm_info_dynamic and not _cm_info_view.
+     * This is because they may affect parts of this object which are used on pages other
+     * than the view page (e.g. in the navigation block, or when checking access on
+     * module pages).
+     * @return void
+     */
+    private function check_not_view_only()
+    {
+    }
+    /**
+     * Constructor should not be called directly; use {@link get_fast_modinfo()}
+     *
+     * @param course_modinfo $modinfo Parent object
+     * @param stdClass $notused1 Argument not used
+     * @param stdClass $mod Module object from the modinfo field of course table
+     * @param stdClass $notused2 Argument not used
+     */
+    public function __construct(\course_modinfo $modinfo, $notused1, $mod, $notused2)
+    {
+    }
+    /**
+     * Creates a cm_info object from a database record (also accepts cm_info
+     * in which case it is just returned unchanged).
+     *
+     * @param stdClass|cm_info|null|bool $cm Stdclass or cm_info (or null or false)
+     * @param int $userid Optional userid (default to current)
+     * @return cm_info|null Object as cm_info, or null if input was null/false
+     */
+    public static function create($cm, $userid = 0)
+    {
+    }
+    /**
+     * If dynamic data for this course-module is not yet available, gets it.
+     *
+     * This function is automatically called when requesting any course_modinfo property
+     * that can be modified by modules (have a set_xxx method).
+     *
+     * Dynamic data is data which does not come directly from the cache but is calculated at
+     * runtime based on the current user. Primarily this concerns whether the user can access
+     * the module or not.
+     *
+     * As part of this function, the module's _cm_info_dynamic function from its lib.php will
+     * be called (if it exists). Make sure that the functions that are called here do not use
+     * any getter magic method from cm_info.
+     * @return void
+     */
+    private function obtain_dynamic_data()
+    {
+    }
+    /**
+     * Getter method for property $uservisible, ensures that dynamic data is retrieved.
+     *
+     * This method is normally called by the property ->uservisible, but can be called directly if
+     * there is a case when it might be called recursively (you can't call property values
+     * recursively).
+     *
+     * @return bool
+     */
+    public function get_user_visible()
+    {
+    }
+    /**
+     * Returns whether this module is visible to the current user on course page
+     *
+     * Activity may be visible on the course page but not available, for example
+     * when it is hidden conditionally but the condition information is displayed.
+     *
+     * @return bool
+     */
+    public function is_visible_on_course_page()
+    {
+    }
+    /**
+     * Whether this module is available but hidden from course page
+     *
+     * "Stealth" modules are the ones that are not shown on course page but available by following url.
+     * They are normally also displayed in grade reports and other reports.
+     * Module will be stealth either if visibleoncoursepage=0 or it is a visible module inside the hidden
+     * section.
+     *
+     * @return bool
+     */
+    public function is_stealth()
+    {
+    }
+    /**
+     * Getter method for property $available, ensures that dynamic data is retrieved
+     * @return bool
+     */
+    private function get_available()
+    {
+    }
+    /**
+     * This method can not be used anymore.
+     *
+     * @see \core_availability\info_module::filter_user_list()
+     * @deprecated Since Moodle 2.8
+     */
+    private function get_deprecated_group_members_only()
+    {
+    }
+    /**
+     * Getter method for property $availableinfo, ensures that dynamic data is retrieved
+     *
+     * @return string Available info (HTML)
+     */
+    private function get_available_info()
+    {
+    }
+    /**
+     * Works out whether activity is available to the current user
+     *
+     * If the activity is unavailable, additional checks are required to determine if its hidden or greyed out
+     *
+     * @return void
+     */
+    private function update_user_visible()
+    {
+    }
+    /**
+     * This method has been deprecated and should not be used.
+     *
+     * @see $uservisible
+     * @deprecated Since Moodle 2.8
+     */
+    public function is_user_access_restricted_by_group()
+    {
+    }
+    /**
+     * Checks whether mod/...:view capability restricts the current user's access.
+     *
+     * @return bool True if the user access is restricted.
+     */
+    public function is_user_access_restricted_by_capability()
+    {
+    }
+    /**
+     * Checks whether the module's conditional access settings mean that the
+     * user cannot see the activity at all
+     *
+     * @deprecated since 2.7 MDL-44070
+     */
+    public function is_user_access_restricted_by_conditional_access()
+    {
+    }
+    /**
+     * Calls a module function (if exists), passing in one parameter: this object.
+     * @param string $type Name of function e.g. if this is 'grooblezorb' and the modname is
+     *   'forum' then it will try to call 'mod_forum_grooblezorb' or 'forum_grooblezorb'
+     * @return void
+     */
+    private function call_mod_function($type)
+    {
+    }
+    /**
+     * If view data for this course-module is not yet available, obtains it.
+     *
+     * This function is automatically called if any of the functions (marked) which require
+     * view data are called.
+     *
+     * View data is data which is needed only for displaying the course main page (& any similar
+     * functionality on other pages) but is not needed in general. Obtaining view data may have
+     * a performance cost.
+     *
+     * As part of this function, the module's _cm_info_view function from its lib.php will
+     * be called (if it exists).
+     * @return void
+     */
+    private function obtain_view_data()
+    {
+    }
+}
+/**
+ * Class that is the return value for the _get_coursemodule_info module API function.
+ *
+ * Note: For backward compatibility, you can also return a stdclass object from that function.
+ * The difference is that the stdclass object may contain an 'extra' field (deprecated,
+ * use extraclasses and onclick instead). The stdclass object may not contain
+ * the new fields defined here (content, extraclasses, customdata).
+ */
+class cached_cm_info
+{
+    /**
+     * Name (text of link) for this activity; Leave unset to accept default name
+     * @var string
+     */
+    public $name;
+    /**
+     * Name of icon for this activity. Normally, this should be used together with $iconcomponent
+     * to define the icon, as per image_url function.
+     * For backward compatibility, if this value is of the form 'mod/forum/icon' then an icon
+     * within that module will be used.
+     * @see cm_info::get_icon_url()
+     * @see renderer_base::image_url()
+     * @var string
+     */
+    public $icon;
+    /**
+     * Component for icon for this activity, as per image_url; leave blank to use default 'moodle'
+     * component
+     * @see renderer_base::image_url()
+     * @var string
+     */
+    public $iconcomponent;
+    /**
+     * HTML content to be displayed on the main page below the link (if any) for this course-module
+     * @var string
+     */
+    public $content;
+    /**
+     * Custom data to be stored in modinfo for this activity; useful if there are cases when
+     * internal information for this activity type needs to be accessible from elsewhere on the
+     * course without making database queries. May be of any type but should be short.
+     * @var mixed
+     */
+    public $customdata;
+    /**
+     * Extra CSS class or classes to be added when this activity is displayed on the main page;
+     * space-separated string
+     * @var string
+     */
+    public $extraclasses;
+    /**
+     * External URL image to be used by activity as icon, useful for some external-tool modules
+     * like lti. If set, takes precedence over $icon and $iconcomponent
+     * @var $moodle_url
+     */
+    public $iconurl;
+    /**
+     * Content of onclick JavaScript; escaped HTML to be inserted as attribute value
+     * @var string
+     */
+    public $onclick;
+}
+/**
+ * Data about a single section on a course. This contains the fields from the
+ * course_sections table, plus additional data when required.
+ *
+ * @property-read int $id Section ID - from course_sections table
+ * @property-read int $course Course ID - from course_sections table
+ * @property-read int $section Section number - from course_sections table
+ * @property-read string $name Section name if specified - from course_sections table
+ * @property-read int $visible Section visibility (1 = visible) - from course_sections table
+ * @property-read string $summary Section summary text if specified - from course_sections table
+ * @property-read int $summaryformat Section summary text format (FORMAT_xx constant) - from course_sections table
+ * @property-read string $availability Availability information as JSON string -
+ *    from course_sections table
+ * @property-read array $conditionscompletion Availability conditions for this section based on the completion of
+ *    course-modules (array from course-module id to required completion state
+ *    for that module) - from cached data in sectioncache field
+ * @property-read array $conditionsgrade Availability conditions for this section based on course grades (array from
+ *    grade item id to object with ->min, ->max fields) - from cached data in
+ *    sectioncache field
+ * @property-read array $conditionsfield Availability conditions for this section based on user fields
+ * @property-read bool $available True if this section is available to the given user i.e. if all availability conditions
+ *    are met - obtained dynamically
+ * @property-read string $availableinfo If section is not available to some users, this string gives information about
+ *    availability which can be displayed to students and/or staff (e.g. 'Available from 3 January 2010')
+ *    for display on main page - obtained dynamically
+ * @property-read bool $uservisible True if this section is available to the given user (for example, if current user
+ *    has viewhiddensections capability, they can access the section even if it is not
+ *    visible or not available, so this would be true in that case) - obtained dynamically
+ * @property-read string $sequence Comma-separated list of all modules in the section. Note, this field may not exactly
+ *    match course_sections.sequence if later has references to non-existing modules or not modules of not available module types.
+ * @property-read course_modinfo $modinfo
+ */
+class section_info implements \IteratorAggregate
+{
+    /**
+     * Section ID - from course_sections table
+     * @var int
+     */
+    private $_id;
+    /**
+     * Section number - from course_sections table
+     * @var int
+     */
+    private $_section;
+    /**
+     * Section name if specified - from course_sections table
+     * @var string
+     */
+    private $_name;
+    /**
+     * Section visibility (1 = visible) - from course_sections table
+     * @var int
+     */
+    private $_visible;
+    /**
+     * Section summary text if specified - from course_sections table
+     * @var string
+     */
+    private $_summary;
+    /**
+     * Section summary text format (FORMAT_xx constant) - from course_sections table
+     * @var int
+     */
+    private $_summaryformat;
+    /**
+     * Availability information as JSON string - from course_sections table
+     * @var string
+     */
+    private $_availability;
+    /**
+     * Availability conditions for this section based on the completion of
+     * course-modules (array from course-module id to required completion state
+     * for that module) - from cached data in sectioncache field
+     * @var array
+     */
+    private $_conditionscompletion;
+    /**
+     * Availability conditions for this section based on course grades (array from
+     * grade item id to object with ->min, ->max fields) - from cached data in
+     * sectioncache field
+     * @var array
+     */
+    private $_conditionsgrade;
+    /**
+     * Availability conditions for this section based on user fields
+     * @var array
+     */
+    private $_conditionsfield;
+    /**
+     * True if this section is available to students i.e. if all availability conditions
+     * are met - obtained dynamically on request, see function {@link section_info::get_available()}
+     * @var bool|null
+     */
+    private $_available;
+    /**
+     * If section is not available to some users, this string gives information about
+     * availability which can be displayed to students and/or staff (e.g. 'Available from 3
+     * January 2010') for display on main page - obtained dynamically on request, see
+     * function {@link section_info::get_availableinfo()}
+     * @var string
+     */
+    private $_availableinfo;
+    /**
+     * True if this section is available to the CURRENT user (for example, if current user
+     * has viewhiddensections capability, they can access the section even if it is not
+     * visible or not available, so this would be true in that case) - obtained dynamically
+     * on request, see function {@link section_info::get_uservisible()}
+     * @var bool|null
+     */
+    private $_uservisible;
+    /**
+     * Default values for sectioncache fields; if a field has this value, it won't
+     * be stored in the sectioncache cache, to save space. Checks are done by ===
+     * which means values must all be strings.
+     * @var array
+     */
+    private static $sectioncachedefaults = array(
+        'name' => \null,
+        'summary' => '',
+        'summaryformat' => '1',
+        // FORMAT_HTML, but must be a string
+        'visible' => '1',
+        'availability' => \null,
+    );
+    /**
+     * Stores format options that have been cached when building 'coursecache'
+     * When the format option is requested we look first if it has been cached
+     * @var array
+     */
+    private $cachedformatoptions = array();
+    /**
+     * Stores the list of all possible section options defined in each used course format.
+     * @var array
+     */
+    private static $sectionformatoptions = array();
+    /**
+     * Stores the modinfo object passed in constructor, may be used when requesting
+     * dynamically obtained attributes such as available, availableinfo, uservisible.
+     * Also used to retrun information about current course or user.
+     * @var course_modinfo
+     */
+    private $modinfo;
+    /**
+     * Constructs object from database information plus extra required data.
+     * @param object $data Array entry from cached sectioncache
+     * @param int $number Section number (array key)
+     * @param int $notused1 argument not used (informaion is available in $modinfo)
+     * @param int $notused2 argument not used (informaion is available in $modinfo)
+     * @param course_modinfo $modinfo Owner (needed for checking availability)
+     * @param int $notused3 argument not used (informaion is available in $modinfo)
+     */
+    public function __construct($data, $number, $notused1, $notused2, $modinfo, $notused3)
+    {
+    }
+    /**
+     * Magic method to check if the property is set
+     *
+     * @param string $name name of the property
+     * @return bool
+     */
+    public function __isset($name)
+    {
+    }
+    /**
+     * Magic method to check if the property is empty
+     *
+     * @param string $name name of the property
+     * @return bool
+     */
+    public function __empty($name)
+    {
+    }
+    /**
+     * Magic method to retrieve the property, this is either basic section property
+     * or availability information or additional properties added by course format
+     *
+     * @param string $name name of the property
+     * @return bool
+     */
+    public function __get($name)
+    {
+    }
+    /**
+     * Finds whether this section is available at the moment for the current user.
+     *
+     * The value can be accessed publicly as $sectioninfo->available, but can be called directly if there
+     * is a case when it might be called recursively (you can't call property values recursively).
+     *
+     * @return bool
+     */
+    public function get_available()
+    {
+    }
+    /**
+     * Returns the availability text shown next to the section on course page.
+     *
+     * @return string
+     */
+    private function get_availableinfo()
+    {
+    }
+    /**
+     * Implementation of IteratorAggregate::getIterator(), allows to cycle through properties
+     * and use {@link convert_to_array()}
+     *
+     * @return ArrayIterator
+     */
+    public function getIterator()
+    {
+    }
+    /**
+     * Works out whether activity is visible *for current user* - if this is false, they
+     * aren't allowed to access it.
+     *
+     * @return bool
+     */
+    private function get_uservisible()
+    {
+    }
+    /**
+     * Restores the course_sections.sequence value
+     *
+     * @return string
+     */
+    private function get_sequence()
+    {
+    }
+    /**
+     * Returns course ID - from course_sections table
+     *
+     * @return int
+     */
+    private function get_course()
+    {
+    }
+    /**
+     * Modinfo object
+     *
+     * @return course_modinfo
+     */
+    private function get_modinfo()
+    {
+    }
+    /**
+     * Prepares section data for inclusion in sectioncache cache, removing items
+     * that are set to defaults, and adding availability data if required.
+     *
+     * Called by build_section_cache in course_modinfo only; do not use otherwise.
+     * @param object $section Raw section data object
+     */
+    public static function convert_for_section_cache($section)
+    {
+    }
+}
+/**
  * Provides core support for plugins that have to deal with emoticons (like HTML editor or emoticon filter).
  *
  * Whenever this manager mentiones 'emoticon object', the following data
@@ -247,6 +1882,1891 @@ class lang_string
 interface renderable
 {
     // intentionally empty
+}
+/**
+ * This class is used to represent a node in a navigation tree
+ *
+ * This class is used to represent a node in a navigation tree within Moodle,
+ * the tree could be one of global navigation, settings navigation, or the navbar.
+ * Each node can be one of two types either a Leaf (default) or a branch.
+ * When a node is first created it is created as a leaf, when/if children are added
+ * the node then becomes a branch.
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2009 Sam Hemelryk
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class navigation_node implements \renderable
+{
+    /** @var int Used to identify this node a leaf (default) 0 */
+    const NODETYPE_LEAF = 0;
+    /** @var int Used to identify this node a branch, happens with children  1 */
+    const NODETYPE_BRANCH = 1;
+    /** @var null Unknown node type null */
+    const TYPE_UNKNOWN = \null;
+    /** @var int System node type 0 */
+    const TYPE_ROOTNODE = 0;
+    /** @var int System node type 1 */
+    const TYPE_SYSTEM = 1;
+    /** @var int Category node type 10 */
+    const TYPE_CATEGORY = 10;
+    /** var int Category displayed in MyHome navigation node */
+    const TYPE_MY_CATEGORY = 11;
+    /** @var int Course node type 20 */
+    const TYPE_COURSE = 20;
+    /** @var int Course Structure node type 30 */
+    const TYPE_SECTION = 30;
+    /** @var int Activity node type, e.g. Forum, Quiz 40 */
+    const TYPE_ACTIVITY = 40;
+    /** @var int Resource node type, e.g. Link to a file, or label 50 */
+    const TYPE_RESOURCE = 50;
+    /** @var int A custom node type, default when adding without specifing type 60 */
+    const TYPE_CUSTOM = 60;
+    /** @var int Setting node type, used only within settings nav 70 */
+    const TYPE_SETTING = 70;
+    /** @var int site admin branch node type, used only within settings nav 71 */
+    const TYPE_SITE_ADMIN = 71;
+    /** @var int Setting node type, used only within settings nav 80 */
+    const TYPE_USER = 80;
+    /** @var int Setting node type, used for containers of no importance 90 */
+    const TYPE_CONTAINER = 90;
+    /** var int Course the current user is not enrolled in */
+    const COURSE_OTHER = 0;
+    /** var int Course the current user is enrolled in but not viewing */
+    const COURSE_MY = 1;
+    /** var int Course the current user is currently viewing */
+    const COURSE_CURRENT = 2;
+    /** var string The course index page navigation node */
+    const COURSE_INDEX_PAGE = 'courseindexpage';
+    /** @var int Parameter to aid the coder in tracking [optional] */
+    public $id = \null;
+    /** @var string|int The identifier for the node, used to retrieve the node */
+    public $key = \null;
+    /** @var string The text to use for the node */
+    public $text = \null;
+    /** @var string Short text to use if requested [optional] */
+    public $shorttext = \null;
+    /** @var string The title attribute for an action if one is defined */
+    public $title = \null;
+    /** @var string A string that can be used to build a help button */
+    public $helpbutton = \null;
+    /** @var moodle_url|action_link|null An action for the node (link) */
+    public $action = \null;
+    /** @var pix_icon The path to an icon to use for this node */
+    public $icon = \null;
+    /** @var int See TYPE_* constants defined for this class */
+    public $type = self::TYPE_UNKNOWN;
+    /** @var int See NODETYPE_* constants defined for this class */
+    public $nodetype = self::NODETYPE_LEAF;
+    /** @var bool If set to true the node will be collapsed by default */
+    public $collapse = \false;
+    /** @var bool If set to true the node will be expanded by default */
+    public $forceopen = \false;
+    /** @var array An array of CSS classes for the node */
+    public $classes = array();
+    /** @var navigation_node_collection An array of child nodes */
+    public $children = array();
+    /** @var bool If set to true the node will be recognised as active */
+    public $isactive = \false;
+    /** @var bool If set to true the node will be dimmed */
+    public $hidden = \false;
+    /** @var bool If set to false the node will not be displayed */
+    public $display = \true;
+    /** @var bool If set to true then an HR will be printed before the node */
+    public $preceedwithhr = \false;
+    /** @var bool If set to true the the navigation bar should ignore this node */
+    public $mainnavonly = \false;
+    /** @var bool If set to true a title will be added to the action no matter what */
+    public $forcetitle = \false;
+    /** @var navigation_node A reference to the node parent, you should never set this directly you should always call set_parent */
+    public $parent = \null;
+    /** @var bool Override to not display the icon even if one is provided **/
+    public $hideicon = \false;
+    /** @var bool Set to true if we KNOW that this node can be expanded.  */
+    public $isexpandable = \false;
+    /** @var array */
+    protected $namedtypes = array(0 => 'system', 10 => 'category', 20 => 'course', 30 => 'structure', 40 => 'activity', 50 => 'resource', 60 => 'custom', 70 => 'setting', 71 => 'siteadmin', 80 => 'user', 90 => 'container');
+    /** @var moodle_url */
+    protected static $fullmeurl = \null;
+    /** @var bool toogles auto matching of active node */
+    public static $autofindactive = \true;
+    /** @var bool should we load full admin tree or rely on AJAX for performance reasons */
+    protected static $loadadmintree = \false;
+    /** @var mixed If set to an int, that section will be included even if it has no activities */
+    public $includesectionnum = \false;
+    /** @var bool does the node need to be loaded via ajax */
+    public $requiresajaxloading = \false;
+    /** @var bool If set to true this node will be added to the "flat" navigation */
+    public $showinflatnavigation = \false;
+    /**
+     * Constructs a new navigation_node
+     *
+     * @param array|string $properties Either an array of properties or a string to use
+     *                     as the text for the node
+     */
+    public function __construct($properties)
+    {
+    }
+    /**
+     * Checks if this node is the active node.
+     *
+     * This is determined by comparing the action for the node against the
+     * defined URL for the page. A match will see this node marked as active.
+     *
+     * @param int $strength One of URL_MATCH_EXACT, URL_MATCH_PARAMS, or URL_MATCH_BASE
+     * @return bool
+     */
+    public function check_if_active($strength = \URL_MATCH_EXACT)
+    {
+    }
+    /**
+     * True if this nav node has siblings in the tree.
+     *
+     * @return bool
+     */
+    public function has_siblings()
+    {
+    }
+    /**
+     * Get a list of sibling navigation nodes at the same level as this one.
+     *
+     * @return bool|array of navigation_node
+     */
+    public function get_siblings()
+    {
+    }
+    /**
+     * This sets the URL that the URL of new nodes get compared to when locating
+     * the active node.
+     *
+     * The active node is the node that matches the URL set here. By default this
+     * is either $PAGE->url or if that hasn't been set $FULLME.
+     *
+     * @param moodle_url $url The url to use for the fullmeurl.
+     * @param bool $loadadmintree use true if the URL point to administration tree
+     */
+    public static function override_active_url(\moodle_url $url, $loadadmintree = \false)
+    {
+    }
+    /**
+     * Use when page is linked from the admin tree,
+     * if not used navigation could not find the page using current URL
+     * because the tree is not fully loaded.
+     */
+    public static function require_admin_tree()
+    {
+    }
+    /**
+     * Creates a navigation node, ready to add it as a child using add_node
+     * function. (The created node needs to be added before you can use it.)
+     * @param string $text
+     * @param moodle_url|action_link $action
+     * @param int $type
+     * @param string $shorttext
+     * @param string|int $key
+     * @param pix_icon $icon
+     * @return navigation_node
+     */
+    public static function create($text, $action = \null, $type = self::TYPE_CUSTOM, $shorttext = \null, $key = \null, \pix_icon $icon = \null)
+    {
+    }
+    /**
+     * Adds a navigation node as a child of this node.
+     *
+     * @param string $text
+     * @param moodle_url|action_link $action
+     * @param int $type
+     * @param string $shorttext
+     * @param string|int $key
+     * @param pix_icon $icon
+     * @return navigation_node
+     */
+    public function add($text, $action = \null, $type = self::TYPE_CUSTOM, $shorttext = \null, $key = \null, \pix_icon $icon = \null)
+    {
+    }
+    /**
+     * Adds a navigation node as a child of this one, given a $node object
+     * created using the create function.
+     * @param navigation_node $childnode Node to add
+     * @param string $beforekey
+     * @return navigation_node The added node
+     */
+    public function add_node(\navigation_node $childnode, $beforekey = \null)
+    {
+    }
+    /**
+     * Return a list of all the keys of all the child nodes.
+     * @return array the keys.
+     */
+    public function get_children_key_list()
+    {
+    }
+    /**
+     * Searches for a node of the given type with the given key.
+     *
+     * This searches this node plus all of its children, and their children....
+     * If you know the node you are looking for is a child of this node then please
+     * use the get method instead.
+     *
+     * @param int|string $key The key of the node we are looking for
+     * @param int $type One of navigation_node::TYPE_*
+     * @return navigation_node|false
+     */
+    public function find($key, $type)
+    {
+    }
+    /**
+     * Walk the tree building up a list of all the flat navigation nodes.
+     *
+     * @param flat_navigation $nodes List of the found flat navigation nodes.
+     * @param boolean $showdivider Show a divider before the first node.
+     * @param string $label A label for the collection of navigation links.
+     */
+    public function build_flat_navigation_list(\flat_navigation $nodes, $showdivider = \false, $label = '')
+    {
+    }
+    /**
+     * Get the child of this node that has the given key + (optional) type.
+     *
+     * If you are looking for a node and want to search all children + their children
+     * then please use the find method instead.
+     *
+     * @param int|string $key The key of the node we are looking for
+     * @param int $type One of navigation_node::TYPE_*
+     * @return navigation_node|false
+     */
+    public function get($key, $type = \null)
+    {
+    }
+    /**
+     * Removes this node.
+     *
+     * @return bool
+     */
+    public function remove()
+    {
+    }
+    /**
+     * Checks if this node has or could have any children
+     *
+     * @return bool Returns true if it has children or could have (by AJAX expansion)
+     */
+    public function has_children()
+    {
+    }
+    /**
+     * Marks this node as active and forces it open.
+     *
+     * Important: If you are here because you need to mark a node active to get
+     * the navigation to do what you want have you looked at {@link navigation_node::override_active_url()}?
+     * You can use it to specify a different URL to match the active navigation node on
+     * rather than having to locate and manually mark a node active.
+     */
+    public function make_active()
+    {
+    }
+    /**
+     * Marks a node as inactive and recusised back to the base of the tree
+     * doing the same to all parents.
+     */
+    public function make_inactive()
+    {
+    }
+    /**
+     * Forces this node to be open and at the same time forces open all
+     * parents until the root node.
+     *
+     * Recursive.
+     */
+    public function force_open()
+    {
+    }
+    /**
+     * Adds a CSS class to this node.
+     *
+     * @param string $class
+     * @return bool
+     */
+    public function add_class($class)
+    {
+    }
+    /**
+     * Removes a CSS class from this node.
+     *
+     * @param string $class
+     * @return bool True if the class was successfully removed.
+     */
+    public function remove_class($class)
+    {
+    }
+    /**
+     * Sets the title for this node and forces Moodle to utilise it.
+     * @param string $title
+     */
+    public function title($title)
+    {
+    }
+    /**
+     * Resets the page specific information on this node if it is being unserialised.
+     */
+    public function __wakeup()
+    {
+    }
+    /**
+     * Checks if this node or any of its children contain the active node.
+     *
+     * Recursive.
+     *
+     * @return bool
+     */
+    public function contains_active_node()
+    {
+    }
+    /**
+     * To better balance the admin tree, we want to group all the short top branches together.
+     *
+     * This means < 8 nodes and no subtrees.
+     *
+     * @return bool
+     */
+    public function is_short_branch()
+    {
+    }
+    /**
+     * Finds the active node.
+     *
+     * Searches this nodes children plus all of the children for the active node
+     * and returns it if found.
+     *
+     * Recursive.
+     *
+     * @return navigation_node|false
+     */
+    public function find_active_node()
+    {
+    }
+    /**
+     * Searches all children for the best matching active node
+     * @return navigation_node|false
+     */
+    public function search_for_active_node()
+    {
+    }
+    /**
+     * Gets the content for this node.
+     *
+     * @param bool $shorttext If true shorttext is used rather than the normal text
+     * @return string
+     */
+    public function get_content($shorttext = \false)
+    {
+    }
+    /**
+     * Gets the title to use for this node.
+     *
+     * @return string
+     */
+    public function get_title()
+    {
+    }
+    /**
+     * Used to easily determine if this link in the breadcrumbs has a valid action/url.
+     *
+     * @return boolean
+     */
+    public function has_action()
+    {
+    }
+    /**
+     * Used to easily determine if this link in the breadcrumbs is hidden.
+     *
+     * @return boolean
+     */
+    public function is_hidden()
+    {
+    }
+    /**
+     * Gets the CSS class to add to this node to describe its type
+     *
+     * @return string
+     */
+    public function get_css_type()
+    {
+    }
+    /**
+     * Finds all nodes that are expandable by AJAX
+     *
+     * @param array $expandable An array by reference to populate with expandable nodes.
+     */
+    public function find_expandable(array &$expandable)
+    {
+    }
+    /**
+     * Finds all nodes of a given type (recursive)
+     *
+     * @param int $type One of navigation_node::TYPE_*
+     * @return array
+     */
+    public function find_all_of_type($type)
+    {
+    }
+    /**
+     * Removes this node if it is empty
+     */
+    public function trim_if_empty()
+    {
+    }
+    /**
+     * Creates a tab representation of this nodes children that can be used
+     * with print_tabs to produce the tabs on a page.
+     *
+     * call_user_func_array('print_tabs', $node->get_tabs_array());
+     *
+     * @param array $inactive
+     * @param bool $return
+     * @return array Array (tabs, selected, inactive, activated, return)
+     */
+    public function get_tabs_array(array $inactive = array(), $return = \false)
+    {
+    }
+    /**
+     * Sets the parent for this node and if this node is active ensures that the tree is properly
+     * adjusted as well.
+     *
+     * @param navigation_node $parent
+     */
+    public function set_parent(\navigation_node $parent)
+    {
+    }
+    /**
+     * Hides the node and any children it has.
+     *
+     * @since Moodle 2.5
+     * @param array $typestohide Optional. An array of node types that should be hidden.
+     *      If null all nodes will be hidden.
+     *      If an array is given then nodes will only be hidden if their type mtatches an element in the array.
+     *          e.g. array(navigation_node::TYPE_COURSE) would hide only course nodes.
+     */
+    public function hide(array $typestohide = \null)
+    {
+    }
+    /**
+     * Get the action url for this navigation node.
+     * Called from templates.
+     *
+     * @since Moodle 3.2
+     */
+    public function action()
+    {
+    }
+    /**
+     * Add the menu item to handle locking and unlocking of a conext.
+     *
+     * @param \navigation_node $node Node to add
+     * @param \context $context The context to be locked
+     */
+    protected function add_context_locking_node(\navigation_node $node, \context $context)
+    {
+    }
+}
+/**
+ * Navigation node collection
+ *
+ * This class is responsible for managing a collection of navigation nodes.
+ * It is required because a node's unique identifier is a combination of both its
+ * key and its type.
+ *
+ * Originally an array was used with a string key that was a combination of the two
+ * however it was decided that a better solution would be to use a class that
+ * implements the standard IteratorAggregate interface.
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2010 Sam Hemelryk
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class navigation_node_collection implements \IteratorAggregate, \Countable
+{
+    /**
+     * A multidimensional array to where the first key is the type and the second
+     * key is the nodes key.
+     * @var array
+     */
+    protected $collection = array();
+    /**
+     * An array that contains references to nodes in the same order they were added.
+     * This is maintained as a progressive array.
+     * @var array
+     */
+    protected $orderedcollection = array();
+    /**
+     * A reference to the last node that was added to the collection
+     * @var navigation_node
+     */
+    protected $last = \null;
+    /**
+     * The total number of items added to this array.
+     * @var int
+     */
+    protected $count = 0;
+    /**
+     * Label for collection of nodes.
+     * @var string
+     */
+    protected $collectionlabel = '';
+    /**
+     * Adds a navigation node to the collection
+     *
+     * @param navigation_node $node Node to add
+     * @param string $beforekey If specified, adds before a node with this key,
+     *   otherwise adds at end
+     * @return navigation_node Added node
+     */
+    public function add(\navigation_node $node, $beforekey = \null)
+    {
+    }
+    /**
+     * Return a list of all the keys of all the nodes.
+     * @return array the keys.
+     */
+    public function get_key_list()
+    {
+    }
+    /**
+     * Set a label for this collection.
+     *
+     * @param string $label
+     */
+    public function set_collectionlabel($label)
+    {
+    }
+    /**
+     * Return a label for this collection.
+     *
+     * @return string
+     */
+    public function get_collectionlabel()
+    {
+    }
+    /**
+     * Fetches a node from this collection.
+     *
+     * @param string|int $key The key of the node we want to find.
+     * @param int $type One of navigation_node::TYPE_*.
+     * @return navigation_node|null
+     */
+    public function get($key, $type = \null)
+    {
+    }
+    /**
+     * Searches for a node with matching key and type.
+     *
+     * This function searches both the nodes in this collection and all of
+     * the nodes in each collection belonging to the nodes in this collection.
+     *
+     * Recursive.
+     *
+     * @param string|int $key  The key of the node we want to find.
+     * @param int $type  One of navigation_node::TYPE_*.
+     * @return navigation_node|null
+     */
+    public function find($key, $type = \null)
+    {
+    }
+    /**
+     * Fetches the last node that was added to this collection
+     *
+     * @return navigation_node
+     */
+    public function last()
+    {
+    }
+    /**
+     * Fetches all nodes of a given type from this collection
+     *
+     * @param string|int $type  node type being searched for.
+     * @return array ordered collection
+     */
+    public function type($type)
+    {
+    }
+    /**
+     * Removes the node with the given key and type from the collection
+     *
+     * @param string|int $key The key of the node we want to find.
+     * @param int $type
+     * @return bool
+     */
+    public function remove($key, $type = \null)
+    {
+    }
+    /**
+     * Gets the number of nodes in this collection
+     *
+     * This option uses an internal count rather than counting the actual options to avoid
+     * a performance hit through the count function.
+     *
+     * @return int
+     */
+    public function count()
+    {
+    }
+    /**
+     * Gets an array iterator for the collection.
+     *
+     * This is required by the IteratorAggregator interface and is used by routines
+     * such as the foreach loop.
+     *
+     * @return ArrayIterator
+     */
+    public function getIterator()
+    {
+    }
+}
+/**
+ * The global navigation class used for... the global navigation
+ *
+ * This class is used by PAGE to store the global navigation for the site
+ * and is then used by the settings nav and navbar to save on processing and DB calls
+ *
+ * See
+ * {@link lib/pagelib.php} {@link moodle_page::initialise_theme_and_output()}
+ * {@link lib/ajax/getnavbranch.php} Called by ajax
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2009 Sam Hemelryk
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class global_navigation extends \navigation_node
+{
+    /** @var moodle_page The Moodle page this navigation object belongs to. */
+    protected $page;
+    /** @var bool switch to let us know if the navigation object is initialised*/
+    protected $initialised = \false;
+    /** @var array An array of course information */
+    protected $mycourses = array();
+    /** @var navigation_node[] An array for containing  root navigation nodes */
+    protected $rootnodes = array();
+    /** @var bool A switch for whether to show empty sections in the navigation */
+    protected $showemptysections = \true;
+    /** @var bool A switch for whether courses should be shown within categories on the navigation. */
+    protected $showcategories = \null;
+    /** @var null@var bool A switch for whether or not to show categories in the my courses branch. */
+    protected $showmycategories = \null;
+    /** @var array An array of stdClasses for users that the navigation is extended for */
+    protected $extendforuser = array();
+    /** @var navigation_cache */
+    protected $cache;
+    /** @var array An array of course ids that are present in the navigation */
+    protected $addedcourses = array();
+    /** @var bool */
+    protected $allcategoriesloaded = \false;
+    /** @var array An array of category ids that are included in the navigation */
+    protected $addedcategories = array();
+    /** @var int expansion limit */
+    protected $expansionlimit = 0;
+    /** @var int userid to allow parent to see child's profile page navigation */
+    protected $useridtouseforparentchecks = 0;
+    /** @var cache_session A cache that stores information on expanded courses */
+    protected $cacheexpandcourse = \null;
+    /** Used when loading categories to load all top level categories [parent = 0] **/
+    const LOAD_ROOT_CATEGORIES = 0;
+    /** Used when loading categories to load all categories **/
+    const LOAD_ALL_CATEGORIES = -1;
+    /**
+     * Constructs a new global navigation
+     *
+     * @param moodle_page $page The page this navigation object belongs to
+     */
+    public function __construct(\moodle_page $page)
+    {
+    }
+    /**
+     * Mutator to set userid to allow parent to see child's profile
+     * page navigation. See MDL-25805 for initial issue. Linked to it
+     * is an issue explaining why this is a REALLY UGLY HACK thats not
+     * for you to use!
+     *
+     * @param int $userid userid of profile page that parent wants to navigate around.
+     */
+    public function set_userid_for_parent_checks($userid)
+    {
+    }
+    /**
+     * Initialises the navigation object.
+     *
+     * This causes the navigation object to look at the current state of the page
+     * that it is associated with and then load the appropriate content.
+     *
+     * This should only occur the first time that the navigation structure is utilised
+     * which will normally be either when the navbar is called to be displayed or
+     * when a block makes use of it.
+     *
+     * @return bool
+     */
+    public function initialise()
+    {
+    }
+    /**
+     * This function gives local plugins an opportunity to modify navigation.
+     */
+    protected function load_local_plugin_navigation()
+    {
+    }
+    /**
+     * Returns true if the current user is a parent of the user being currently viewed.
+     *
+     * If the current user is not viewing another user, or if the current user does not hold any parent roles over the
+     * other user being viewed this function returns false.
+     * In order to set the user for whom we are checking against you must call {@link set_userid_for_parent_checks()}
+     *
+     * @since Moodle 2.4
+     * @return bool
+     */
+    protected function current_user_is_parent_role()
+    {
+    }
+    /**
+     * Returns true if courses should be shown within categories on the navigation.
+     *
+     * @param bool $ismycourse Set to true if you are calculating this for a course.
+     * @return bool
+     */
+    protected function show_categories($ismycourse = \false)
+    {
+    }
+    /**
+     * Returns true if we should show categories in the My Courses branch.
+     * @return bool
+     */
+    protected function show_my_categories()
+    {
+    }
+    /**
+     * Loads the courses in Moodle into the navigation.
+     *
+     * @global moodle_database $DB
+     * @param string|array $categoryids An array containing categories to load courses
+     *                     for, OR null to load courses for all categories.
+     * @return array An array of navigation_nodes one for each course
+     */
+    protected function load_all_courses($categoryids = \null)
+    {
+    }
+    /**
+     * Returns true if more courses can be added to the provided category.
+     *
+     * @param int|navigation_node|stdClass $category
+     * @return bool
+     */
+    protected function can_add_more_courses_to_category($category)
+    {
+    }
+    /**
+     * Loads all categories (top level or if an id is specified for that category)
+     *
+     * @param int $categoryid The category id to load or null/0 to load all base level categories
+     * @param bool $showbasecategories If set to true all base level categories will be loaded as well
+     *        as the requested category and any parent categories.
+     * @return navigation_node|void returns a navigation node if a category has been loaded.
+     */
+    protected function load_all_categories($categoryid = self::LOAD_ROOT_CATEGORIES, $showbasecategories = \false)
+    {
+    }
+    /**
+     * Adds a structured category to the navigation in the correct order/place
+     *
+     * @param stdClass $category category to be added in navigation.
+     * @param navigation_node $parent parent navigation node
+     * @param int $nodetype type of node, if category is under MyHome then it's TYPE_MY_CATEGORY
+     * @return void.
+     */
+    protected function add_category(\stdClass $category, \navigation_node $parent, $nodetype = self::TYPE_CATEGORY)
+    {
+    }
+    /**
+     * Loads the given course into the navigation
+     *
+     * @param stdClass $course
+     * @return navigation_node
+     */
+    protected function load_course(\stdClass $course)
+    {
+    }
+    /**
+     * Loads all of the courses section into the navigation.
+     *
+     * This function calls method from current course format, see
+     * {@link format_base::extend_course_navigation()}
+     * If course module ($cm) is specified but course format failed to create the node,
+     * the activity node is created anyway.
+     *
+     * By default course formats call the method {@link global_navigation::load_generic_course_sections()}
+     *
+     * @param stdClass $course Database record for the course
+     * @param navigation_node $coursenode The course node within the navigation
+     * @param null|int $sectionnum If specified load the contents of section with this relative number
+     * @param null|cm_info $cm If specified make sure that activity node is created (either
+     *    in containg section or by calling load_stealth_activity() )
+     */
+    protected function load_course_sections(\stdClass $course, \navigation_node $coursenode, $sectionnum = \null, $cm = \null)
+    {
+    }
+    /**
+     * Generates an array of sections and an array of activities for the given course.
+     *
+     * This method uses the cache to improve performance and avoid the get_fast_modinfo call
+     *
+     * @param stdClass $course
+     * @return array Array($sections, $activities)
+     */
+    protected function generate_sections_and_activities(\stdClass $course)
+    {
+    }
+    /**
+     * Generically loads the course sections into the course's navigation.
+     *
+     * @param stdClass $course
+     * @param navigation_node $coursenode
+     * @return array An array of course section nodes
+     */
+    public function load_generic_course_sections(\stdClass $course, \navigation_node $coursenode)
+    {
+    }
+    /**
+     * Loads all of the activities for a section into the navigation structure.
+     *
+     * @param navigation_node $sectionnode
+     * @param int $sectionnumber
+     * @param array $activities An array of activites as returned by {@link global_navigation::generate_sections_and_activities()}
+     * @param stdClass $course The course object the section and activities relate to.
+     * @return array Array of activity nodes
+     */
+    protected function load_section_activities(\navigation_node $sectionnode, $sectionnumber, array $activities, $course = \null)
+    {
+    }
+    /**
+     * Loads a stealth module from unavailable section
+     * @param navigation_node $coursenode
+     * @param stdClass $modinfo
+     * @return navigation_node or null if not accessible
+     */
+    protected function load_stealth_activity(\navigation_node $coursenode, $modinfo)
+    {
+    }
+    /**
+     * Loads the navigation structure for the given activity into the activities node.
+     *
+     * This method utilises a callback within the modules lib.php file to load the
+     * content specific to activity given.
+     *
+     * The callback is a method: {modulename}_extend_navigation()
+     * Examples:
+     *  * {@link forum_extend_navigation()}
+     *  * {@link workshop_extend_navigation()}
+     *
+     * @param cm_info|stdClass $cm
+     * @param stdClass $course
+     * @param navigation_node $activity
+     * @return bool
+     */
+    protected function load_activity($cm, \stdClass $course, \navigation_node $activity)
+    {
+    }
+    /**
+     * Loads user specific information into the navigation in the appropriate place.
+     *
+     * If no user is provided the current user is assumed.
+     *
+     * @param stdClass $user
+     * @param bool $forceforcontext probably force something to be loaded somewhere (ask SamH if not sure what this means)
+     * @return bool
+     */
+    protected function load_for_user($user = \null, $forceforcontext = \false)
+    {
+    }
+    /**
+     * This method simply checks to see if a given module can extend the navigation.
+     *
+     * @todo (MDL-25290) A shared caching solution should be used to save details on what extends navigation.
+     *
+     * @param string $modname
+     * @return bool
+     */
+    public static function module_extends_navigation($modname)
+    {
+    }
+    /**
+     * Extends the navigation for the given user.
+     *
+     * @param stdClass $user A user from the database
+     */
+    public function extend_for_user($user)
+    {
+    }
+    /**
+     * Returns all of the users the navigation is being extended for
+     *
+     * @return array An array of extending users.
+     */
+    public function get_extending_users()
+    {
+    }
+    /**
+     * Adds the given course to the navigation structure.
+     *
+     * @param stdClass $course
+     * @param bool $forcegeneric
+     * @param bool $ismycourse
+     * @return navigation_node
+     */
+    public function add_course(\stdClass $course, $forcegeneric = \false, $coursetype = self::COURSE_OTHER)
+    {
+    }
+    /**
+     * Returns a cache instance to use for the expand course cache.
+     * @return cache_session
+     */
+    protected function get_expand_course_cache()
+    {
+    }
+    /**
+     * Checks if a user can expand a course in the navigation.
+     *
+     * We use a cache here because in order to be accurate we need to call can_access_course which is a costly function.
+     * Because this functionality is basic + non-essential and because we lack good event triggering this cache
+     * permits stale data.
+     * In the situation the user is granted access to a course after we've initialised this session cache the cache
+     * will be stale.
+     * It is brought up to date in only one of two ways.
+     *   1. The user logs out and in again.
+     *   2. The user browses to the course they've just being given access to.
+     *
+     * Really all this controls is whether the node is shown as expandable or not. It is uber un-important.
+     *
+     * @param stdClass $course
+     * @return bool
+     */
+    protected function can_expand_course($course)
+    {
+    }
+    /**
+     * Returns true if the category has already been loaded as have any child categories
+     *
+     * @param int $categoryid
+     * @return bool
+     */
+    protected function is_category_fully_loaded($categoryid)
+    {
+    }
+    /**
+     * Adds essential course nodes to the navigation for the given course.
+     *
+     * This method adds nodes such as reports, blogs and participants
+     *
+     * @param navigation_node $coursenode
+     * @param stdClass $course
+     * @return bool returns true on successful addition of a node.
+     */
+    public function add_course_essentials($coursenode, \stdClass $course)
+    {
+    }
+    /**
+     * This generates the structure of the course that won't be generated when
+     * the modules and sections are added.
+     *
+     * Things such as the reports branch, the participants branch, blogs... get
+     * added to the course node by this method.
+     *
+     * @param navigation_node $coursenode
+     * @param stdClass $course
+     * @return bool True for successfull generation
+     */
+    public function add_front_page_course_essentials(\navigation_node $coursenode, \stdClass $course)
+    {
+    }
+    /**
+     * Clears the navigation cache
+     */
+    public function clear_cache()
+    {
+    }
+    /**
+     * Sets an expansion limit for the navigation
+     *
+     * The expansion limit is used to prevent the display of content that has a type
+     * greater than the provided $type.
+     *
+     * Can be used to ensure things such as activities or activity content don't get
+     * shown on the navigation.
+     * They are still generated in order to ensure the navbar still makes sense.
+     *
+     * @param int $type One of navigation_node::TYPE_*
+     * @return bool true when complete.
+     */
+    public function set_expansion_limit($type)
+    {
+    }
+    /**
+     * Attempts to get the navigation with the given key from this nodes children.
+     *
+     * This function only looks at this nodes children, it does NOT look recursivily.
+     * If the node can't be found then false is returned.
+     *
+     * If you need to search recursivily then use the {@link global_navigation::find()} method.
+     *
+     * Note: If you are trying to set the active node {@link navigation_node::override_active_url()}
+     * may be of more use to you.
+     *
+     * @param string|int $key The key of the node you wish to receive.
+     * @param int $type One of navigation_node::TYPE_*
+     * @return navigation_node|false
+     */
+    public function get($key, $type = \null)
+    {
+    }
+    /**
+     * Searches this nodes children and their children to find a navigation node
+     * with the matching key and type.
+     *
+     * This method is recursive and searches children so until either a node is
+     * found or there are no more nodes to search.
+     *
+     * If you know that the node being searched for is a child of this node
+     * then use the {@link global_navigation::get()} method instead.
+     *
+     * Note: If you are trying to set the active node {@link navigation_node::override_active_url()}
+     * may be of more use to you.
+     *
+     * @param string|int $key The key of the node you wish to receive.
+     * @param int $type One of navigation_node::TYPE_*
+     * @return navigation_node|false
+     */
+    public function find($key, $type)
+    {
+    }
+    /**
+     * They've expanded the 'my courses' branch.
+     */
+    protected function load_courses_enrolled()
+    {
+    }
+}
+/**
+ * The global navigation class used especially for AJAX requests.
+ *
+ * The primary methods that are used in the global navigation class have been overriden
+ * to ensure that only the relevant branch is generated at the root of the tree.
+ * This can be done because AJAX is only used when the backwards structure for the
+ * requested branch exists.
+ * This has been done only because it shortens the amounts of information that is generated
+ * which of course will speed up the response time.. because no one likes laggy AJAX.
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2009 Sam Hemelryk
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class global_navigation_for_ajax extends \global_navigation
+{
+    /** @var int used for determining what type of navigation_node::TYPE_* is being used */
+    protected $branchtype;
+    /** @var int the instance id */
+    protected $instanceid;
+    /** @var array Holds an array of expandable nodes */
+    protected $expandable = array();
+    /**
+     * Constructs the navigation for use in an AJAX request
+     *
+     * @param moodle_page $page moodle_page object
+     * @param int $branchtype
+     * @param int $id
+     */
+    public function __construct($page, $branchtype, $id)
+    {
+    }
+    /**
+     * Initialise the navigation given the type and id for the branch to expand.
+     *
+     * @return array An array of the expandable nodes
+     */
+    public function initialise()
+    {
+    }
+    /**
+     * They've expanded the general 'courses' branch.
+     */
+    protected function load_courses_other()
+    {
+    }
+    /**
+     * Loads a single category into the AJAX navigation.
+     *
+     * This function is special in that it doesn't concern itself with the parent of
+     * the requested category or its siblings.
+     * This is because with the AJAX navigation we know exactly what is wanted and only need to
+     * request that.
+     *
+     * @global moodle_database $DB
+     * @param int $categoryid id of category to load in navigation.
+     * @param int $nodetype type of node, if category is under MyHome then it's TYPE_MY_CATEGORY
+     * @return void.
+     */
+    protected function load_category($categoryid, $nodetype = self::TYPE_CATEGORY)
+    {
+    }
+    /**
+     * Returns an array of expandable nodes
+     * @return array
+     */
+    public function get_expandable()
+    {
+    }
+}
+/**
+ * Navbar class
+ *
+ * This class is used to manage the navbar, which is initialised from the navigation
+ * object held by PAGE
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2009 Sam Hemelryk
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class navbar extends \navigation_node
+{
+    /** @var bool A switch for whether the navbar is initialised or not */
+    protected $initialised = \false;
+    /** @var mixed keys used to reference the nodes on the navbar */
+    protected $keys = array();
+    /** @var null|string content of the navbar */
+    protected $content = \null;
+    /** @var moodle_page object the moodle page that this navbar belongs to */
+    protected $page;
+    /** @var bool A switch for whether to ignore the active navigation information */
+    protected $ignoreactive = \false;
+    /** @var bool A switch to let us know if we are in the middle of an install */
+    protected $duringinstall = \false;
+    /** @var bool A switch for whether the navbar has items */
+    protected $hasitems = \false;
+    /** @var array An array of navigation nodes for the navbar */
+    protected $items;
+    /** @var array An array of child node objects */
+    public $children = array();
+    /** @var bool A switch for whether we want to include the root node in the navbar */
+    public $includesettingsbase = \false;
+    /** @var breadcrumb_navigation_node[] $prependchildren */
+    protected $prependchildren = array();
+    /**
+     * The almighty constructor
+     *
+     * @param moodle_page $page
+     */
+    public function __construct(\moodle_page $page)
+    {
+    }
+    /**
+     * Quick check to see if the navbar will have items in.
+     *
+     * @return bool Returns true if the navbar will have items, false otherwise
+     */
+    public function has_items()
+    {
+    }
+    /**
+     * Turn on/off ignore active
+     *
+     * @param bool $setting
+     */
+    public function ignore_active($setting = \true)
+    {
+    }
+    /**
+     * Gets a navigation node
+     *
+     * @param string|int $key for referencing the navbar nodes
+     * @param int $type breadcrumb_navigation_node::TYPE_*
+     * @return breadcrumb_navigation_node|bool
+     */
+    public function get($key, $type = \null)
+    {
+    }
+    /**
+     * Returns an array of breadcrumb_navigation_nodes that make up the navbar.
+     *
+     * @return array
+     */
+    public function get_items()
+    {
+    }
+    /**
+     * Get the list of categories leading to this course.
+     *
+     * This function is used by {@link navbar::get_items()} to add back the "courses"
+     * node and category chain leading to the current course.  Note that this is only ever
+     * called for the current course, so we don't need to bother taking in any parameters.
+     *
+     * @return array
+     */
+    private function get_course_categories()
+    {
+    }
+    /**
+     * Add a new breadcrumb_navigation_node to the navbar, overrides parent::add
+     *
+     * This function overrides {@link breadcrumb_navigation_node::add()} so that we can change
+     * the way nodes get added to allow us to simply call add and have the node added to the
+     * end of the navbar
+     *
+     * @param string $text
+     * @param string|moodle_url|action_link $action An action to associate with this node.
+     * @param int $type One of navigation_node::TYPE_*
+     * @param string $shorttext
+     * @param string|int $key A key to identify this node with. Key + type is unique to a parent.
+     * @param pix_icon $icon An optional icon to use for this node.
+     * @return navigation_node
+     */
+    public function add($text, $action = \null, $type = self::TYPE_CUSTOM, $shorttext = \null, $key = \null, \pix_icon $icon = \null)
+    {
+    }
+    /**
+     * Prepends a new navigation_node to the start of the navbar
+     *
+     * @param string $text
+     * @param string|moodle_url|action_link $action An action to associate with this node.
+     * @param int $type One of navigation_node::TYPE_*
+     * @param string $shorttext
+     * @param string|int $key A key to identify this node with. Key + type is unique to a parent.
+     * @param pix_icon $icon An optional icon to use for this node.
+     * @return navigation_node
+     */
+    public function prepend($text, $action = \null, $type = self::TYPE_CUSTOM, $shorttext = \null, $key = \null, \pix_icon $icon = \null)
+    {
+    }
+}
+/**
+ * Subclass of navigation_node allowing different rendering for the breadcrumbs
+ * in particular adding extra metadata for search engine robots to leverage.
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2015 Brendan Heywood
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class breadcrumb_navigation_node extends \navigation_node
+{
+    /** @var $last boolean A flag indicating this is the last item in the list of breadcrumbs. */
+    private $last = \false;
+    /**
+     * A proxy constructor
+     *
+     * @param mixed $navnode A navigation_node or an array
+     */
+    public function __construct($navnode)
+    {
+    }
+    /**
+     * Getter for "last"
+     * @return boolean
+     */
+    public function is_last()
+    {
+    }
+    /**
+     * Setter for "last"
+     * @param $val boolean
+     */
+    public function set_last($val)
+    {
+    }
+}
+/**
+ * Subclass of navigation_node allowing different rendering for the flat navigation
+ * in particular allowing dividers and indents.
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2016 Damyon Wiese
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class flat_navigation_node extends \navigation_node
+{
+    /** @var $indent integer The indent level */
+    private $indent = 0;
+    /** @var $showdivider bool Show a divider before this element */
+    private $showdivider = \false;
+    /** @var $collectionlabel string Label for a group of nodes */
+    private $collectionlabel = '';
+    /**
+     * A proxy constructor
+     *
+     * @param mixed $navnode A navigation_node or an array
+     */
+    public function __construct($navnode, $indent)
+    {
+    }
+    /**
+     * Setter, a label is required for a flat navigation node that shows a divider.
+     *
+     * @param string $label
+     */
+    public function set_collectionlabel($label)
+    {
+    }
+    /**
+     * Getter, get the label for this flat_navigation node, or it's parent if it doesn't have one.
+     *
+     * @return string
+     */
+    public function get_collectionlabel()
+    {
+    }
+    /**
+     * Does this node represent a course section link.
+     * @return boolean
+     */
+    public function is_section()
+    {
+    }
+    /**
+     * In flat navigation - sections are active if we are looking at activities in the section.
+     * @return boolean
+     */
+    public function isactive()
+    {
+    }
+    /**
+     * Getter for "showdivider"
+     * @return boolean
+     */
+    public function showdivider()
+    {
+    }
+    /**
+     * Setter for "showdivider"
+     * @param $val boolean
+     * @param $label string Label for the group of nodes
+     */
+    public function set_showdivider($val, $label = '')
+    {
+    }
+    /**
+     * Getter for "indent"
+     * @return boolean
+     */
+    public function get_indent()
+    {
+    }
+    /**
+     * Setter for "indent"
+     * @param $val boolean
+     */
+    public function set_indent($val)
+    {
+    }
+}
+/**
+ * Class used to generate a collection of navigation nodes most closely related
+ * to the current page.
+ *
+ * @package core
+ * @copyright 2016 Damyon Wiese
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class flat_navigation extends \navigation_node_collection
+{
+    /** @var moodle_page the moodle page that the navigation belongs to */
+    protected $page;
+    /**
+     * Constructor.
+     *
+     * @param moodle_page $page
+     */
+    public function __construct(\moodle_page &$page)
+    {
+    }
+    /**
+     * Build the list of navigation nodes based on the current navigation and settings trees.
+     *
+     */
+    public function initialise()
+    {
+    }
+    /**
+     * Override the parent so we can set a label for this collection if it has not been set yet.
+     *
+     * @param navigation_node $node Node to add
+     * @param string $beforekey If specified, adds before a node with this key,
+     *   otherwise adds at end
+     * @return navigation_node Added node
+     */
+    public function add(\navigation_node $node, $beforekey = \null)
+    {
+    }
+}
+/**
+ * Class used to manage the settings option for the current page
+ *
+ * This class is used to manage the settings options in a tree format (recursively)
+ * and was created initially for use with the settings blocks.
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2009 Sam Hemelryk
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class settings_navigation extends \navigation_node
+{
+    /** @var stdClass the current context */
+    protected $context;
+    /** @var moodle_page the moodle page that the navigation belongs to */
+    protected $page;
+    /** @var string contains administration section navigation_nodes */
+    protected $adminsection;
+    /** @var bool A switch to see if the navigation node is initialised */
+    protected $initialised = \false;
+    /** @var array An array of users that the nodes can extend for. */
+    protected $userstoextendfor = array();
+    /** @var navigation_cache **/
+    protected $cache;
+    /**
+     * Sets up the object with basic settings and preparse it for use
+     *
+     * @param moodle_page $page
+     */
+    public function __construct(\moodle_page &$page)
+    {
+    }
+    /**
+     * Initialise the settings navigation based on the current context
+     *
+     * This function initialises the settings navigation tree for a given context
+     * by calling supporting functions to generate major parts of the tree.
+     *
+     */
+    public function initialise()
+    {
+    }
+    /**
+     * Override the parent function so that we can add preceeding hr's and set a
+     * root node class against all first level element
+     *
+     * It does this by first calling the parent's add method {@link navigation_node::add()}
+     * and then proceeds to use the key to set class and hr
+     *
+     * @param string $text text to be used for the link.
+     * @param string|moodle_url $url url for the new node
+     * @param int $type the type of node navigation_node::TYPE_*
+     * @param string $shorttext
+     * @param string|int $key a key to access the node by.
+     * @param pix_icon $icon An icon that appears next to the node.
+     * @return navigation_node with the new node added to it.
+     */
+    public function add($text, $url = \null, $type = \null, $shorttext = \null, $key = \null, \pix_icon $icon = \null)
+    {
+    }
+    /**
+     * This function allows the user to add something to the start of the settings
+     * navigation, which means it will be at the top of the settings navigation block
+     *
+     * @param string $text text to be used for the link.
+     * @param string|moodle_url $url url for the new node
+     * @param int $type the type of node navigation_node::TYPE_*
+     * @param string $shorttext
+     * @param string|int $key a key to access the node by.
+     * @param pix_icon $icon An icon that appears next to the node.
+     * @return navigation_node $node with the new node added to it.
+     */
+    public function prepend($text, $url = \null, $type = \null, $shorttext = \null, $key = \null, \pix_icon $icon = \null)
+    {
+    }
+    /**
+     * Does this page require loading of full admin tree or is
+     * it enough rely on AJAX?
+     *
+     * @return bool
+     */
+    protected function is_admin_tree_needed()
+    {
+    }
+    /**
+     * Load the site administration tree
+     *
+     * This function loads the site administration tree by using the lib/adminlib library functions
+     *
+     * @param navigation_node $referencebranch A reference to a branch in the settings
+     *      navigation tree
+     * @param part_of_admin_tree $adminbranch The branch to add, if null generate the admin
+     *      tree and start at the beginning
+     * @return mixed A key to access the admin tree by
+     */
+    protected function load_administration_settings(\navigation_node $referencebranch = \null, \part_of_admin_tree $adminbranch = \null)
+    {
+    }
+    /**
+     * This function recursivily scans nodes until it finds the active node or there
+     * are no more nodes.
+     * @param navigation_node $node
+     */
+    protected function scan_for_active_node(\navigation_node $node)
+    {
+    }
+    /**
+     * Gets a navigation node given an array of keys that represent the path to
+     * the desired node.
+     *
+     * @param array $path
+     * @return navigation_node|false
+     */
+    protected function get_by_path(array $path)
+    {
+    }
+    /**
+     * This function loads the course settings that are available for the user
+     *
+     * @param bool $forceopen If set to true the course node will be forced open
+     * @return navigation_node|false
+     */
+    protected function load_course_settings($forceopen = \false)
+    {
+    }
+    /**
+     * This function calls the module function to inject module settings into the
+     * settings navigation tree.
+     *
+     * This only gets called if there is a corrosponding function in the modules
+     * lib file.
+     *
+     * For examples mod/forum/lib.php {@link forum_extend_settings_navigation()}
+     *
+     * @return navigation_node|false
+     */
+    protected function load_module_settings()
+    {
+    }
+    /**
+     * Loads the user settings block of the settings nav
+     *
+     * This function is simply works out the userid and whether we need to load
+     * just the current users profile settings, or the current user and the user the
+     * current user is viewing.
+     *
+     * This function has some very ugly code to work out the user, if anyone has
+     * any bright ideas please feel free to intervene.
+     *
+     * @param int $courseid The course id of the current course
+     * @return navigation_node|false
+     */
+    protected function load_user_settings($courseid = \SITEID)
+    {
+    }
+    /**
+     * Extends the settings navigation for the given user.
+     *
+     * Note: This method gets called automatically if you call
+     * $PAGE->navigation->extend_for_user($userid)
+     *
+     * @param int $userid
+     */
+    public function extend_for_user($userid)
+    {
+    }
+    /**
+     * This function gets called by {@link settings_navigation::load_user_settings()} and actually works out
+     * what can be shown/done
+     *
+     * @param int $courseid The current course' id
+     * @param int $userid The user id to load for
+     * @param string $gstitle The string to pass to get_string for the branch title
+     * @return navigation_node|false
+     */
+    protected function generate_user_settings($courseid, $userid, $gstitle = 'usercurrentsettings')
+    {
+    }
+    /**
+     * Loads block specific settings in the navigation
+     *
+     * @return navigation_node
+     */
+    protected function load_block_settings()
+    {
+    }
+    /**
+     * Loads category specific settings in the navigation
+     *
+     * @return navigation_node
+     */
+    protected function load_category_settings()
+    {
+    }
+    /**
+     * Determine whether the user is assuming another role
+     *
+     * This function checks to see if the user is assuming another role by means of
+     * role switching. In doing this we compare each RSW key (context path) against
+     * the current context path. This ensures that we can provide the switching
+     * options against both the course and any page shown under the course.
+     *
+     * @return bool|int The role(int) if the user is in another role, false otherwise
+     */
+    protected function in_alternative_role()
+    {
+    }
+    /**
+     * This function loads all of the front page settings into the settings navigation.
+     * This function is called when the user is on the front page, or $COURSE==$SITE
+     * @param bool $forceopen (optional)
+     * @return navigation_node
+     */
+    protected function load_front_page_settings($forceopen = \false)
+    {
+    }
+    /**
+     * This function gives local plugins an opportunity to modify the settings navigation.
+     */
+    protected function load_local_plugin_settings()
+    {
+    }
+    /**
+     * This function marks the cache as volatile so it is cleared during shutdown
+     */
+    public function clear_cache()
+    {
+    }
+    /**
+     * Checks to see if there are child nodes available in the specific user's preference node.
+     * If so, then they have the appropriate permissions view this user's preferences.
+     *
+     * @since Moodle 2.9.3
+     * @param int $userid The user's ID.
+     * @return bool True if child nodes exist to view, otherwise false.
+     */
+    public function can_view_user_preferences($userid)
+    {
+    }
+}
+/**
+ * Class used to populate site admin navigation for ajax.
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2013 Rajesh Taneja <rajesh@moodle.com>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class settings_navigation_ajax extends \settings_navigation
+{
+    /**
+     * Constructs the navigation for use in an AJAX request
+     *
+     * @param moodle_page $page
+     */
+    public function __construct(\moodle_page &$page)
+    {
+    }
+    /**
+     * Initialise the site admin navigation.
+     *
+     * @return array An array of the expandable nodes
+     */
+    public function initialise()
+    {
+    }
+}
+/**
+ * Simple class used to output a navigation branch in XML
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2009 Sam Hemelryk
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class navigation_json
+{
+    /** @var array An array of different node types */
+    protected $nodetype = array('node', 'branch');
+    /** @var array An array of node keys and types */
+    protected $expandable = array();
+    /**
+     * Turns a branch and all of its children into XML
+     *
+     * @param navigation_node $branch
+     * @return string XML string
+     */
+    public function convert($branch)
+    {
+    }
+    /**
+     * Set the expandable items in the array so that we have enough information
+     * to attach AJAX events
+     * @param array $expandable
+     */
+    public function set_expandable($expandable)
+    {
+    }
+    /**
+     * Recusively converts a child node and its children to XML for output
+     *
+     * @param navigation_node $child The child to convert
+     * @param int $depth Pointlessly used to track the depth of the XML structure
+     * @return string JSON
+     */
+    protected function convert_child($child, $depth = 1)
+    {
+    }
+}
+/**
+ * The cache class used by global navigation and settings navigation.
+ *
+ * It is basically an easy access point to session with a bit of smarts to make
+ * sure that the information that is cached is valid still.
+ *
+ * Example use:
+ * <code php>
+ * if (!$cache->viewdiscussion()) {
+ *     // Code to do stuff and produce cachable content
+ *     $cache->viewdiscussion = has_capability('mod/forum:viewdiscussion', $coursecontext);
+ * }
+ * $content = $cache->viewdiscussion;
+ * </code>
+ *
+ * @package   core
+ * @category  navigation
+ * @copyright 2009 Sam Hemelryk
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class navigation_cache
+{
+    /** @var int represents the time created */
+    protected $creation;
+    /** @var array An array of session keys */
+    protected $session;
+    /**
+     * The string to use to segregate this particular cache. It can either be
+     * unique to start a fresh cache or if you want to share a cache then make
+     * it the string used in the original cache.
+     * @var string
+     */
+    protected $area;
+    /** @var int a time that the information will time out */
+    protected $timeout;
+    /** @var stdClass The current context */
+    protected $currentcontext;
+    /** @var int cache time information */
+    const CACHETIME = 0;
+    /** @var int cache user id */
+    const CACHEUSERID = 1;
+    /** @var int cache value */
+    const CACHEVALUE = 2;
+    /** @var null|array An array of navigation cache areas to expire on shutdown */
+    public static $volatilecaches;
+    /**
+     * Contructor for the cache. Requires two arguments
+     *
+     * @param string $area The string to use to segregate this particular cache
+     *                it can either be unique to start a fresh cache or if you want
+     *                to share a cache then make it the string used in the original
+     *                cache
+     * @param int $timeout The number of seconds to time the information out after
+     */
+    public function __construct($area, $timeout = 1800)
+    {
+    }
+    /**
+     * Used to set up the cache within the SESSION.
+     *
+     * This is called for each access and ensure that we don't put anything into the session before
+     * it is required.
+     */
+    protected function ensure_session_cache_initialised()
+    {
+    }
+    /**
+     * Magic Method to retrieve something by simply calling using = cache->key
+     *
+     * @param mixed $key The identifier for the information you want out again
+     * @return void|mixed Either void or what ever was put in
+     */
+    public function __get($key)
+    {
+    }
+    /**
+     * Magic method that simply uses {@link set();} to store something in the cache
+     *
+     * @param string|int $key
+     * @param mixed $information
+     */
+    public function __set($key, $information)
+    {
+    }
+    /**
+     * Sets some information against the cache (session) for later retrieval
+     *
+     * @param string|int $key
+     * @param mixed $information
+     */
+    public function set($key, $information)
+    {
+    }
+    /**
+     * Check the existence of the identifier in the cache
+     *
+     * @param string|int $key
+     * @return bool
+     */
+    public function cached($key)
+    {
+    }
+    /**
+     * Compare something to it's equivilant in the cache
+     *
+     * @param string $key
+     * @param mixed $value
+     * @param bool $serialise Whether to serialise the value before comparison
+     *              this should only be set to false if the value is already
+     *              serialised
+     * @return bool If the value is the same false if it is not set or doesn't match
+     */
+    public function compare($key, $value, $serialise = \true)
+    {
+    }
+    /**
+     * Wipes the entire cache, good to force regeneration
+     */
+    public function clear()
+    {
+    }
+    /**
+     * Checks all cache entries and removes any that have expired, good ole cleanup
+     */
+    protected function garbage_collection()
+    {
+    }
+    /**
+     * Marks the cache as being volatile (likely to change)
+     *
+     * Any caches marked as volatile will be destroyed at the on shutdown by
+     * {@link navigation_node::destroy_volatile_caches()} which is registered
+     * as a shutdown function if any caches are marked as volatile.
+     *
+     * @param bool $setting True to destroy the cache false not too
+     */
+    public function volatile($setting = \true)
+    {
+    }
+    /**
+     * Destroys all caches marked as volatile
+     *
+     * This function is static and works in conjunction with the static volatilecaches
+     * property of navigation cache.
+     * Because this function is static it manually resets the cached areas back to an
+     * empty array.
+     */
+    public static function destroy_volatile_caches()
+    {
+    }
 }
 /**
  * Interface marking other classes having the ability to export their data for use by templates.
@@ -4582,6 +8102,2351 @@ class bootstrap_renderer
     }
 }
 /**
+ * Class for creating and manipulating urls.
+ *
+ * It can be used in moodle pages where config.php has been included without any further includes.
+ *
+ * It is useful for manipulating urls with long lists of params.
+ * One situation where it will be useful is a page which links to itself to perform various actions
+ * and / or to process form data. A moodle_url object :
+ * can be created for a page to refer to itself with all the proper get params being passed from page call to
+ * page call and methods can be used to output a url including all the params, optionally adding and overriding
+ * params and can also be used to
+ *     - output the url without any get params
+ *     - and output the params as hidden fields to be output within a form
+ *
+ * @copyright 2007 jamiesensei
+ * @link http://docs.moodle.org/dev/lib/weblib.php_moodle_url See short write up here
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+class moodle_url
+{
+    /**
+     * Scheme, ex.: http, https
+     * @var string
+     */
+    protected $scheme = '';
+    /**
+     * Hostname.
+     * @var string
+     */
+    protected $host = '';
+    /**
+     * Port number, empty means default 80 or 443 in case of http.
+     * @var int
+     */
+    protected $port = '';
+    /**
+     * Username for http auth.
+     * @var string
+     */
+    protected $user = '';
+    /**
+     * Password for http auth.
+     * @var string
+     */
+    protected $pass = '';
+    /**
+     * Script path.
+     * @var string
+     */
+    protected $path = '';
+    /**
+     * Optional slash argument value.
+     * @var string
+     */
+    protected $slashargument = '';
+    /**
+     * Anchor, may be also empty, null means none.
+     * @var string
+     */
+    protected $anchor = \null;
+    /**
+     * Url parameters as associative array.
+     * @var array
+     */
+    protected $params = array();
+    /**
+     * Create new instance of moodle_url.
+     *
+     * @param moodle_url|string $url - moodle_url means make a copy of another
+     *      moodle_url and change parameters, string means full url or shortened
+     *      form (ex.: '/course/view.php'). It is strongly encouraged to not include
+     *      query string because it may result in double encoded values. Use the
+     *      $params instead. For admin URLs, just use /admin/script.php, this
+     *      class takes care of the $CFG->admin issue.
+     * @param array $params these params override current params or add new
+     * @param string $anchor The anchor to use as part of the URL if there is one.
+     * @throws moodle_exception
+     */
+    public function __construct($url, array $params = \null, $anchor = \null)
+    {
+    }
+    /**
+     * Add an array of params to the params for this url.
+     *
+     * The added params override existing ones if they have the same name.
+     *
+     * @param array $params Defaults to null. If null then returns all params.
+     * @return array Array of Params for url.
+     * @throws coding_exception
+     */
+    public function params(array $params = \null)
+    {
+    }
+    /**
+     * Remove all params if no arguments passed.
+     * Remove selected params if arguments are passed.
+     *
+     * Can be called as either remove_params('param1', 'param2')
+     * or remove_params(array('param1', 'param2')).
+     *
+     * @param string[]|string $params,... either an array of param names, or 1..n string params to remove as args.
+     * @return array url parameters
+     */
+    public function remove_params($params = \null)
+    {
+    }
+    /**
+     * Remove all url parameters.
+     *
+     * @todo remove the unused param.
+     * @param array $params Unused param
+     * @return void
+     */
+    public function remove_all_params($params = \null)
+    {
+    }
+    /**
+     * Add a param to the params for this url.
+     *
+     * The added param overrides existing one if they have the same name.
+     *
+     * @param string $paramname name
+     * @param string $newvalue Param value. If new value specified current value is overriden or parameter is added
+     * @return mixed string parameter value, null if parameter does not exist
+     */
+    public function param($paramname, $newvalue = '')
+    {
+    }
+    /**
+     * Merges parameters and validates them
+     *
+     * @param array $overrideparams
+     * @return array merged parameters
+     * @throws coding_exception
+     */
+    protected function merge_overrideparams(array $overrideparams = \null)
+    {
+    }
+    /**
+     * Get the params as as a query string.
+     *
+     * This method should not be used outside of this method.
+     *
+     * @param bool $escaped Use &amp; as params separator instead of plain &
+     * @param array $overrideparams params to add to the output params, these
+     *      override existing ones with the same name.
+     * @return string query string that can be added to a url.
+     */
+    public function get_query_string($escaped = \true, array $overrideparams = \null)
+    {
+    }
+    /**
+     * Shortcut for printing of encoded URL.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+    }
+    /**
+     * Output url.
+     *
+     * If you use the returned URL in HTML code, you want the escaped ampersands. If you use
+     * the returned URL in HTTP headers, you want $escaped=false.
+     *
+     * @param bool $escaped Use &amp; as params separator instead of plain &
+     * @param array $overrideparams params to add to the output url, these override existing ones with the same name.
+     * @return string Resulting URL
+     */
+    public function out($escaped = \true, array $overrideparams = \null)
+    {
+    }
+    /**
+     * Output url without any rewrites
+     *
+     * This is identical in signature and use to out() but doesn't call the rewrite handler.
+     *
+     * @param bool $escaped Use &amp; as params separator instead of plain &
+     * @param array $overrideparams params to add to the output url, these override existing ones with the same name.
+     * @return string Resulting URL
+     */
+    public function raw_out($escaped = \true, array $overrideparams = \null)
+    {
+    }
+    /**
+     * Returns url without parameters, everything before '?'.
+     *
+     * @param bool $includeanchor if {@link self::anchor} is defined, should it be returned?
+     * @return string
+     */
+    public function out_omit_querystring($includeanchor = \false)
+    {
+    }
+    /**
+     * Compares this moodle_url with another.
+     *
+     * See documentation of constants for an explanation of the comparison flags.
+     *
+     * @param moodle_url $url The moodle_url object to compare
+     * @param int $matchtype The type of comparison (URL_MATCH_BASE, URL_MATCH_PARAMS, URL_MATCH_EXACT)
+     * @return bool
+     */
+    public function compare(\moodle_url $url, $matchtype = \URL_MATCH_EXACT)
+    {
+    }
+    /**
+     * Sets the anchor for the URI (the bit after the hash)
+     *
+     * @param string $anchor null means remove previous
+     */
+    public function set_anchor($anchor)
+    {
+    }
+    /**
+     * Sets the scheme for the URI (the bit before ://)
+     *
+     * @param string $scheme
+     */
+    public function set_scheme($scheme)
+    {
+    }
+    /**
+     * Sets the url slashargument value.
+     *
+     * @param string $path usually file path
+     * @param string $parameter name of page parameter if slasharguments not supported
+     * @param bool $supported usually null, then it depends on $CFG->slasharguments, use true or false for other servers
+     * @return void
+     */
+    public function set_slashargument($path, $parameter = 'file', $supported = \null)
+    {
+    }
+    // Static factory methods.
+    /**
+     * General moodle file url.
+     *
+     * @param string $urlbase the script serving the file
+     * @param string $path
+     * @param bool $forcedownload
+     * @return moodle_url
+     */
+    public static function make_file_url($urlbase, $path, $forcedownload = \false)
+    {
+    }
+    /**
+     * Factory method for creation of url pointing to plugin file.
+     *
+     * Please note this method can be used only from the plugins to
+     * create urls of own files, it must not be used outside of plugins!
+     *
+     * @param int $contextid
+     * @param string $component
+     * @param string $area
+     * @param int $itemid
+     * @param string $pathname
+     * @param string $filename
+     * @param bool $forcedownload
+     * @param mixed $includetoken Whether to use a user token when displaying this group image.
+     *                True indicates to generate a token for current user, and integer value indicates to generate a token for the
+     *                user whose id is the value indicated.
+     *                If the group picture is included in an e-mail or some other location where the audience is a specific
+     *                user who will not be logged in when viewing, then we use a token to authenticate the user.
+     * @return moodle_url
+     */
+    public static function make_pluginfile_url($contextid, $component, $area, $itemid, $pathname, $filename, $forcedownload = \false, $includetoken = \false)
+    {
+    }
+    /**
+     * Factory method for creation of url pointing to plugin file.
+     * This method is the same that make_pluginfile_url but pointing to the webservice pluginfile.php script.
+     * It should be used only in external functions.
+     *
+     * @since  2.8
+     * @param int $contextid
+     * @param string $component
+     * @param string $area
+     * @param int $itemid
+     * @param string $pathname
+     * @param string $filename
+     * @param bool $forcedownload
+     * @return moodle_url
+     */
+    public static function make_webservice_pluginfile_url($contextid, $component, $area, $itemid, $pathname, $filename, $forcedownload = \false)
+    {
+    }
+    /**
+     * Factory method for creation of url pointing to draft file of current user.
+     *
+     * @param int $draftid draft item id
+     * @param string $pathname
+     * @param string $filename
+     * @param bool $forcedownload
+     * @return moodle_url
+     */
+    public static function make_draftfile_url($draftid, $pathname, $filename, $forcedownload = \false)
+    {
+    }
+    /**
+     * Factory method for creating of links to legacy course files.
+     *
+     * @param int $courseid
+     * @param string $filepath
+     * @param bool $forcedownload
+     * @return moodle_url
+     */
+    public static function make_legacyfile_url($courseid, $filepath, $forcedownload = \false)
+    {
+    }
+    /**
+     * Returns URL a relative path from $CFG->wwwroot
+     *
+     * Can be used for passing around urls with the wwwroot stripped
+     *
+     * @param boolean $escaped Use &amp; as params separator instead of plain &
+     * @param array $overrideparams params to add to the output url, these override existing ones with the same name.
+     * @return string Resulting URL
+     * @throws coding_exception if called on a non-local url
+     */
+    public function out_as_local_url($escaped = \true, array $overrideparams = \null)
+    {
+    }
+    /**
+     * Returns the 'path' portion of a URL. For example, if the URL is
+     * http://www.example.org:447/my/file/is/here.txt?really=1 then this will
+     * return '/my/file/is/here.txt'.
+     *
+     * By default the path includes slash-arguments (for example,
+     * '/myfile.php/extra/arguments') so it is what you would expect from a
+     * URL path. If you don't want this behaviour, you can opt to exclude the
+     * slash arguments. (Be careful: if the $CFG variable slasharguments is
+     * disabled, these URLs will have a different format and you may need to
+     * look at the 'file' parameter too.)
+     *
+     * @param bool $includeslashargument If true, includes slash arguments
+     * @return string Path of URL
+     */
+    public function get_path($includeslashargument = \true)
+    {
+    }
+    /**
+     * Returns a given parameter value from the URL.
+     *
+     * @param string $name Name of parameter
+     * @return string Value of parameter or null if not set
+     */
+    public function get_param($name)
+    {
+    }
+    /**
+     * Returns the 'scheme' portion of a URL. For example, if the URL is
+     * http://www.example.org:447/my/file/is/here.txt?really=1 then this will
+     * return 'http' (without the colon).
+     *
+     * @return string Scheme of the URL.
+     */
+    public function get_scheme()
+    {
+    }
+    /**
+     * Returns the 'host' portion of a URL. For example, if the URL is
+     * http://www.example.org:447/my/file/is/here.txt?really=1 then this will
+     * return 'www.example.org'.
+     *
+     * @return string Host of the URL.
+     */
+    public function get_host()
+    {
+    }
+    /**
+     * Returns the 'port' portion of a URL. For example, if the URL is
+     * http://www.example.org:447/my/file/is/here.txt?really=1 then this will
+     * return '447'.
+     *
+     * @return string Port of the URL.
+     */
+    public function get_port()
+    {
+    }
+}
+/**
+ * Progress trace class.
+ *
+ * Use this class from long operations where you want to output occasional information about
+ * what is going on, but don't know if, or in what format, the output should be.
+ *
+ * @copyright 2009 Tim Hunt
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+abstract class progress_trace
+{
+    /**
+     * Output an progress message in whatever format.
+     *
+     * @param string $message the message to output.
+     * @param integer $depth indent depth for this message.
+     */
+    public abstract function output($message, $depth = 0);
+    /**
+     * Called when the processing is finished.
+     */
+    public function finished()
+    {
+    }
+}
+/**
+ * This subclass of progress_trace does not ouput anything.
+ *
+ * @copyright 2009 Tim Hunt
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+class null_progress_trace extends \progress_trace
+{
+    /**
+     * Does Nothing
+     *
+     * @param string $message
+     * @param int $depth
+     * @return void Does Nothing
+     */
+    public function output($message, $depth = 0)
+    {
+    }
+}
+/**
+ * This subclass of progress_trace outputs to plain text.
+ *
+ * @copyright 2009 Tim Hunt
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+class text_progress_trace extends \progress_trace
+{
+    /**
+     * Output the trace message.
+     *
+     * @param string $message
+     * @param int $depth
+     * @return void Output is echo'd
+     */
+    public function output($message, $depth = 0)
+    {
+    }
+}
+/**
+ * This subclass of progress_trace outputs as HTML.
+ *
+ * @copyright 2009 Tim Hunt
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+class html_progress_trace extends \progress_trace
+{
+    /**
+     * Output the trace message.
+     *
+     * @param string $message
+     * @param int $depth
+     * @return void Output is echo'd
+     */
+    public function output($message, $depth = 0)
+    {
+    }
+}
+/**
+ * HTML List Progress Tree
+ *
+ * @copyright 2009 Tim Hunt
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+class html_list_progress_trace extends \progress_trace
+{
+    /** @var int */
+    protected $currentdepth = -1;
+    /**
+     * Echo out the list
+     *
+     * @param string $message The message to display
+     * @param int $depth
+     * @return void Output is echoed
+     */
+    public function output($message, $depth = 0)
+    {
+    }
+    /**
+     * Called when the processing is finished.
+     */
+    public function finished()
+    {
+    }
+}
+/**
+ * This subclass of progress_trace outputs to error log.
+ *
+ * @copyright Petr Skoda {@link http://skodak.org}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+class error_log_progress_trace extends \progress_trace
+{
+    /** @var string log prefix */
+    protected $prefix;
+    /**
+     * Constructor.
+     * @param string $prefix optional log prefix
+     */
+    public function __construct($prefix = '')
+    {
+    }
+    /**
+     * Output the trace message.
+     *
+     * @param string $message
+     * @param int $depth
+     * @return void Output is sent to error log.
+     */
+    public function output($message, $depth = 0)
+    {
+    }
+}
+/**
+ * Special type of trace that can be used for catching of output of other traces.
+ *
+ * @copyright Petr Skoda {@link http://skodak.org}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+class progress_trace_buffer extends \progress_trace
+{
+    /** @var progres_trace */
+    protected $trace;
+    /** @var bool do we pass output out */
+    protected $passthrough;
+    /** @var string output buffer */
+    protected $buffer;
+    /**
+     * Constructor.
+     *
+     * @param progress_trace $trace
+     * @param bool $passthrough true means output and buffer, false means just buffer and no output
+     */
+    public function __construct(\progress_trace $trace, $passthrough = \true)
+    {
+    }
+    /**
+     * Output the trace message.
+     *
+     * @param string $message the message to output.
+     * @param int $depth indent depth for this message.
+     * @return void output stored in buffer
+     */
+    public function output($message, $depth = 0)
+    {
+    }
+    /**
+     * Called when the processing is finished.
+     */
+    public function finished()
+    {
+    }
+    /**
+     * Reset internal text buffer.
+     */
+    public function reset_buffer()
+    {
+    }
+    /**
+     * Return internal text buffer.
+     * @return string buffered plain text
+     */
+    public function get_buffer()
+    {
+    }
+}
+/**
+ * Special type of trace that can be used for redirecting to multiple other traces.
+ *
+ * @copyright Petr Skoda {@link http://skodak.org}
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package core
+ */
+class combined_progress_trace extends \progress_trace
+{
+    /**
+     * An array of traces.
+     * @var array
+     */
+    protected $traces;
+    /**
+     * Constructs a new instance.
+     *
+     * @param array $traces multiple traces
+     */
+    public function __construct(array $traces)
+    {
+    }
+    /**
+     * Output an progress message in whatever format.
+     *
+     * @param string $message the message to output.
+     * @param integer $depth indent depth for this message.
+     */
+    public function output($message, $depth = 0)
+    {
+    }
+    /**
+     * Called when the processing is finished.
+     */
+    public function finished()
+    {
+    }
+}
+/**
+ * Abstract class representing moodle database interface.
+ * @link http://docs.moodle.org/dev/DML_functions
+ *
+ * @package    core_dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+abstract class moodle_database
+{
+    /** @var database_manager db manager which allows db structure modifications. */
+    protected $database_manager;
+    /** @var moodle_temptables temptables manager to provide cross-db support for temp tables. */
+    protected $temptables;
+    /** @var array Cache of table info. */
+    protected $tables = \null;
+    // db connection options
+    /** @var string db host name. */
+    protected $dbhost;
+    /** @var string db host user. */
+    protected $dbuser;
+    /** @var string db host password. */
+    protected $dbpass;
+    /** @var string db name. */
+    protected $dbname;
+    /** @var string Prefix added to table names. */
+    protected $prefix;
+    /** @var array Database or driver specific options, such as sockets or TCP/IP db connections. */
+    protected $dboptions;
+    /** @var bool True means non-moodle external database used.*/
+    protected $external;
+    /** @var int The database reads (performance counter).*/
+    protected $reads = 0;
+    /** @var int The database writes (performance counter).*/
+    protected $writes = 0;
+    /** @var float Time queries took to finish, seconds with microseconds.*/
+    protected $queriestime = 0;
+    /** @var int Debug level. */
+    protected $debug = 0;
+    /** @var string Last used query sql. */
+    protected $last_sql;
+    /** @var array Last query parameters. */
+    protected $last_params;
+    /** @var int Last query type. */
+    protected $last_type;
+    /** @var string Last extra info. */
+    protected $last_extrainfo;
+    /** @var float Last time in seconds with millisecond precision. */
+    protected $last_time;
+    /** @var bool Flag indicating logging of query in progress. This helps prevent infinite loops. */
+    protected $loggingquery = \false;
+    /** @var bool True if the db is used for db sessions. */
+    protected $used_for_db_sessions = \false;
+    /** @var array Array containing open transactions. */
+    protected $transactions = array();
+    /** @var bool Flag used to force rollback of all current transactions. */
+    private $force_rollback = \false;
+    /** @var string MD5 of settings used for connection. Used by MUC as an identifier. */
+    private $settingshash;
+    /** @var cache_application for column info */
+    protected $metacache;
+    /** @var cache_request for column info on temp tables */
+    protected $metacachetemp;
+    /** @var bool flag marking database instance as disposed */
+    protected $disposed;
+    /**
+     * @var int internal temporary variable used to fix params. Its used by {@link _fix_sql_params_dollar_callback()}.
+     */
+    private $fix_sql_params_i;
+    /**
+     * @var int internal temporary variable used to guarantee unique parameters in each request. Its used by {@link get_in_or_equal()}.
+     */
+    protected $inorequaluniqueindex = 1;
+    /**
+     * @var boolean variable use to temporarily disable logging.
+     */
+    protected $skiplogging = \false;
+    /**
+     * Constructor - Instantiates the database, specifying if it's external (connect to other systems) or not (Moodle DB).
+     *              Note that this affects the decision of whether prefix checks must be performed or not.
+     * @param bool $external True means that an external database is used.
+     */
+    public function __construct($external = \false)
+    {
+    }
+    /**
+     * Destructor - cleans up and flushes everything needed.
+     */
+    public function __destruct()
+    {
+    }
+    /**
+     * Detects if all needed PHP stuff are installed for DB connectivity.
+     * Note: can be used before connect()
+     * @return mixed True if requirements are met, otherwise a string if something isn't installed.
+     */
+    public abstract function driver_installed();
+    /**
+     * Returns database table prefix
+     * Note: can be used before connect()
+     * @return string The prefix used in the database.
+     */
+    public function get_prefix()
+    {
+    }
+    /**
+     * Loads and returns a database instance with the specified type and library.
+     *
+     * The loaded class is within lib/dml directory and of the form: $type.'_'.$library.'_moodle_database'
+     *
+     * @param string $type Database driver's type. (eg: mysqli, pgsql, mssql, sqldrv, oci, etc.)
+     * @param string $library Database driver's library (native, pdo, etc.)
+     * @param bool $external True if this is an external database.
+     * @return moodle_database driver object or null if error, for example of driver object see {@link mysqli_native_moodle_database}
+     */
+    public static function get_driver_instance($type, $library, $external = \false)
+    {
+    }
+    /**
+     * Returns the database vendor.
+     * Note: can be used before connect()
+     * @return string The db vendor name, usually the same as db family name.
+     */
+    public function get_dbvendor()
+    {
+    }
+    /**
+     * Returns the database family type. (This sort of describes the SQL 'dialect')
+     * Note: can be used before connect()
+     * @return string The db family name (mysql, postgres, mssql, oracle, etc.)
+     */
+    public abstract function get_dbfamily();
+    /**
+     * Returns a more specific database driver type
+     * Note: can be used before connect()
+     * @return string The db type mysqli, pgsql, oci, mssql, sqlsrv
+     */
+    protected abstract function get_dbtype();
+    /**
+     * Returns the general database library name
+     * Note: can be used before connect()
+     * @return string The db library type -  pdo, native etc.
+     */
+    protected abstract function get_dblibrary();
+    /**
+     * Returns the localised database type name
+     * Note: can be used before connect()
+     * @return string
+     */
+    public abstract function get_name();
+    /**
+     * Returns the localised database configuration help.
+     * Note: can be used before connect()
+     * @return string
+     */
+    public abstract function get_configuration_help();
+    /**
+     * Returns the localised database description
+     * Note: can be used before connect()
+     * @deprecated since 2.6
+     * @return string
+     */
+    public function get_configuration_hints()
+    {
+    }
+    /**
+     * Returns the db related part of config.php
+     * @return stdClass
+     */
+    public function export_dbconfig()
+    {
+    }
+    /**
+     * Diagnose database and tables, this function is used
+     * to verify database and driver settings, db engine types, etc.
+     *
+     * @return string null means everything ok, string means problem found.
+     */
+    public function diagnose()
+    {
+    }
+    /**
+     * Connects to the database.
+     * Must be called before other methods.
+     * @param string $dbhost The database host.
+     * @param string $dbuser The database user to connect as.
+     * @param string $dbpass The password to use when connecting to the database.
+     * @param string $dbname The name of the database being connected to.
+     * @param mixed $prefix string means moodle db prefix, false used for external databases where prefix not used
+     * @param array $dboptions driver specific options
+     * @return bool true
+     * @throws dml_connection_exception if error
+     */
+    public abstract function connect($dbhost, $dbuser, $dbpass, $dbname, $prefix, array $dboptions = \null);
+    /**
+     * Store various database settings
+     * @param string $dbhost The database host.
+     * @param string $dbuser The database user to connect as.
+     * @param string $dbpass The password to use when connecting to the database.
+     * @param string $dbname The name of the database being connected to.
+     * @param mixed $prefix string means moodle db prefix, false used for external databases where prefix not used
+     * @param array $dboptions driver specific options
+     * @return void
+     */
+    protected function store_settings($dbhost, $dbuser, $dbpass, $dbname, $prefix, array $dboptions = \null)
+    {
+    }
+    /**
+     * Returns a hash for the settings used during connection.
+     *
+     * If not already requested it is generated and stored in a private property.
+     *
+     * @return string
+     */
+    protected function get_settings_hash()
+    {
+    }
+    /**
+     * Handle the creation and caching of the databasemeta information for all databases.
+     *
+     * @return cache_application The databasemeta cachestore to complete operations on.
+     */
+    protected function get_metacache()
+    {
+    }
+    /**
+     * Handle the creation and caching of the temporary tables.
+     *
+     * @return cache_application The temp_tables cachestore to complete operations on.
+     */
+    protected function get_temp_tables_cache()
+    {
+    }
+    /**
+     * Attempt to create the database
+     * @param string $dbhost The database host.
+     * @param string $dbuser The database user to connect as.
+     * @param string $dbpass The password to use when connecting to the database.
+     * @param string $dbname The name of the database being connected to.
+     * @param array $dboptions An array of optional database options (eg: dbport)
+     *
+     * @return bool success True for successful connection. False otherwise.
+     */
+    public function create_database($dbhost, $dbuser, $dbpass, $dbname, array $dboptions = \null)
+    {
+    }
+    /**
+     * Returns transaction trace for debugging purposes.
+     * @private to be used by core only
+     * @return array or null if not in transaction.
+     */
+    public function get_transaction_start_backtrace()
+    {
+    }
+    /**
+     * Closes the database connection and releases all resources
+     * and memory (especially circular memory references).
+     * Do NOT use connect() again, create a new instance if needed.
+     * @return void
+     */
+    public function dispose()
+    {
+    }
+    /**
+     * This should be called before each db query.
+     * @param string $sql The query string.
+     * @param array $params An array of parameters.
+     * @param int $type The type of query. ( SQL_QUERY_SELECT | SQL_QUERY_AUX | SQL_QUERY_INSERT | SQL_QUERY_UPDATE | SQL_QUERY_STRUCTURE )
+     * @param mixed $extrainfo This is here for any driver specific extra information.
+     * @return void
+     */
+    protected function query_start($sql, array $params = \null, $type, $extrainfo = \null)
+    {
+    }
+    /**
+     * This should be called immediately after each db query. It does a clean up of resources.
+     * It also throws exceptions if the sql that ran produced errors.
+     * @param mixed $result The db specific result obtained from running a query.
+     * @throws dml_read_exception | dml_write_exception | ddl_change_structure_exception
+     * @return void
+     */
+    protected function query_end($result)
+    {
+    }
+    /**
+     * This logs the last query based on 'logall', 'logslow' and 'logerrors' options configured via $CFG->dboptions .
+     * @param string|bool $error or false if not error
+     * @return void
+     */
+    public function query_log($error = \false)
+    {
+    }
+    /**
+     * Disable logging temporarily.
+     */
+    protected function query_log_prevent()
+    {
+    }
+    /**
+     * Restore old logging behavior.
+     */
+    protected function query_log_allow()
+    {
+    }
+    /**
+     * Returns the time elapsed since the query started.
+     * @return float Seconds with microseconds
+     */
+    protected function query_time()
+    {
+    }
+    /**
+     * Returns database server info array
+     * @return array Array containing 'description' and 'version' at least.
+     */
+    public abstract function get_server_info();
+    /**
+     * Returns supported query parameter types
+     * @return int bitmask of accepted SQL_PARAMS_*
+     */
+    protected abstract function allowed_param_types();
+    /**
+     * Returns the last error reported by the database engine.
+     * @return string The error message.
+     */
+    public abstract function get_last_error();
+    /**
+     * Prints sql debug info
+     * @param string $sql The query which is being debugged.
+     * @param array $params The query parameters. (optional)
+     * @param mixed $obj The library specific object. (optional)
+     * @return void
+     */
+    protected function print_debug($sql, array $params = \null, $obj = \null)
+    {
+    }
+    /**
+     * Prints the time a query took to run.
+     * @return void
+     */
+    protected function print_debug_time()
+    {
+    }
+    /**
+     * Returns the SQL WHERE conditions.
+     * @param string $table The table name that these conditions will be validated against.
+     * @param array $conditions The conditions to build the where clause. (must not contain numeric indexes)
+     * @throws dml_exception
+     * @return array An array list containing sql 'where' part and 'params'.
+     */
+    protected function where_clause($table, array $conditions = \null)
+    {
+    }
+    /**
+     * Returns SQL WHERE conditions for the ..._list group of methods.
+     *
+     * @param string $field the name of a field.
+     * @param array $values the values field might take.
+     * @return array An array containing sql 'where' part and 'params'
+     */
+    protected function where_clause_list($field, array $values)
+    {
+    }
+    /**
+     * Constructs 'IN()' or '=' sql fragment
+     * @param mixed $items A single value or array of values for the expression.
+     * @param int $type Parameter bounding type : SQL_PARAMS_QM or SQL_PARAMS_NAMED.
+     * @param string $prefix Named parameter placeholder prefix (a unique counter value is appended to each parameter name).
+     * @param bool $equal True means we want to equate to the constructed expression, false means we don't want to equate to it.
+     * @param mixed $onemptyitems This defines the behavior when the array of items provided is empty. Defaults to false,
+     *              meaning throw exceptions. Other values will become part of the returned SQL fragment.
+     * @throws coding_exception | dml_exception
+     * @return array A list containing the constructed sql fragment and an array of parameters.
+     */
+    public function get_in_or_equal($items, $type = \SQL_PARAMS_QM, $prefix = 'param', $equal = \true, $onemptyitems = \false)
+    {
+    }
+    /**
+     * Converts short table name {tablename} to the real prefixed table name in given sql.
+     * @param string $sql The sql to be operated on.
+     * @return string The sql with tablenames being prefixed with $CFG->prefix
+     */
+    protected function fix_table_names($sql)
+    {
+    }
+    /**
+     * Adds the prefix to the table name.
+     *
+     * @param string $tablename The table name
+     * @return string The prefixed table name
+     */
+    protected function fix_table_name($tablename)
+    {
+    }
+    /**
+     * Internal private utitlity function used to fix parameters.
+     * Used with {@link preg_replace_callback()}
+     * @param array $match Refer to preg_replace_callback usage for description.
+     * @return string
+     */
+    private function _fix_sql_params_dollar_callback($match)
+    {
+    }
+    /**
+     * Detects object parameters and throws exception if found
+     * @param mixed $value
+     * @return void
+     * @throws coding_exception if object detected
+     */
+    protected function detect_objects($value)
+    {
+    }
+    /**
+     * Normalizes sql query parameters and verifies parameters.
+     * @param string $sql The query or part of it.
+     * @param array $params The query parameters.
+     * @return array (sql, params, type of params)
+     */
+    public function fix_sql_params($sql, array $params = \null)
+    {
+    }
+    /**
+     * Add an SQL comment to trace all sql calls back to the calling php code
+     * @param string $sql Original sql
+     * @return string Instrumented sql
+     */
+    protected function add_sql_debugging(string $sql) : string
+    {
+    }
+    /**
+     * Ensures that limit params are numeric and positive integers, to be passed to the database.
+     * We explicitly treat null, '' and -1 as 0 in order to provide compatibility with how limit
+     * values have been passed historically.
+     *
+     * @param int $limitfrom Where to start results from
+     * @param int $limitnum How many results to return
+     * @return array Normalised limit params in array($limitfrom, $limitnum)
+     */
+    protected function normalise_limit_from_num($limitfrom, $limitnum)
+    {
+    }
+    /**
+     * Return tables in database WITHOUT current prefix.
+     * @param bool $usecache if true, returns list of cached tables.
+     * @return array of table names in lowercase and without prefix
+     */
+    public abstract function get_tables($usecache = \true);
+    /**
+     * Return table indexes - everything lowercased.
+     * @param string $table The table we want to get indexes from.
+     * @return array An associative array of indexes containing 'unique' flag and 'columns' being indexed
+     */
+    public abstract function get_indexes($table);
+    /**
+     * Returns detailed information about columns in table. This information is cached internally.
+     *
+     * @param string $table The table's name.
+     * @param bool $usecache Flag to use internal cacheing. The default is true.
+     * @return database_column_info[] of database_column_info objects indexed with column names
+     */
+    public function get_columns($table, $usecache = \true) : array
+    {
+    }
+    /**
+     * Returns detailed information about columns in table. This information is cached internally.
+     *
+     * @param string $table The table's name.
+     * @return database_column_info[] of database_column_info objects indexed with column names
+     */
+    protected abstract function fetch_columns(string $table) : array;
+    /**
+     * Normalise values based on varying RDBMS's dependencies (booleans, LOBs...)
+     *
+     * @param database_column_info $column column metadata corresponding with the value we are going to normalise
+     * @param mixed $value value we are going to normalise
+     * @return mixed the normalised value
+     */
+    protected abstract function normalise_value($column, $value);
+    /**
+     * Resets the internal column details cache
+     *
+     * @param array|null $tablenames an array of xmldb table names affected by this request.
+     * @return void
+     */
+    public function reset_caches($tablenames = \null)
+    {
+    }
+    /**
+     * Returns the sql generator used for db manipulation.
+     * Used mostly in upgrade.php scripts.
+     * @return database_manager The instance used to perform ddl operations.
+     * @see lib/ddl/database_manager.php
+     */
+    public function get_manager()
+    {
+    }
+    /**
+     * Attempts to change db encoding to UTF-8 encoding if possible.
+     * @return bool True is successful.
+     */
+    public function change_db_encoding()
+    {
+    }
+    /**
+     * Checks to see if the database is in unicode mode?
+     * @return bool
+     */
+    public function setup_is_unicodedb()
+    {
+    }
+    /**
+     * Enable/disable very detailed debugging.
+     * @param bool $state
+     * @return void
+     */
+    public function set_debug($state)
+    {
+    }
+    /**
+     * Returns debug status
+     * @return bool $state
+     */
+    public function get_debug()
+    {
+    }
+    /**
+     * Enable/disable detailed sql logging
+     *
+     * @deprecated since Moodle 2.9
+     */
+    public function set_logging($state)
+    {
+    }
+    /**
+     * Do NOT use in code, this is for use by database_manager only!
+     * @param string|array $sql query or array of queries
+     * @param array|null $tablenames an array of xmldb table names affected by this request.
+     * @return bool true
+     * @throws ddl_change_structure_exception A DDL specific exception is thrown for any errors.
+     */
+    public abstract function change_database_structure($sql, $tablenames = \null);
+    /**
+     * Executes a general sql query. Should be used only when no other method suitable.
+     * Do NOT use this to make changes in db structure, use database_manager methods instead!
+     * @param string $sql query
+     * @param array $params query parameters
+     * @return bool true
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function execute($sql, array $params = \null);
+    /**
+     * Get a number of records as a moodle_recordset where all the given conditions met.
+     *
+     * Selects records from the table $table.
+     *
+     * If specified, only records meeting $conditions.
+     *
+     * If specified, the results will be sorted as specified by $sort. This
+     * is added to the SQL as "ORDER BY $sort". Example values of $sort
+     * might be "time ASC" or "time DESC".
+     *
+     * If $fields is specified, only those fields are returned.
+     *
+     * Since this method is a little less readable, use of it should be restricted to
+     * code where it's possible there might be large datasets being returned.  For known
+     * small datasets use get_records - it leads to simpler code.
+     *
+     * If you only want some of the records, specify $limitfrom and $limitnum.
+     * The query will skip the first $limitfrom records (according to the sort
+     * order) and then return the next $limitnum records. If either of $limitfrom
+     * or $limitnum is specified, both must be present.
+     *
+     * The return value is a moodle_recordset
+     * if the query succeeds. If an error occurs, false is returned.
+     *
+     * @param string $table the table to query.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @param string $sort an order to sort the results in (optional, a valid SQL ORDER BY parameter).
+     * @param string $fields a comma separated list of fields to return (optional, by default all fields are returned).
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
+     * @return moodle_recordset A moodle_recordset instance
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_recordset($table, array $conditions = \null, $sort = '', $fields = '*', $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get a number of records as a moodle_recordset where one field match one list of values.
+     *
+     * Only records where $field takes one of the values $values are returned.
+     * $values must be an array of values.
+     *
+     * Other arguments and the return type are like {@link function get_recordset}.
+     *
+     * @param string $table the table to query.
+     * @param string $field a field to check (optional).
+     * @param array $values array of values the field must have
+     * @param string $sort an order to sort the results in (optional, a valid SQL ORDER BY parameter).
+     * @param string $fields a comma separated list of fields to return (optional, by default all fields are returned).
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
+     * @return moodle_recordset A moodle_recordset instance.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_recordset_list($table, $field, array $values, $sort = '', $fields = '*', $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get a number of records as a moodle_recordset which match a particular WHERE clause.
+     *
+     * If given, $select is used as the SELECT parameter in the SQL query,
+     * otherwise all records from the table are returned.
+     *
+     * Other arguments and the return type are like {@link function get_recordset}.
+     *
+     * @param string $table the table to query.
+     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param array $params array of sql parameters
+     * @param string $sort an order to sort the results in (optional, a valid SQL ORDER BY parameter).
+     * @param string $fields a comma separated list of fields to return (optional, by default all fields are returned).
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
+     * @return moodle_recordset A moodle_recordset instance.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_recordset_select($table, $select, array $params = \null, $sort = '', $fields = '*', $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get a number of records as a moodle_recordset using a SQL statement.
+     *
+     * Since this method is a little less readable, use of it should be restricted to
+     * code where it's possible there might be large datasets being returned.  For known
+     * small datasets use get_records_sql - it leads to simpler code.
+     *
+     * The return type is like {@link function get_recordset}.
+     *
+     * @param string $sql the SQL select query to execute.
+     * @param array $params array of sql parameters
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
+     * @return moodle_recordset A moodle_recordset instance.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function get_recordset_sql($sql, array $params = \null, $limitfrom = 0, $limitnum = 0);
+    /**
+     * Get all records from a table.
+     *
+     * This method works around potential memory problems and may improve performance,
+     * this method may block access to table until the recordset is closed.
+     *
+     * @param string $table Name of database table.
+     * @return moodle_recordset A moodle_recordset instance {@link function get_recordset}.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function export_table_recordset($table)
+    {
+    }
+    /**
+     * Get a number of records as an array of objects where all the given conditions met.
+     *
+     * If the query succeeds and returns at least one record, the
+     * return value is an array of objects, one object for each
+     * record found. The array key is the value from the first
+     * column of the result set. The object associated with that key
+     * has a member variable for each column of the results.
+     *
+     * @param string $table the table to query.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @param string $sort an order to sort the results in (optional, a valid SQL ORDER BY parameter).
+     * @param string $fields a comma separated list of fields to return (optional, by default
+     *   all fields are returned). The first field will be used as key for the
+     *   array so must be a unique field such as 'id'.
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records in total (optional, required if $limitfrom is set).
+     * @return array An array of Objects indexed by first column.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_records($table, array $conditions = \null, $sort = '', $fields = '*', $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get a number of records as an array of objects where one field match one list of values.
+     *
+     * Return value is like {@link function get_records}.
+     *
+     * @param string $table The database table to be checked against.
+     * @param string $field The field to search
+     * @param array $values An array of values
+     * @param string $sort Sort order (as valid SQL sort parameter)
+     * @param string $fields A comma separated list of fields to be returned from the chosen table. If specified,
+     *   the first field should be a unique one such as 'id' since it will be used as a key in the associative
+     *   array.
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records in total (optional).
+     * @return array An array of objects indexed by first column
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_records_list($table, $field, array $values, $sort = '', $fields = '*', $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get a number of records as an array of objects which match a particular WHERE clause.
+     *
+     * Return value is like {@link function get_records}.
+     *
+     * @param string $table The table to query.
+     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param array $params An array of sql parameters
+     * @param string $sort An order to sort the results in (optional, a valid SQL ORDER BY parameter).
+     * @param string $fields A comma separated list of fields to return
+     *   (optional, by default all fields are returned). The first field will be used as key for the
+     *   array so must be a unique field such as 'id'.
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records in total (optional, required if $limitfrom is set).
+     * @return array of objects indexed by first column
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_records_select($table, $select, array $params = \null, $sort = '', $fields = '*', $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get a number of records as an array of objects using a SQL statement.
+     *
+     * Return value is like {@link function get_records}.
+     *
+     * @param string $sql the SQL select query to execute. The first column of this SELECT statement
+     *   must be a unique value (usually the 'id' field), as it will be used as the key of the
+     *   returned array.
+     * @param array $params array of sql parameters
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records in total (optional, required if $limitfrom is set).
+     * @return array of objects indexed by first column
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function get_records_sql($sql, array $params = \null, $limitfrom = 0, $limitnum = 0);
+    /**
+     * Get the first two columns from a number of records as an associative array where all the given conditions met.
+     *
+     * Arguments are like {@link function get_recordset}.
+     *
+     * If no errors occur the return value
+     * is an associative whose keys come from the first field of each record,
+     * and whose values are the corresponding second fields.
+     * False is returned if an error occurs.
+     *
+     * @param string $table the table to query.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @param string $sort an order to sort the results in (optional, a valid SQL ORDER BY parameter).
+     * @param string $fields a comma separated list of fields to return - the number of fields should be 2!
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
+     * @return array an associative array
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_records_menu($table, array $conditions = \null, $sort = '', $fields = '*', $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get the first two columns from a number of records as an associative array which match a particular WHERE clause.
+     *
+     * Arguments are like {@link function get_recordset_select}.
+     * Return value is like {@link function get_records_menu}.
+     *
+     * @param string $table The database table to be checked against.
+     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param array $params array of sql parameters
+     * @param string $sort Sort order (optional) - a valid SQL order parameter
+     * @param string $fields A comma separated list of fields to be returned from the chosen table - the number of fields should be 2!
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
+     * @return array an associative array
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_records_select_menu($table, $select, array $params = \null, $sort = '', $fields = '*', $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get the first two columns from a number of records as an associative array using a SQL statement.
+     *
+     * Arguments are like {@link function get_recordset_sql}.
+     * Return value is like {@link function get_records_menu}.
+     *
+     * @param string $sql The SQL string you wish to be executed.
+     * @param array $params array of sql parameters
+     * @param int $limitfrom return a subset of records, starting at this point (optional).
+     * @param int $limitnum return a subset comprising this many records (optional, required if $limitfrom is set).
+     * @return array an associative array
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_records_sql_menu($sql, array $params = \null, $limitfrom = 0, $limitnum = 0)
+    {
+    }
+    /**
+     * Get a single database record as an object where all the given conditions met.
+     *
+     * @param string $table The table to select from.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @param string $fields A comma separated list of fields to be returned from the chosen table.
+     * @param int $strictness IGNORE_MISSING means compatible mode, false returned if record not found, debug message if more found;
+     *                        IGNORE_MULTIPLE means return first, ignore multiple records found(not recommended);
+     *                        MUST_EXIST means we will throw an exception if no record or multiple records found.
+     *
+     * @todo MDL-30407 MUST_EXIST option should not throw a dml_exception, it should throw a different exception as it's a requested check.
+     * @return mixed a fieldset object containing the first matching record, false or exception if error not found depending on mode
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_record($table, array $conditions, $fields = '*', $strictness = \IGNORE_MISSING)
+    {
+    }
+    /**
+     * Get a single database record as an object which match a particular WHERE clause.
+     *
+     * @param string $table The database table to be checked against.
+     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param array $params array of sql parameters
+     * @param string $fields A comma separated list of fields to be returned from the chosen table.
+     * @param int $strictness IGNORE_MISSING means compatible mode, false returned if record not found, debug message if more found;
+     *                        IGNORE_MULTIPLE means return first, ignore multiple records found(not recommended);
+     *                        MUST_EXIST means throw exception if no record or multiple records found
+     * @return stdClass|false a fieldset object containing the first matching record, false or exception if error not found depending on mode
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_record_select($table, $select, array $params = \null, $fields = '*', $strictness = \IGNORE_MISSING)
+    {
+    }
+    /**
+     * Get a single database record as an object using a SQL statement.
+     *
+     * The SQL statement should normally only return one record.
+     * It is recommended to use get_records_sql() if more matches possible!
+     *
+     * @param string $sql The SQL string you wish to be executed, should normally only return one record.
+     * @param array $params array of sql parameters
+     * @param int $strictness IGNORE_MISSING means compatible mode, false returned if record not found, debug message if more found;
+     *                        IGNORE_MULTIPLE means return first, ignore multiple records found(not recommended);
+     *                        MUST_EXIST means throw exception if no record or multiple records found
+     * @return mixed a fieldset object containing the first matching record, false or exception if error not found depending on mode
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_record_sql($sql, array $params = \null, $strictness = \IGNORE_MISSING)
+    {
+    }
+    /**
+     * Get a single field value from a table record where all the given conditions met.
+     *
+     * @param string $table the table to query.
+     * @param string $return the field to return the value of.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @param int $strictness IGNORE_MISSING means compatible mode, false returned if record not found, debug message if more found;
+     *                        IGNORE_MULTIPLE means return first, ignore multiple records found(not recommended);
+     *                        MUST_EXIST means throw exception if no record or multiple records found
+     * @return mixed the specified value false if not found
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_field($table, $return, array $conditions, $strictness = \IGNORE_MISSING)
+    {
+    }
+    /**
+     * Get a single field value from a table record which match a particular WHERE clause.
+     *
+     * @param string $table the table to query.
+     * @param string $return the field to return the value of.
+     * @param string $select A fragment of SQL to be used in a where clause returning one row with one column
+     * @param array $params array of sql parameters
+     * @param int $strictness IGNORE_MISSING means compatible mode, false returned if record not found, debug message if more found;
+     *                        IGNORE_MULTIPLE means return first, ignore multiple records found(not recommended);
+     *                        MUST_EXIST means throw exception if no record or multiple records found
+     * @return mixed the specified value false if not found
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_field_select($table, $return, $select, array $params = \null, $strictness = \IGNORE_MISSING)
+    {
+    }
+    /**
+     * Get a single field value (first field) using a SQL statement.
+     *
+     * @param string $sql The SQL query returning one row with one column
+     * @param array $params array of sql parameters
+     * @param int $strictness IGNORE_MISSING means compatible mode, false returned if record not found, debug message if more found;
+     *                        IGNORE_MULTIPLE means return first, ignore multiple records found(not recommended);
+     *                        MUST_EXIST means throw exception if no record or multiple records found
+     * @return mixed the specified value false if not found
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_field_sql($sql, array $params = \null, $strictness = \IGNORE_MISSING)
+    {
+    }
+    /**
+     * Selects records and return values of chosen field as an array which match a particular WHERE clause.
+     *
+     * @param string $table the table to query.
+     * @param string $return the field we are intered in
+     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param array $params array of sql parameters
+     * @return array of values
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_fieldset_select($table, $return, $select, array $params = \null)
+    {
+    }
+    /**
+     * Selects records and return values (first field) as an array using a SQL statement.
+     *
+     * @param string $sql The SQL query
+     * @param array $params array of sql parameters
+     * @return array of values
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function get_fieldset_sql($sql, array $params = \null);
+    /**
+     * Insert new record into database, as fast as possible, no safety checks, lobs not supported.
+     * @param string $table name
+     * @param mixed $params data record as object or array
+     * @param bool $returnid Returns id of inserted record.
+     * @param bool $bulk true means repeated inserts expected
+     * @param bool $customsequence true if 'id' included in $params, disables $returnid
+     * @return bool|int true or new id
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function insert_record_raw($table, $params, $returnid = \true, $bulk = \false, $customsequence = \false);
+    /**
+     * Insert a record into a table and return the "id" field if required.
+     *
+     * Some conversions and safety checks are carried out. Lobs are supported.
+     * If the return ID isn't required, then this just reports success as true/false.
+     * $data is an object containing needed data
+     * @param string $table The database table to be inserted into
+     * @param object|array $dataobject A data object with values for one or more fields in the record
+     * @param bool $returnid Should the id of the newly created record entry be returned? If this option is not requested then true/false is returned.
+     * @param bool $bulk Set to true is multiple inserts are expected
+     * @return bool|int true or new id
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function insert_record($table, $dataobject, $returnid = \true, $bulk = \false);
+    /**
+     * Insert multiple records into database as fast as possible.
+     *
+     * Order of inserts is maintained, but the operation is not atomic,
+     * use transactions if necessary.
+     *
+     * This method is intended for inserting of large number of small objects,
+     * do not use for huge objects with text or binary fields.
+     *
+     * @since Moodle 2.7
+     *
+     * @param string $table  The database table to be inserted into
+     * @param array|Traversable $dataobjects list of objects to be inserted, must be compatible with foreach
+     * @return void does not return new record ids
+     *
+     * @throws coding_exception if data objects have different structure
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function insert_records($table, $dataobjects)
+    {
+    }
+    /**
+     * Import a record into a table, id field is required.
+     * Safety checks are NOT carried out. Lobs are supported.
+     *
+     * @param string $table name of database table to be inserted into
+     * @param object $dataobject A data object with values for one or more fields in the record
+     * @return bool true
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function import_record($table, $dataobject);
+    /**
+     * Update record in database, as fast as possible, no safety checks, lobs not supported.
+     * @param string $table name
+     * @param mixed $params data record as object or array
+     * @param bool $bulk True means repeated updates expected.
+     * @return bool true
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function update_record_raw($table, $params, $bulk = \false);
+    /**
+     * Update a record in a table
+     *
+     * $dataobject is an object containing needed data
+     * Relies on $dataobject having a variable "id" to
+     * specify the record to update
+     *
+     * @param string $table The database table to be checked against.
+     * @param object $dataobject An object with contents equal to fieldname=>fieldvalue. Must have an entry for 'id' to map to the table specified.
+     * @param bool $bulk True means repeated updates expected.
+     * @return bool true
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function update_record($table, $dataobject, $bulk = \false);
+    /**
+     * Set a single field in every table record where all the given conditions met.
+     *
+     * @param string $table The database table to be checked against.
+     * @param string $newfield the field to set.
+     * @param string $newvalue the value to set the field to.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @return bool true
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function set_field($table, $newfield, $newvalue, array $conditions = \null)
+    {
+    }
+    /**
+     * Set a single field in every table record which match a particular WHERE clause.
+     *
+     * @param string $table The database table to be checked against.
+     * @param string $newfield the field to set.
+     * @param string $newvalue the value to set the field to.
+     * @param string $select A fragment of SQL to be used in a where clause in the SQL call.
+     * @param array $params array of sql parameters
+     * @return bool true
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function set_field_select($table, $newfield, $newvalue, $select, array $params = \null);
+    /**
+     * Count the records in a table where all the given conditions met.
+     *
+     * @param string $table The table to query.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @return int The count of records returned from the specified criteria.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function count_records($table, array $conditions = \null)
+    {
+    }
+    /**
+     * Count the records in a table which match a particular WHERE clause.
+     *
+     * @param string $table The database table to be checked against.
+     * @param string $select A fragment of SQL to be used in a WHERE clause in the SQL call.
+     * @param array $params array of sql parameters
+     * @param string $countitem The count string to be used in the SQL call. Default is COUNT('x').
+     * @return int The count of records returned from the specified criteria.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function count_records_select($table, $select, array $params = \null, $countitem = "COUNT('x')")
+    {
+    }
+    /**
+     * Get the result of a SQL SELECT COUNT(...) query.
+     *
+     * Given a query that counts rows, return that count. (In fact,
+     * given any query, return the first field of the first record
+     * returned. However, this method should only be used for the
+     * intended purpose.) If an error occurs, 0 is returned.
+     *
+     * @param string $sql The SQL string you wish to be executed.
+     * @param array $params array of sql parameters
+     * @return int the count
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function count_records_sql($sql, array $params = \null)
+    {
+    }
+    /**
+     * Test whether a record exists in a table where all the given conditions met.
+     *
+     * @param string $table The table to check.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @return bool true if a matching record exists, else false.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function record_exists($table, array $conditions)
+    {
+    }
+    /**
+     * Test whether any records exists in a table which match a particular WHERE clause.
+     *
+     * @param string $table The database table to be checked against.
+     * @param string $select A fragment of SQL to be used in a WHERE clause in the SQL call.
+     * @param array $params array of sql parameters
+     * @return bool true if a matching record exists, else false.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function record_exists_select($table, $select, array $params = \null)
+    {
+    }
+    /**
+     * Test whether a SQL SELECT statement returns any records.
+     *
+     * This function returns true if the SQL statement executes
+     * without any errors and returns at least one record.
+     *
+     * @param string $sql The SQL statement to execute.
+     * @param array $params array of sql parameters
+     * @return bool true if the SQL executes without errors and returns at least one record.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function record_exists_sql($sql, array $params = \null)
+    {
+    }
+    /**
+     * Delete the records from a table where all the given conditions met.
+     * If conditions not specified, table is truncated.
+     *
+     * @param string $table the table to delete from.
+     * @param array $conditions optional array $fieldname=>requestedvalue with AND in between
+     * @return bool true.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function delete_records($table, array $conditions = \null)
+    {
+    }
+    /**
+     * Delete the records from a table where one field match one list of values.
+     *
+     * @param string $table the table to delete from.
+     * @param string $field The field to search
+     * @param array $values array of values
+     * @return bool true.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function delete_records_list($table, $field, array $values)
+    {
+    }
+    /**
+     * Deletes records from a table using a subquery. The subquery should return a list of values
+     * in a single column, which match one field from the table being deleted.
+     *
+     * The $alias parameter must be set to the name of the single column in your subquery result
+     * (e.g. if the subquery is 'SELECT id FROM whatever', then it should be 'id'). This is not
+     * needed on most databases, but MySQL requires it.
+     *
+     * (On database where the subquery is inefficient, it is implemented differently.)
+     *
+     * @param string $table Table to delete from
+     * @param string $field Field in table to match
+     * @param string $alias Name of single column in subquery e.g. 'id'
+     * @param string $subquery Subquery that will return values of the field to delete
+     * @param array $params Parameters for subquery
+     * @throws dml_exception If there is any error
+     * @since Moodle 3.10
+     */
+    public function delete_records_subquery(string $table, string $field, string $alias, string $subquery, array $params = []) : void
+    {
+    }
+    /**
+     * Delete one or more records from a table which match a particular WHERE clause.
+     *
+     * @param string $table The database table to be checked against.
+     * @param string $select A fragment of SQL to be used in a where clause in the SQL call (used to define the selection criteria).
+     * @param array $params array of sql parameters
+     * @return bool true.
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public abstract function delete_records_select($table, $select, array $params = \null);
+    /**
+     * Returns the FROM clause required by some DBs in all SELECT statements.
+     *
+     * To be used in queries not having FROM clause to provide cross_db
+     * Most DBs don't need it, hence the default is ''
+     * @return string
+     */
+    public function sql_null_from_clause()
+    {
+    }
+    /**
+     * Returns the SQL text to be used in order to perform one bitwise AND operation
+     * between 2 integers.
+     *
+     * NOTE: The SQL result is a number and can not be used directly in
+     *       SQL condition, please compare it to some number to get a bool!!
+     *
+     * @param int $int1 First integer in the operation.
+     * @param int $int2 Second integer in the operation.
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_bitand($int1, $int2)
+    {
+    }
+    /**
+     * Returns the SQL text to be used in order to perform one bitwise NOT operation
+     * with 1 integer.
+     *
+     * @param int $int1 The operand integer in the operation.
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_bitnot($int1)
+    {
+    }
+    /**
+     * Returns the SQL text to be used in order to perform one bitwise OR operation
+     * between 2 integers.
+     *
+     * NOTE: The SQL result is a number and can not be used directly in
+     *       SQL condition, please compare it to some number to get a bool!!
+     *
+     * @param int $int1 The first operand integer in the operation.
+     * @param int $int2 The second operand integer in the operation.
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_bitor($int1, $int2)
+    {
+    }
+    /**
+     * Returns the SQL text to be used in order to perform one bitwise XOR operation
+     * between 2 integers.
+     *
+     * NOTE: The SQL result is a number and can not be used directly in
+     *       SQL condition, please compare it to some number to get a bool!!
+     *
+     * @param int $int1 The first operand integer in the operation.
+     * @param int $int2 The second operand integer in the operation.
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_bitxor($int1, $int2)
+    {
+    }
+    /**
+     * Returns the SQL text to be used in order to perform module '%'
+     * operation - remainder after division
+     *
+     * @param int $int1 The first operand integer in the operation.
+     * @param int $int2 The second operand integer in the operation.
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_modulo($int1, $int2)
+    {
+    }
+    /**
+     * Returns the cross db correct CEIL (ceiling) expression applied to fieldname.
+     * note: Most DBs use CEIL(), hence it's the default here.
+     *
+     * @param string $fieldname The field (or expression) we are going to ceil.
+     * @return string The piece of SQL code to be used in your ceiling statement.
+     */
+    public function sql_ceil($fieldname)
+    {
+    }
+    /**
+     * Returns the SQL to be used in order to CAST one CHAR column to INTEGER.
+     *
+     * Be aware that the CHAR column you're trying to cast contains really
+     * int values or the RDBMS will throw an error!
+     *
+     * @param string $fieldname The name of the field to be casted.
+     * @param bool $text Specifies if the original column is one TEXT (CLOB) column (true). Defaults to false.
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_cast_char2int($fieldname, $text = \false)
+    {
+    }
+    /**
+     * Returns the SQL to be used in order to CAST one CHAR column to REAL number.
+     *
+     * Be aware that the CHAR column you're trying to cast contains really
+     * numbers or the RDBMS will throw an error!
+     *
+     * @param string $fieldname The name of the field to be casted.
+     * @param bool $text Specifies if the original column is one TEXT (CLOB) column (true). Defaults to false.
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_cast_char2real($fieldname, $text = \false)
+    {
+    }
+    /**
+     * Returns the SQL to be used in order to an UNSIGNED INTEGER column to SIGNED.
+     *
+     * (Only MySQL needs this. MySQL things that 1 * -1 = 18446744073709551615
+     * if the 1 comes from an unsigned column).
+     *
+     * @deprecated since 2.3
+     * @param string $fieldname The name of the field to be cast
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_cast_2signed($fieldname)
+    {
+    }
+    /**
+     * Returns the SQL text to be used to compare one TEXT (clob) column with
+     * one varchar column, because some RDBMS doesn't support such direct
+     * comparisons.
+     *
+     * @param string $fieldname The name of the TEXT field we need to order by
+     * @param int $numchars Number of chars to use for the ordering (defaults to 32).
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_compare_text($fieldname, $numchars = 32)
+    {
+    }
+    /**
+     * Returns an equal (=) or not equal (<>) part of a query.
+     *
+     * Note the use of this method may lead to slower queries (full scans) so
+     * use it only when needed and against already reduced data sets.
+     *
+     * @since Moodle 3.2
+     *
+     * @param string $fieldname Usually the name of the table column.
+     * @param string $param Usually the bound query parameter (?, :named).
+     * @param bool $casesensitive Use case sensitive search when set to true (default).
+     * @param bool $accentsensitive Use accent sensitive search when set to true (default). (not all databases support accent insensitive)
+     * @param bool $notequal True means not equal (<>)
+     * @return string The SQL code fragment.
+     */
+    public function sql_equal($fieldname, $param, $casesensitive = \true, $accentsensitive = \true, $notequal = \false)
+    {
+    }
+    /**
+     * Returns 'LIKE' part of a query.
+     *
+     * @param string $fieldname Usually the name of the table column.
+     * @param string $param Usually the bound query parameter (?, :named).
+     * @param bool $casesensitive Use case sensitive search when set to true (default).
+     * @param bool $accentsensitive Use accent sensitive search when set to true (default). (not all databases support accent insensitive)
+     * @param bool $notlike True means "NOT LIKE".
+     * @param string $escapechar The escape char for '%' and '_'.
+     * @return string The SQL code fragment.
+     */
+    public function sql_like($fieldname, $param, $casesensitive = \true, $accentsensitive = \true, $notlike = \false, $escapechar = '\\')
+    {
+    }
+    /**
+     * Escape sql LIKE special characters like '_' or '%'.
+     * @param string $text The string containing characters needing escaping.
+     * @param string $escapechar The desired escape character, defaults to '\\'.
+     * @return string The escaped sql LIKE string.
+     */
+    public function sql_like_escape($text, $escapechar = '\\')
+    {
+    }
+    /**
+     * Returns the proper SQL to do CONCAT between the elements(fieldnames) passed.
+     *
+     * This function accepts variable number of string parameters.
+     * All strings/fieldnames will used in the SQL concatenate statement generated.
+     *
+     * @return string The SQL to concatenate strings passed in.
+     * @uses func_get_args()  and thus parameters are unlimited OPTIONAL number of additional field names.
+     */
+    public abstract function sql_concat();
+    /**
+     * Returns the proper SQL to do CONCAT between the elements passed
+     * with a given separator
+     *
+     * @param string $separator The separator desired for the SQL concatenating $elements.
+     * @param array  $elements The array of strings to be concatenated.
+     * @return string The SQL to concatenate the strings.
+     */
+    public abstract function sql_concat_join($separator = "' '", $elements = array());
+    /**
+     * Return SQL for performing group concatenation on given field/expression
+     *
+     * @param string $field Table field or SQL expression to be concatenated
+     * @param string $separator The separator desired between each concatetated field
+     * @param string $sort Ordering of the concatenated field
+     * @return string
+     */
+    public abstract function sql_group_concat(string $field, string $separator = ', ', string $sort = '') : string;
+    /**
+     * Returns the proper SQL (for the dbms in use) to concatenate $firstname and $lastname
+     *
+     * @todo MDL-31233 This may not be needed here.
+     *
+     * @param string $first User's first name (default:'firstname').
+     * @param string $last User's last name (default:'lastname').
+     * @return string The SQL to concatenate strings.
+     */
+    function sql_fullname($first = 'firstname', $last = 'lastname')
+    {
+    }
+    /**
+     * Returns the SQL text to be used to order by one TEXT (clob) column, because
+     * some RDBMS doesn't support direct ordering of such fields.
+     *
+     * Note that the use or queries being ordered by TEXT columns must be minimised,
+     * because it's really slooooooow.
+     *
+     * @param string $fieldname The name of the TEXT field we need to order by.
+     * @param int $numchars The number of chars to use for the ordering (defaults to 32).
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_order_by_text($fieldname, $numchars = 32)
+    {
+    }
+    /**
+     * Returns the SQL text to be used to calculate the length in characters of one expression.
+     * @param string $fieldname The fieldname/expression to calculate its length in characters.
+     * @return string the piece of SQL code to be used in the statement.
+     */
+    public function sql_length($fieldname)
+    {
+    }
+    /**
+     * Returns the proper substr() SQL text used to extract substrings from DB
+     * NOTE: this was originally returning only function name
+     *
+     * @param string $expr Some string field, no aggregates.
+     * @param mixed $start Integer or expression evaluating to integer (1 based value; first char has index 1)
+     * @param mixed $length Optional integer or expression evaluating to integer.
+     * @return string The sql substring extraction fragment.
+     */
+    public function sql_substr($expr, $start, $length = \false)
+    {
+    }
+    /**
+     * Returns the SQL for returning searching one string for the location of another.
+     *
+     * Note, there is no guarantee which order $needle, $haystack will be in
+     * the resulting SQL so when using this method, and both arguments contain
+     * placeholders, you should use named placeholders.
+     *
+     * @param string $needle the SQL expression that will be searched for.
+     * @param string $haystack the SQL expression that will be searched in.
+     * @return string The required searching SQL part.
+     */
+    public function sql_position($needle, $haystack)
+    {
+    }
+    /**
+     * This used to return empty string replacement character.
+     *
+     * @deprecated use bound parameter with empty string instead
+     *
+     * @return string An empty string.
+     */
+    function sql_empty()
+    {
+    }
+    /**
+     * Returns the proper SQL to know if one field is empty.
+     *
+     * Note that the function behavior strongly relies on the
+     * parameters passed describing the field so, please,  be accurate
+     * when specifying them.
+     *
+     * Also, note that this function is not suitable to look for
+     * fields having NULL contents at all. It's all for empty values!
+     *
+     * This function should be applied in all the places where conditions of
+     * the type:
+     *
+     *     ... AND fieldname = '';
+     *
+     * are being used. Final result for text fields should be:
+     *
+     *     ... AND ' . sql_isempty('tablename', 'fieldname', true/false, true);
+     *
+     * and for varchar fields result should be:
+     *
+     *    ... AND fieldname = :empty; "; $params['empty'] = '';
+     *
+     * (see parameters description below)
+     *
+     * @param string $tablename Name of the table (without prefix). Not used for now but can be
+     *                          necessary in the future if we want to use some introspection using
+     *                          meta information against the DB. /// TODO ///
+     * @param string $fieldname Name of the field we are going to check
+     * @param bool $nullablefield For specifying if the field is nullable (true) or no (false) in the DB.
+     * @param bool $textfield For specifying if it is a text (also called clob) field (true) or a varchar one (false)
+     * @return string the sql code to be added to check for empty values
+     */
+    public function sql_isempty($tablename, $fieldname, $nullablefield, $textfield)
+    {
+    }
+    /**
+     * Returns the proper SQL to know if one field is not empty.
+     *
+     * Note that the function behavior strongly relies on the
+     * parameters passed describing the field so, please,  be accurate
+     * when specifying them.
+     *
+     * This function should be applied in all the places where conditions of
+     * the type:
+     *
+     *     ... AND fieldname != '';
+     *
+     * are being used. Final result for text fields should be:
+     *
+     *     ... AND ' . sql_isnotempty('tablename', 'fieldname', true/false, true/false);
+     *
+     * and for varchar fields result should be:
+     *
+     *    ... AND fieldname != :empty; "; $params['empty'] = '';
+     *
+     * (see parameters description below)
+     *
+     * @param string $tablename Name of the table (without prefix). This is not used for now but can be
+     *                          necessary in the future if we want to use some introspection using
+     *                          meta information against the DB.
+     * @param string $fieldname The name of the field we are going to check.
+     * @param bool $nullablefield Specifies if the field is nullable (true) or not (false) in the DB.
+     * @param bool $textfield Specifies if it is a text (also called clob) field (true) or a varchar one (false).
+     * @return string The sql code to be added to check for non empty values.
+     */
+    public function sql_isnotempty($tablename, $fieldname, $nullablefield, $textfield)
+    {
+    }
+    /**
+     * Returns true if this database driver supports regex syntax when searching.
+     * @return bool True if supported.
+     */
+    public function sql_regex_supported()
+    {
+    }
+    /**
+     * Returns the driver specific syntax (SQL part) for matching regex positively or negatively (inverted matching).
+     * Eg: 'REGEXP':'NOT REGEXP' or '~*' : '!~*'
+     *
+     * @param bool $positivematch
+     * @param bool $casesensitive
+     * @return string or empty if not supported
+     */
+    public function sql_regex($positivematch = \true, $casesensitive = \false)
+    {
+    }
+    /**
+     * Returns the SQL that allows to find intersection of two or more queries
+     *
+     * @since Moodle 2.8
+     *
+     * @param array $selects array of SQL select queries, each of them only returns fields with the names from $fields
+     * @param string $fields comma-separated list of fields (used only by some DB engines)
+     * @return string SQL query that will return only values that are present in each of selects
+     */
+    public function sql_intersect($selects, $fields)
+    {
+    }
+    /**
+     * Does this driver support tool_replace?
+     *
+     * @since Moodle 2.6.1
+     * @return bool
+     */
+    public function replace_all_text_supported()
+    {
+    }
+    /**
+     * Replace given text in all rows of column.
+     *
+     * @since Moodle 2.6.1
+     * @param string $table name of the table
+     * @param database_column_info $column
+     * @param string $search
+     * @param string $replace
+     */
+    public function replace_all_text($table, \database_column_info $column, $search, $replace)
+    {
+    }
+    /**
+     * Analyze the data in temporary tables to force statistics collection after bulk data loads.
+     *
+     * @return void
+     */
+    public function update_temp_table_stats()
+    {
+    }
+    /**
+     * Checks and returns true if transactions are supported.
+     *
+     * It is not responsible to run productions servers
+     * on databases without transaction support ;-)
+     *
+     * Override in driver if needed.
+     *
+     * @return bool
+     */
+    protected function transactions_supported()
+    {
+    }
+    /**
+     * Returns true if a transaction is in progress.
+     * @return bool
+     */
+    public function is_transaction_started()
+    {
+    }
+    /**
+     * This is a test that throws an exception if transaction in progress.
+     * This test does not force rollback of active transactions.
+     * @return void
+     * @throws dml_transaction_exception if stansaction active
+     */
+    public function transactions_forbidden()
+    {
+    }
+    /**
+     * On DBs that support it, switch to transaction mode and begin a transaction
+     * you'll need to ensure you call allow_commit() on the returned object
+     * or your changes *will* be lost.
+     *
+     * this is _very_ useful for massive updates
+     *
+     * Delegated database transactions can be nested, but only one actual database
+     * transaction is used for the outer-most delegated transaction. This method
+     * returns a transaction object which you should keep until the end of the
+     * delegated transaction. The actual database transaction will
+     * only be committed if all the nested delegated transactions commit
+     * successfully. If any part of the transaction rolls back then the whole
+     * thing is rolled back.
+     *
+     * @return moodle_transaction
+     */
+    public function start_delegated_transaction()
+    {
+    }
+    /**
+     * Driver specific start of real database transaction,
+     * this can not be used directly in code.
+     * @return void
+     */
+    protected abstract function begin_transaction();
+    /**
+     * Indicates delegated transaction finished successfully.
+     * The real database transaction is committed only if
+     * all delegated transactions committed.
+     * @param moodle_transaction $transaction The transaction to commit
+     * @return void
+     * @throws dml_transaction_exception Creates and throws transaction related exceptions.
+     */
+    public function commit_delegated_transaction(\moodle_transaction $transaction)
+    {
+    }
+    /**
+     * Driver specific commit of real database transaction,
+     * this can not be used directly in code.
+     * @return void
+     */
+    protected abstract function commit_transaction();
+    /**
+     * Call when delegated transaction failed, this rolls back
+     * all delegated transactions up to the top most level.
+     *
+     * In many cases you do not need to call this method manually,
+     * because all open delegated transactions are rolled back
+     * automatically if exceptions not caught.
+     *
+     * @param moodle_transaction $transaction An instance of a moodle_transaction.
+     * @param Exception|Throwable $e The related exception/throwable to this transaction rollback.
+     * @return void This does not return, instead the exception passed in will be rethrown.
+     */
+    public function rollback_delegated_transaction(\moodle_transaction $transaction, $e)
+    {
+    }
+    /**
+     * Driver specific abort of real database transaction,
+     * this can not be used directly in code.
+     * @return void
+     */
+    protected abstract function rollback_transaction();
+    /**
+     * Force rollback of all delegated transaction.
+     * Does not throw any exceptions and does not log anything.
+     *
+     * This method should be used only from default exception handlers and other
+     * core code.
+     *
+     * @return void
+     */
+    public function force_transaction_rollback()
+    {
+    }
+    /**
+     * Is session lock supported in this driver?
+     * @return bool
+     */
+    public function session_lock_supported()
+    {
+    }
+    /**
+     * Obtains the session lock.
+     * @param int $rowid The id of the row with session record.
+     * @param int $timeout The maximum allowed time to wait for the lock in seconds.
+     * @return void
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function get_session_lock($rowid, $timeout)
+    {
+    }
+    /**
+     * Releases the session lock.
+     * @param int $rowid The id of the row with session record.
+     * @return void
+     * @throws dml_exception A DML specific exception is thrown for any errors.
+     */
+    public function release_session_lock($rowid)
+    {
+    }
+    /**
+     * Returns the number of reads done by this database.
+     * @return int Number of reads.
+     */
+    public function perf_get_reads()
+    {
+    }
+    /**
+     * Returns whether we want to connect to slave database for read queries.
+     * @return bool Want read only connection
+     */
+    public function want_read_slave() : bool
+    {
+    }
+    /**
+     * Returns the number of reads before first write done by this database.
+     * @return int Number of reads.
+     */
+    public function perf_get_reads_slave() : int
+    {
+    }
+    /**
+     * Returns the number of writes done by this database.
+     * @return int Number of writes.
+     */
+    public function perf_get_writes()
+    {
+    }
+    /**
+     * Returns the number of queries done by this database.
+     * @return int Number of queries.
+     */
+    public function perf_get_queries()
+    {
+    }
+    /**
+     * Time waiting for the database engine to finish running all queries.
+     * @return float Number of seconds with microseconds
+     */
+    public function perf_get_queries_time()
+    {
+    }
+    /**
+     * Whether the database is able to support full-text search or not.
+     *
+     * @return bool
+     */
+    public function is_fulltext_search_supported()
+    {
+    }
+}
+/**
  * Native mysqli class representing moodle database interface.
  *
  * @package    core_dml
@@ -5321,6 +11186,112 @@ class mysqli_native_moodle_database extends \moodle_database
     protected function fix_table_name($tablename)
     {
     }
+}
+/**
+ * Returns reference to full info about modules in course (including visibility).
+ * Cached and as fast as possible (0 or 1 db query).
+ *
+ * use get_fast_modinfo($courseid, 0, true) to reset the static cache for particular course
+ * use get_fast_modinfo(0, 0, true) to reset the static cache for all courses
+ *
+ * use rebuild_course_cache($courseid, true) to reset the application AND static cache
+ * for particular course when it's contents has changed
+ *
+ * @param int|stdClass $courseorid object from DB table 'course' (must have field 'id'
+ *     and recommended to have field 'cacherev') or just a course id. Just course id
+ *     is enough when calling get_fast_modinfo() for current course or site or when
+ *     calling for any other course for the second time.
+ * @param int $userid User id to populate 'availble' and 'uservisible' attributes of modules and sections.
+ *     Set to 0 for current user (default). Set to -1 to avoid calculation of dynamic user-depended data.
+ * @param bool $resetonly whether we want to get modinfo or just reset the cache
+ * @return course_modinfo|null Module information for course, or null if resetting
+ * @throws moodle_exception when course is not found (nothing is thrown if resetting)
+ */
+function get_fast_modinfo($courseorid, $userid = 0, $resetonly = \false)
+{
+}
+/**
+ * Efficiently retrieves the $course (stdclass) and $cm (cm_info) objects, given
+ * a cmid. If module name is also provided, it will ensure the cm is of that type.
+ *
+ * Usage:
+ * list($course, $cm) = get_course_and_cm_from_cmid($cmid, 'forum');
+ *
+ * Using this method has a performance advantage because it works by loading
+ * modinfo for the course - which will then be cached and it is needed later
+ * in most requests. It also guarantees that the $cm object is a cm_info and
+ * not a stdclass.
+ *
+ * The $course object can be supplied if already known and will speed
+ * up this function - although it is more efficient to use this function to
+ * get the course if you are starting from a cmid.
+ *
+ * To avoid security problems and obscure bugs, you should always specify
+ * $modulename if the cmid value came from user input.
+ *
+ * By default this obtains information (for example, whether user can access
+ * the activity) for current user, but you can specify a userid if required.
+ *
+ * @param stdClass|int $cmorid Id of course-module, or database object
+ * @param string $modulename Optional modulename (improves security)
+ * @param stdClass|int $courseorid Optional course object if already loaded
+ * @param int $userid Optional userid (default = current)
+ * @return array Array with 2 elements $course and $cm
+ * @throws moodle_exception If the item doesn't exist or is of wrong module name
+ */
+function get_course_and_cm_from_cmid($cmorid, $modulename = '', $courseorid = 0, $userid = 0)
+{
+}
+/**
+ * Efficiently retrieves the $course (stdclass) and $cm (cm_info) objects, given
+ * an instance id or record and module name.
+ *
+ * Usage:
+ * list($course, $cm) = get_course_and_cm_from_instance($forum, 'forum');
+ *
+ * Using this method has a performance advantage because it works by loading
+ * modinfo for the course - which will then be cached and it is needed later
+ * in most requests. It also guarantees that the $cm object is a cm_info and
+ * not a stdclass.
+ *
+ * The $course object can be supplied if already known and will speed
+ * up this function - although it is more efficient to use this function to
+ * get the course if you are starting from an instance id.
+ *
+ * By default this obtains information (for example, whether user can access
+ * the activity) for current user, but you can specify a userid if required.
+ *
+ * @param stdclass|int $instanceorid Id of module instance, or database object
+ * @param string $modulename Modulename (required)
+ * @param stdClass|int $courseorid Optional course object if already loaded
+ * @param int $userid Optional userid (default = current)
+ * @return array Array with 2 elements $course and $cm
+ * @throws moodle_exception If the item doesn't exist or is of wrong module name
+ */
+function get_course_and_cm_from_instance($instanceorid, $modulename, $courseorid = 0, $userid = 0)
+{
+}
+/**
+ * Rebuilds or resets the cached list of course activities stored in MUC.
+ *
+ * rebuild_course_cache() must NEVER be called from lib/db/upgrade.php.
+ * At the same time course cache may ONLY be cleared using this function in
+ * upgrade scripts of plugins.
+ *
+ * During the bulk operations if it is necessary to reset cache of multiple
+ * courses it is enough to call {@link increment_revision_number()} for the
+ * table 'course' and field 'cacherev' specifying affected courses in select.
+ *
+ * Cached course information is stored in MUC core/coursemodinfo and is
+ * validated with the DB field {course}.cacherev
+ *
+ * @global moodle_database $DB
+ * @param int $courseid id of course to rebuild, empty means all
+ * @param boolean $clearonly only clear the cache, gets rebuild automatically on the fly.
+ *     Recommended to set to true to avoid unnecessary multiple rebuilding.
+ */
+function rebuild_course_cache($courseid = 0, $clearonly = \false)
+{
 }
 // PARAMETER HANDLING.
 /**
@@ -8372,5 +14343,939 @@ function make_localcache_directory($directory, $exceptiononerror = \true)
  * Webserver access user logging
  */
 function set_access_log_user()
+{
+}
+// Functions.
+/**
+ * Add quotes to HTML characters.
+ *
+ * Returns $var with HTML characters (like "<", ">", etc.) properly quoted.
+ * Related function {@link p()} simply prints the output of this function.
+ *
+ * @param string $var the string potentially containing HTML characters
+ * @return string
+ */
+function s($var)
+{
+}
+/**
+ * Add quotes to HTML characters.
+ *
+ * Prints $var with HTML characters (like "<", ">", etc.) properly quoted.
+ * This function simply calls & displays {@link s()}.
+ * @see s()
+ *
+ * @param string $var the string potentially containing HTML characters
+ * @return string
+ */
+function p($var)
+{
+}
+/**
+ * Does proper javascript quoting.
+ *
+ * Do not use addslashes anymore, because it does not work when magic_quotes_sybase is enabled.
+ *
+ * @param mixed $var String, Array, or Object to add slashes to
+ * @return mixed quoted result
+ */
+function addslashes_js($var)
+{
+}
+/**
+ * Remove query string from url.
+ *
+ * Takes in a URL and returns it without the querystring portion.
+ *
+ * @param string $url the url which may have a query string attached.
+ * @return string The remaining URL.
+ */
+function strip_querystring($url)
+{
+}
+/**
+ * Returns the name of the current script, WITH the querystring portion.
+ *
+ * This function is necessary because PHP_SELF and REQUEST_URI and SCRIPT_NAME
+ * return different things depending on a lot of things like your OS, Web
+ * server, and the way PHP is compiled (ie. as a CGI, module, ISAPI, etc.)
+ * <b>NOTE:</b> This function returns false if the global variables needed are not set.
+ *
+ * @return mixed String or false if the global variables needed are not set.
+ */
+function me()
+{
+}
+/**
+ * Guesses the full URL of the current script.
+ *
+ * This function is using $PAGE->url, but may fall back to $FULLME which
+ * is constructed from  PHP_SELF and REQUEST_URI or SCRIPT_NAME
+ *
+ * @return mixed full page URL string or false if unknown
+ */
+function qualified_me()
+{
+}
+/**
+ * Determines whether or not the Moodle site is being served over HTTPS.
+ *
+ * This is done simply by checking the value of $CFG->wwwroot, which seems
+ * to be the only reliable method.
+ *
+ * @return boolean True if site is served over HTTPS, false otherwise.
+ */
+function is_https()
+{
+}
+/**
+ * Returns the cleaned local URL of the HTTP_REFERER less the URL query string parameters if required.
+ *
+ * @param bool $stripquery if true, also removes the query part of the url.
+ * @return string The resulting referer or empty string.
+ */
+function get_local_referer($stripquery = \true)
+{
+}
+/**
+ * Determine if there is data waiting to be processed from a form
+ *
+ * Used on most forms in Moodle to check for data
+ * Returns the data as an object, if it's found.
+ * This object can be used in foreach loops without
+ * casting because it's cast to (array) automatically
+ *
+ * Checks that submitted POST data exists and returns it as object.
+ *
+ * @return mixed false or object
+ */
+function data_submitted()
+{
+}
+/**
+ * Given some normal text this function will break up any
+ * long words to a given size by inserting the given character
+ *
+ * It's multibyte savvy and doesn't change anything inside html tags.
+ *
+ * @param string $string the string to be modified
+ * @param int $maxsize maximum length of the string to be returned
+ * @param string $cutchar the string used to represent word breaks
+ * @return string
+ */
+function break_up_long_words($string, $maxsize = 20, $cutchar = ' ')
+{
+}
+/**
+ * Try and close the current window using JavaScript, either immediately, or after a delay.
+ *
+ * Echo's out the resulting XHTML & javascript
+ *
+ * @param integer $delay a delay in seconds before closing the window. Default 0.
+ * @param boolean $reloadopener if true, we will see if this window was a pop-up, and try
+ *      to reload the parent window before this one closes.
+ */
+function close_window($delay = 0, $reloadopener = \false)
+{
+}
+/**
+ * Returns a string containing a link to the user documentation for the current page.
+ *
+ * Also contains an icon by default. Shown to teachers and admin only.
+ *
+ * @param string $text The text to be displayed for the link
+ * @return string The link to user documentation for this current page
+ */
+function page_doc_link($text = '')
+{
+}
+/**
+ * Returns the path to use when constructing a link to the docs.
+ *
+ * @since Moodle 2.5.1 2.6
+ * @param moodle_page $page
+ * @return string
+ */
+function page_get_doc_link_path(\moodle_page $page)
+{
+}
+/**
+ * Validates an email to make sure it makes sense.
+ *
+ * @param string $address The email address to validate.
+ * @return boolean
+ */
+function validate_email($address)
+{
+}
+/**
+ * Extracts file argument either from file parameter or PATH_INFO
+ *
+ * Note: $scriptname parameter is not needed anymore
+ *
+ * @return string file path (only safe characters)
+ */
+function get_file_argument()
+{
+}
+/**
+ * Just returns an array of text formats suitable for a popup menu
+ *
+ * @return array
+ */
+function format_text_menu()
+{
+}
+/**
+ * Given text in a variety of format codings, this function returns the text as safe HTML.
+ *
+ * This function should mainly be used for long strings like posts,
+ * answers, glossary items etc. For short strings {@link format_string()}.
+ *
+ * <pre>
+ * Options:
+ *      trusted     :   If true the string won't be cleaned. Default false required noclean=true.
+ *      noclean     :   If true the string won't be cleaned, unless $CFG->forceclean is set. Default false required trusted=true.
+ *      nocache     :   If true the strign will not be cached and will be formatted every call. Default false.
+ *      filter      :   If true the string will be run through applicable filters as well. Default true.
+ *      para        :   If true then the returned string will be wrapped in div tags. Default true.
+ *      newlines    :   If true then lines newline breaks will be converted to HTML newline breaks. Default true.
+ *      context     :   The context that will be used for filtering.
+ *      overflowdiv :   If set to true the formatted text will be encased in a div
+ *                      with the class no-overflow before being returned. Default false.
+ *      allowid     :   If true then id attributes will not be removed, even when
+ *                      using htmlpurifier. Default false.
+ *      blanktarget :   If true all <a> tags will have target="_blank" added unless target is explicitly specified.
+ * </pre>
+ *
+ * @staticvar array $croncache
+ * @param string $text The text to be formatted. This is raw text originally from user input.
+ * @param int $format Identifier of the text format to be used
+ *            [FORMAT_MOODLE, FORMAT_HTML, FORMAT_PLAIN, FORMAT_MARKDOWN]
+ * @param object/array $options text formatting options
+ * @param int $courseiddonotuse deprecated course id, use context option instead
+ * @return string
+ */
+function format_text($text, $format = \FORMAT_MOODLE, $options = \null, $courseiddonotuse = \null)
+{
+}
+/**
+ * Resets some data related to filters, called during upgrade or when general filter settings change.
+ *
+ * @param bool $phpunitreset true means called from our PHPUnit integration test reset
+ * @return void
+ */
+function reset_text_filters_cache($phpunitreset = \false)
+{
+}
+/**
+ * Given a simple string, this function returns the string
+ * processed by enabled string filters if $CFG->filterall is enabled
+ *
+ * This function should be used to print short strings (non html) that
+ * need filter processing e.g. activity titles, post subjects,
+ * glossary concepts.
+ *
+ * @staticvar bool $strcache
+ * @param string $string The string to be filtered. Should be plain text, expect
+ * possibly for multilang tags.
+ * @param boolean $striplinks To strip any link in the result text. Moodle 1.8 default changed from false to true! MDL-8713
+ * @param array $options options array/object or courseid
+ * @return string
+ */
+function format_string($string, $striplinks = \true, $options = \null)
+{
+}
+/**
+ * Given a string, performs a negative lookahead looking for any ampersand character
+ * that is not followed by a proper HTML entity. If any is found, it is replaced
+ * by &amp;. The string is then returned.
+ *
+ * @param string $string
+ * @return string
+ */
+function replace_ampersands_not_followed_by_entity($string)
+{
+}
+/**
+ * Given a string, replaces all <a>.*</a> by .* and returns the string.
+ *
+ * @param string $string
+ * @return string
+ */
+function strip_links($string)
+{
+}
+/**
+ * This expression turns links into something nice in a text format. (Russell Jungwirth)
+ *
+ * @param string $string
+ * @return string
+ */
+function wikify_links($string)
+{
+}
+/**
+ * Given text in a variety of format codings, this function returns the text as plain text suitable for plain email.
+ *
+ * @param string $text The text to be formatted. This is raw text originally from user input.
+ * @param int $format Identifier of the text format to be used
+ *            [FORMAT_MOODLE, FORMAT_HTML, FORMAT_PLAIN, FORMAT_WIKI, FORMAT_MARKDOWN]
+ * @return string
+ */
+function format_text_email($text, $format)
+{
+}
+/**
+ * Formats activity intro text
+ *
+ * @param string $module name of module
+ * @param object $activity instance of activity
+ * @param int $cmid course module id
+ * @param bool $filter filter resulting html text
+ * @return string
+ */
+function format_module_intro($module, $activity, $cmid, $filter = \true)
+{
+}
+/**
+ * Removes the usage of Moodle files from a text.
+ *
+ * In some rare cases we need to re-use a text that already has embedded links
+ * to some files hosted within Moodle. But the new area in which we will push
+ * this content does not support files... therefore we need to remove those files.
+ *
+ * @param string $source The text
+ * @return string The stripped text
+ */
+function strip_pluginfile_content($source)
+{
+}
+/**
+ * Legacy function, used for cleaning of old forum and glossary text only.
+ *
+ * @param string $text text that may contain legacy TRUSTTEXT marker
+ * @return string text without legacy TRUSTTEXT marker
+ */
+function trusttext_strip($text)
+{
+}
+/**
+ * Must be called before editing of all texts with trust flag. Removes all XSS nasties from texts stored in database if needed.
+ *
+ * @param stdClass $object data object with xxx, xxxformat and xxxtrust fields
+ * @param string $field name of text field
+ * @param context $context active context
+ * @return stdClass updated $object
+ */
+function trusttext_pre_edit($object, $field, $context)
+{
+}
+/**
+ * Is current user trusted to enter no dangerous XSS in this context?
+ *
+ * Please note the user must be in fact trusted everywhere on this server!!
+ *
+ * @param context $context
+ * @return bool true if user trusted
+ */
+function trusttext_trusted($context)
+{
+}
+/**
+ * Is trusttext feature active?
+ *
+ * @return bool
+ */
+function trusttext_active()
+{
+}
+/**
+ * Cleans raw text removing nasties.
+ *
+ * Given raw text (eg typed in by a user) this function cleans it up and removes any nasty tags that could mess up
+ * Moodle pages through XSS attacks.
+ *
+ * The result must be used as a HTML text fragment, this function can not cleanup random
+ * parts of html tags such as url or src attributes.
+ *
+ * NOTE: the format parameter was deprecated because we can safely clean only HTML.
+ *
+ * @param string $text The text to be cleaned
+ * @param int|string $format deprecated parameter, should always contain FORMAT_HTML or FORMAT_MOODLE
+ * @param array $options Array of options; currently only option supported is 'allowid' (if true,
+ *   does not remove id attributes when cleaning)
+ * @return string The cleaned up text
+ */
+function clean_text($text, $format = \FORMAT_HTML, $options = array())
+{
+}
+/**
+ * Is it necessary to use HTMLPurifier?
+ *
+ * @private
+ * @param string $text
+ * @return bool false means html is safe and valid, true means use HTMLPurifier
+ */
+function is_purify_html_necessary($text)
+{
+}
+/**
+ * KSES replacement cleaning function - uses HTML Purifier.
+ *
+ * @param string $text The (X)HTML string to purify
+ * @param array $options Array of options; currently only option supported is 'allowid' (if set,
+ *   does not remove id attributes when cleaning)
+ * @return string
+ */
+function purify_html($text, $options = array())
+{
+}
+/**
+ * Given plain text, makes it into HTML as nicely as possible.
+ *
+ * May contain HTML tags already.
+ *
+ * Do not abuse this function. It is intended as lower level formatting feature used
+ * by {@link format_text()} to convert FORMAT_MOODLE to HTML. You are supposed
+ * to call format_text() in most of cases.
+ *
+ * @param string $text The string to convert.
+ * @param boolean $smileyignored Was used to determine if smiley characters should convert to smiley images, ignored now
+ * @param boolean $para If true then the returned string will be wrapped in div tags
+ * @param boolean $newlines If true then lines newline breaks will be converted to HTML newline breaks.
+ * @return string
+ */
+function text_to_html($text, $smileyignored = \null, $para = \true, $newlines = \true)
+{
+}
+/**
+ * Given Markdown formatted text, make it into XHTML using external function
+ *
+ * @param string $text The markdown formatted text to be converted.
+ * @return string Converted text
+ */
+function markdown_to_html($text)
+{
+}
+/**
+ * Given HTML text, make it into plain text using external function
+ *
+ * @param string $html The text to be converted.
+ * @param integer $width Width to wrap the text at. (optional, default 75 which
+ *      is a good value for email. 0 means do not limit line length.)
+ * @param boolean $dolinks By default, any links in the HTML are collected, and
+ *      printed as a list at the end of the HTML. If you don't want that, set this
+ *      argument to false.
+ * @return string plain text equivalent of the HTML.
+ */
+function html_to_text($html, $width = 75, $dolinks = \true)
+{
+}
+/**
+ * Converts texts or strings to plain text.
+ *
+ * - When used to convert user input introduced in an editor the text format needs to be passed in $contentformat like we usually
+ *   do in format_text.
+ * - When this function is used for strings that are usually passed through format_string before displaying them
+ *   we need to set $contentformat to false. This will execute html_to_text as these strings can contain multilang tags if
+ *   multilang filter is applied to headings.
+ *
+ * @param string $content The text as entered by the user
+ * @param int|false $contentformat False for strings or the text format: FORMAT_MOODLE/FORMAT_HTML/FORMAT_PLAIN/FORMAT_MARKDOWN
+ * @return string Plain text.
+ */
+function content_to_text($content, $contentformat)
+{
+}
+/**
+ * Factory method for extracting draft file links from arbitrary text using regular expressions. Only text
+ * is required; other file fields may be passed to filter.
+ *
+ * @param string $text Some html content.
+ * @param bool $forcehttps force https urls.
+ * @param int $contextid This parameter and the next three identify the file area to save to.
+ * @param string $component The component name.
+ * @param string $filearea The filearea.
+ * @param int $itemid The item id for the filearea.
+ * @param string $filename The specific filename of the file.
+ * @return array
+ */
+function extract_draft_file_urls_from_text($text, $forcehttps = \false, $contextid = \null, $component = \null, $filearea = \null, $itemid = \null, $filename = \null)
+{
+}
+/**
+ * This function will highlight search words in a given string
+ *
+ * It cares about HTML and will not ruin links.  It's best to use
+ * this function after performing any conversions to HTML.
+ *
+ * @param string $needle The search string. Syntax like "word1 +word2 -word3" is dealt with correctly.
+ * @param string $haystack The string (HTML) within which to highlight the search terms.
+ * @param boolean $matchcase whether to do case-sensitive. Default case-insensitive.
+ * @param string $prefix the string to put before each search term found.
+ * @param string $suffix the string to put after each search term found.
+ * @return string The highlighted HTML.
+ */
+function highlight($needle, $haystack, $matchcase = \false, $prefix = '<span class="highlight">', $suffix = '</span>')
+{
+}
+/**
+ * This function will highlight instances of $needle in $haystack
+ *
+ * It's faster that the above function {@link highlight()} and doesn't care about
+ * HTML or anything.
+ *
+ * @param string $needle The string to search for
+ * @param string $haystack The string to search for $needle in
+ * @return string The highlighted HTML
+ */
+function highlightfast($needle, $haystack)
+{
+}
+/**
+ * Return a string containing 'lang', xml:lang and optionally 'dir' HTML attributes.
+ *
+ * Internationalisation, for print_header and backup/restorelib.
+ *
+ * @param bool $dir Default false
+ * @return string Attributes
+ */
+function get_html_lang($dir = \false)
+{
+}
+// STANDARD WEB PAGE PARTS.
+/**
+ * Send the HTTP headers that Moodle requires.
+ *
+ * There is a backwards compatibility hack for legacy code
+ * that needs to add custom IE compatibility directive.
+ *
+ * Example:
+ * <code>
+ * if (!isset($CFG->additionalhtmlhead)) {
+ *     $CFG->additionalhtmlhead = '';
+ * }
+ * $CFG->additionalhtmlhead .= '<meta http-equiv="X-UA-Compatible" content="IE=8" />';
+ * header('X-UA-Compatible: IE=8');
+ * echo $OUTPUT->header();
+ * </code>
+ *
+ * Please note the $CFG->additionalhtmlhead alone might not work,
+ * you should send the IE compatibility header() too.
+ *
+ * @param string $contenttype
+ * @param bool $cacheable Can this page be cached on back?
+ * @return void, sends HTTP headers
+ */
+function send_headers($contenttype, $cacheable = \true)
+{
+}
+/**
+ * Return the right arrow with text ('next'), and optionally embedded in a link.
+ *
+ * @param string $text HTML/plain text label (set to blank only for breadcrumb separator cases).
+ * @param string $url An optional link to use in a surrounding HTML anchor.
+ * @param bool $accesshide True if text should be hidden (for screen readers only).
+ * @param string $addclass Additional class names for the link, or the arrow character.
+ * @return string HTML string.
+ */
+function link_arrow_right($text, $url = '', $accesshide = \false, $addclass = '', $addparams = [])
+{
+}
+/**
+ * Return the left arrow with text ('previous'), and optionally embedded in a link.
+ *
+ * @param string $text HTML/plain text label (set to blank only for breadcrumb separator cases).
+ * @param string $url An optional link to use in a surrounding HTML anchor.
+ * @param bool $accesshide True if text should be hidden (for screen readers only).
+ * @param string $addclass Additional class names for the link, or the arrow character.
+ * @return string HTML string.
+ */
+function link_arrow_left($text, $url = '', $accesshide = \false, $addclass = '', $addparams = [])
+{
+}
+/**
+ * Return a HTML element with the class "accesshide", for accessibility.
+ *
+ * Please use cautiously - where possible, text should be visible!
+ *
+ * @param string $text Plain text.
+ * @param string $elem Lowercase element name, default "span".
+ * @param string $class Additional classes for the element.
+ * @param string $attrs Additional attributes string in the form, "name='value' name2='value2'"
+ * @return string HTML string.
+ */
+function get_accesshide($text, $elem = 'span', $class = '', $attrs = '')
+{
+}
+/**
+ * Return the breadcrumb trail navigation separator.
+ *
+ * @return string HTML string.
+ */
+function get_separator()
+{
+}
+/**
+ * Print (or return) a collapsible region, that has a caption that can be clicked to expand or collapse the region.
+ *
+ * If JavaScript is off, then the region will always be expanded.
+ *
+ * @param string $contents the contents of the box.
+ * @param string $classes class names added to the div that is output.
+ * @param string $id id added to the div that is output. Must not be blank.
+ * @param string $caption text displayed at the top. Clicking on this will cause the region to expand or contract.
+ * @param string $userpref the name of the user preference that stores the user's preferred default state.
+ *      (May be blank if you do not wish the state to be persisted.
+ * @param boolean $default Initial collapsed state to use if the user_preference it not set.
+ * @param boolean $return if true, return the HTML as a string, rather than printing it.
+ * @return string|void If $return is false, returns nothing, otherwise returns a string of HTML.
+ */
+function print_collapsible_region($contents, $classes, $id, $caption, $userpref = '', $default = \false, $return = \false)
+{
+}
+/**
+ * Print (or return) the start of a collapsible region
+ *
+ * The collapsibleregion has a caption that can be clicked to expand or collapse the region. If JavaScript is off, then the region
+ * will always be expanded.
+ *
+ * @param string $classes class names added to the div that is output.
+ * @param string $id id added to the div that is output. Must not be blank.
+ * @param string $caption text displayed at the top. Clicking on this will cause the region to expand or contract.
+ * @param string $userpref the name of the user preference that stores the user's preferred default state.
+ *      (May be blank if you do not wish the state to be persisted.
+ * @param boolean $default Initial collapsed state to use if the user_preference it not set.
+ * @param boolean $return if true, return the HTML as a string, rather than printing it.
+ * @param string $extracontent the extra content will show next to caption, eg.Help icon.
+ * @return string|void if $return is false, returns nothing, otherwise returns a string of HTML.
+ */
+function print_collapsible_region_start($classes, $id, $caption, $userpref = '', $default = \false, $return = \false, $extracontent = \null)
+{
+}
+/**
+ * Close a region started with print_collapsible_region_start.
+ *
+ * @param boolean $return if true, return the HTML as a string, rather than printing it.
+ * @return string|void if $return is false, returns nothing, otherwise returns a string of HTML.
+ */
+function print_collapsible_region_end($return = \false)
+{
+}
+/**
+ * Print a specified group's avatar.
+ *
+ * @param array|stdClass $group A single {@link group} object OR array of groups.
+ * @param int $courseid The course ID.
+ * @param boolean $large Default small picture, or large.
+ * @param boolean $return If false print picture, otherwise return the output as string
+ * @param boolean $link Enclose image in a link to view specified course?
+ * @param boolean $includetoken Whether to use a user token when displaying this group image.
+ *                True indicates to generate a token for current user, and integer value indicates to generate a token for the
+ *                user whose id is the value indicated.
+ *                If the group picture is included in an e-mail or some other location where the audience is a specific
+ *                user who will not be logged in when viewing, then we use a token to authenticate the user.
+ * @return string|void Depending on the setting of $return
+ */
+function print_group_picture($group, $courseid, $large = \false, $return = \false, $link = \true, $includetoken = \false)
+{
+}
+/**
+ * Return the url to the group picture.
+ *
+ * @param  stdClass $group A group object.
+ * @param  int $courseid The course ID for the group.
+ * @param  bool $large A large or small group picture? Default is small.
+ * @param  boolean $includetoken Whether to use a user token when displaying this group image.
+ *                 True indicates to generate a token for current user, and integer value indicates to generate a token for the
+ *                 user whose id is the value indicated.
+ *                 If the group picture is included in an e-mail or some other location where the audience is a specific
+ *                 user who will not be logged in when viewing, then we use a token to authenticate the user.
+ * @return moodle_url Returns the url for the group picture.
+ */
+function get_group_picture_url($group, $courseid, $large = \false, $includetoken = \false)
+{
+}
+/**
+ * Display a recent activity note
+ *
+ * @staticvar string $strftimerecent
+ * @param int $time A timestamp int.
+ * @param stdClass $user A user object from the database.
+ * @param string $text Text for display for the note
+ * @param string $link The link to wrap around the text
+ * @param bool $return If set to true the HTML is returned rather than echo'd
+ * @param string $viewfullnames
+ * @return string If $retrun was true returns HTML for a recent activity notice.
+ */
+function print_recent_activity_note($time, $user, $text, $link, $return = \false, $viewfullnames = \null)
+{
+}
+/**
+ * Returns a popup menu with course activity modules
+ *
+ * Given a course this function returns a small popup menu with all the course activity modules in it, as a navigation menu
+ * outputs a simple list structure in XHTML.
+ * The data is taken from the serialised array stored in the course record.
+ *
+ * @param course $course A {@link $COURSE} object.
+ * @param array $sections
+ * @param course_modinfo $modinfo
+ * @param string $strsection
+ * @param string $strjumpto
+ * @param int $width
+ * @param string $cmid
+ * @return string The HTML block
+ */
+function navmenulist($course, $sections, $modinfo, $strsection, $strjumpto, $width = 50, $cmid = 0)
+{
+}
+/**
+ * Prints a grade menu (as part of an existing form) with help showing all possible numerical grades and scales.
+ *
+ * @todo Finish documenting this function
+ * @todo Deprecate: this is only used in a few contrib modules
+ *
+ * @param int $courseid The course ID
+ * @param string $name
+ * @param string $current
+ * @param boolean $includenograde Include those with no grades
+ * @param boolean $return If set to true returns rather than echo's
+ * @return string|bool Depending on value of $return
+ */
+function print_grade_menu($courseid, $name, $current, $includenograde = \true, $return = \false)
+{
+}
+/**
+ * Print an error to STDOUT and exit with a non-zero code. For commandline scripts.
+ *
+ * Default errorcode is 1.
+ *
+ * Very useful for perl-like error-handling:
+ * do_somethting() or mdie("Something went wrong");
+ *
+ * @param string  $msg       Error message
+ * @param integer $errorcode Error code to emit
+ */
+function mdie($msg = '', $errorcode = 1)
+{
+}
+/**
+ * Print a message and exit.
+ *
+ * @param string $message The message to print in the notice
+ * @param moodle_url|string $link The link to use for the continue button
+ * @param object $course A course object. Unused.
+ * @return void This function simply exits
+ */
+function notice($message, $link = '', $course = \null)
+{
+}
+/**
+ * Redirects the user to another page, after printing a notice.
+ *
+ * This function calls the OUTPUT redirect method, echo's the output and then dies to ensure nothing else happens.
+ *
+ * <strong>Good practice:</strong> You should call this method before starting page
+ * output by using any of the OUTPUT methods.
+ *
+ * @param moodle_url|string $url A moodle_url to redirect to. Strings are not to be trusted!
+ * @param string $message The message to display to the user
+ * @param int $delay The delay before redirecting
+ * @param string $messagetype The type of notification to show the message in. See constants on \core\output\notification.
+ * @throws moodle_exception
+ */
+function redirect($url, $message = '', $delay = \null, $messagetype = \core\output\notification::NOTIFY_INFO)
+{
+}
+/**
+ * Given an email address, this function will return an obfuscated version of it.
+ *
+ * @param string $email The email address to obfuscate
+ * @return string The obfuscated email address
+ */
+function obfuscate_email($email)
+{
+}
+/**
+ * This function takes some text and replaces about half of the characters
+ * with HTML entity equivalents.   Return string is obviously longer.
+ *
+ * @param string $plaintext The text to be obfuscated
+ * @return string The obfuscated text
+ */
+function obfuscate_text($plaintext)
+{
+}
+/**
+ * This function uses the {@link obfuscate_email()} and {@link obfuscate_text()}
+ * to generate a fully obfuscated email link, ready to use.
+ *
+ * @param string $email The email address to display
+ * @param string $label The text to displayed as hyperlink to $email
+ * @param boolean $dimmed If true then use css class 'dimmed' for hyperlink
+ * @param string $subject The subject of the email in the mailto link
+ * @param string $body The content of the email in the mailto link
+ * @return string The obfuscated mailto link
+ */
+function obfuscate_mailto($email, $label = '', $dimmed = \false, $subject = '', $body = '')
+{
+}
+/**
+ * This function is used to rebuild the <nolink> tag because some formats (PLAIN and WIKI)
+ * will transform it to html entities
+ *
+ * @param string $text Text to search for nolink tag in
+ * @return string
+ */
+function rebuildnolinktag($text)
+{
+}
+/**
+ * Prints a maintenance message from $CFG->maintenance_message or default if empty.
+ */
+function print_maintenance_message()
+{
+}
+/**
+ * Returns a string containing a nested list, suitable for formatting into tabs with CSS.
+ *
+ * It is not recommended to use this function in Moodle 2.5 but it is left for backward
+ * compartibility.
+ *
+ * Example how to print a single line tabs:
+ * $rows = array(
+ *    new tabobject(...),
+ *    new tabobject(...)
+ * );
+ * echo $OUTPUT->tabtree($rows, $selectedid);
+ *
+ * Multiple row tabs may not look good on some devices but if you want to use them
+ * you can specify ->subtree for the active tabobject.
+ *
+ * @param array $tabrows An array of rows where each row is an array of tab objects
+ * @param string $selected  The id of the selected tab (whatever row it's on)
+ * @param array  $inactive  An array of ids of inactive tabs that are not selectable.
+ * @param array  $activated An array of ids of other tabs that are currently activated
+ * @param bool $return If true output is returned rather then echo'd
+ * @return string HTML output if $return was set to true.
+ */
+function print_tabs($tabrows, $selected = \null, $inactive = \null, $activated = \null, $return = \false)
+{
+}
+/**
+ * Alter debugging level for the current request,
+ * the change is not saved in database.
+ *
+ * @param int $level one of the DEBUG_* constants
+ * @param bool $debugdisplay
+ */
+function set_debugging($level, $debugdisplay = \null)
+{
+}
+/**
+ * Standard Debugging Function
+ *
+ * Returns true if the current site debugging settings are equal or above specified level.
+ * If passed a parameter it will emit a debugging notice similar to trigger_error(). The
+ * routing of notices is controlled by $CFG->debugdisplay
+ * eg use like this:
+ *
+ * 1)  debugging('a normal debug notice');
+ * 2)  debugging('something really picky', DEBUG_ALL);
+ * 3)  debugging('annoying debug message only for developers', DEBUG_DEVELOPER);
+ * 4)  if (debugging()) { perform extra debugging operations (do not use print or echo) }
+ *
+ * In code blocks controlled by debugging() (such as example 4)
+ * any output should be routed via debugging() itself, or the lower-level
+ * trigger_error() or error_log(). Using echo or print will break XHTML
+ * JS and HTTP headers.
+ *
+ * It is also possible to define NO_DEBUG_DISPLAY which redirects the message to error_log.
+ *
+ * @param string $message a message to print
+ * @param int $level the level at which this debugging statement should show
+ * @param array $backtrace use different backtrace
+ * @return bool
+ */
+function debugging($message = '', $level = \DEBUG_NORMAL, $backtrace = \null)
+{
+}
+/**
+ * Outputs a HTML comment to the browser.
+ *
+ * This is used for those hard-to-debug pages that use bits from many different files in very confusing ways (e.g. blocks).
+ *
+ * <code>print_location_comment(__FILE__, __LINE__);</code>
+ *
+ * @param string $file
+ * @param integer $line
+ * @param boolean $return Whether to return or print the comment
+ * @return string|void Void unless true given as third parameter
+ */
+function print_location_comment($file, $line, $return = \false)
+{
+}
+/**
+ * Returns true if the user is using a right-to-left language.
+ *
+ * @return boolean true if the current language is right-to-left (Hebrew, Arabic etc)
+ */
+function right_to_left()
+{
+}
+/**
+ * Returns swapped left<=> right if in RTL environment.
+ *
+ * Part of RTL Moodles support.
+ *
+ * @param string $align align to check
+ * @return string
+ */
+function fix_align_rtl($align)
+{
+}
+/**
+ * Returns true if the page is displayed in a popup window.
+ *
+ * Gets the information from the URL parameter inpopup.
+ *
+ * @todo Use a central function to create the popup calls all over Moodle and
+ * In the moment only works with resources and probably questions.
+ *
+ * @return boolean
+ */
+function is_in_popup()
+{
+}
+/**
+ * Returns a localized sentence in the current language summarizing the current password policy
+ *
+ * @todo this should be handled by a function/method in the language pack library once we have a support for it
+ * @uses $CFG
+ * @return string
+ */
+function print_password_policy()
+{
+}
+/**
+ * Get the value of a help string fully prepared for display in the current language.
+ *
+ * @param string $identifier The identifier of the string to search for.
+ * @param string $component The module the string is associated with.
+ * @param boolean $ajax Whether this help is called from an AJAX script.
+ *                This is used to influence text formatting and determines
+ *                which format to output the doclink in.
+ * @param string|object|array $a An object, string or number that can be used
+ *      within translation strings
+ * @return Object An object containing:
+ * - heading: Any heading that there may be for this help string.
+ * - text: The wiki-formatted help string.
+ * - doclink: An object containing a link, the linktext, and any additional
+ *            CSS classes to apply to that link. Only present if $ajax = false.
+ * - completedoclink: A text representation of the doclink. Only present if $ajax = true.
+ */
+function get_formatted_help_string($identifier, $component, $ajax = \false, $a = \null)
 {
 }

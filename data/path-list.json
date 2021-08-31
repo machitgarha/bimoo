@@ -1,7 +1,11 @@
 [
+    "/lib/modinfolib.php",
     "/lib/moodlelib.php",
+    "/lib/navigationlib.php",
     "/lib/outputcomponents.php",
     "/lib/pagelib.php",
     "/lib/setuplib.php",
+    "/lib/weblib.php",
+    "/lib/dml/moodle_database.php",
     "/lib/dml/mysqli_native_moodle_database.php"
 ]
