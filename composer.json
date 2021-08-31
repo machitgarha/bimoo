@@ -11,8 +11,9 @@
             "role": "Creator"
         }
     ],
-    "require": {},
     "require-dev": {
-        "php-stubs/generator": "^0.6.0"
+        "php-stubs/generator": "^0.6.0",
+        "symfony/process": "^5.3",
+        "symfony/console": "^5.3"
     }
 }
