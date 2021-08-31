@@ -57,12 +57,7 @@ class GenerateStubsCommand extends Command
             )
         );
 
-        $phpStubsGeneratorInput = new ArrayInput([
-            "sources" => $sources,
-            "--out" => self::OUTPUT_FILE_PATH,
-        ]);
-
-        return $this->callPhpStubsGenerator($phpStubsGeneratorInput, $output);
+        return $this->callPhpStubsGenerator($output, $sources);
     }
 
     /**
@@ -108,9 +103,16 @@ class GenerateStubsCommand extends Command
     }
 
     private function callPhpStubsGenerator(
-        InputInterface $input,
-        OutputInterface $output
+        OutputInterface $output,
+        array $sources
     ): int {
+        $input = new ArrayInput([
+            "sources" => $sources,
+            "--out" => self::OUTPUT_FILE_PATH,
+            // Overwrite the existing file
+            "--force" => true,
+        ]);
+
         return (new \StubsGenerator\GenerateStubsCommand())->run(
             $input,
             $output,
