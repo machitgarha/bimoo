@@ -1,6 +1,6 @@
 {
     "name": "machitgarha/bimoo",
-    "description": "Moodle declaration stubs for static analysis",
+    "description": "Moodle declaration stubs, helping IDEs and static analyzers",
     "type": "library",
     "license": "Apache License 2.0",
     "authors": [
