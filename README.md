@@ -26,9 +26,15 @@ To see what paths are included and what not, see `data/path-list.json` file. You
 
 To follow Moodle versions properly, and prevent from conflicts and confusions, instead of using [semantic versioning](https://semver.org), we use the following method:
 
-Each version is in the form of `<MoodleVersion>.<Minor>`. `MoodleVersion` is the version of Moodle the release is based on. `Minor` is the state of this library for that specific Moodle version; in other words, it increases whenever a change is made for a specific version of Moodle. For example, `3.11.1.3` means the fourth series of changes supporting Moodle `3.11.1`.
+Each version is in the form of `<MoodleMajor>.<MoodleMinor>.<BimooUpdate>`.
 
-Every Moodle version older than latest supported is followed in a separate branch. The branches are named as their Moodle version they follow, e.g. `3.9.9`. Ideally, `master` branch follows the latest Moodle version.
+`<MoodleMajor>` and `<MoodleMinor>` are the pieces of Moodle release number a version of Bimoo is based on, as stated [here](https://docs.moodle.org/dev/Process#Stable_maintenance_cycles). The reason why the bug-fix piece of Moodle version is not included, is what its official documentation says: "Releases like 2.2.1, 2.2.2, 2.2.3 etc only include fixes based on the latest major release (2.2) and never any significant new features or database changes".
+
+`<BimooUpdate>` is the state of the current library for that specific Moodle version. In other words, considering a particular minor release of Moodle, it increases whenever an update is made to the library (i.e. the stubs file).
+
+For example, `3.11.19` means the twentieth series of changes supporting Moodle 3.11.*. Pay attention, it has nothing to do with Moodle 3.11.10 (which, perhaps, will never be released).
+
+Every Moodle version older than latest supported is followed in a separate branch. The branches are named as their Moodle version they follow, e.g. `3.9`. Ideally, `master` branch follows the latest Moodle version.
 
 **Note:** There is no guarantee to support all versions Moodle currently supports. However, support is pretty much welcomed from the community (maybe you?).
 
