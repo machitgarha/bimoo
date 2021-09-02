@@ -32,7 +32,7 @@ Each version is in the form of `<MoodleMajor>.<MoodleMinor>.<BimooUpdate>`.
 
 `<BimooUpdate>` is the state of the current library for that specific Moodle version. In other words, considering a particular minor release of Moodle, it increases whenever an update is made to the library (i.e. the stubs file).
 
-For example, `3.11.19` means the twentieth series of changes supporting Moodle 3.11.*. Pay attention, it has nothing to do with Moodle 3.11.10 (which, perhaps, will never be released).
+For example, `3.11.19` means the twentieth series of changes supporting Moodle 3.11.*. Pay attention, it has nothing to do with Moodle 3.11.19 (which, perhaps, will never be released).
 
 Every Moodle version older than latest supported is followed in a separate branch. The branches are named as their Moodle version they follow, e.g. `3.9`. Ideally, `master` branch follows the latest Moodle version.
 
