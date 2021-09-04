@@ -552,6 +552,1357 @@ abstract class moodleform
     {
     }
 }
+/* vim: set expandtab tabstop=4 shiftwidth=4: */
+// +----------------------------------------------------------------------+
+// | PHP Version 4                                                        |
+// +----------------------------------------------------------------------+
+// | Copyright (c) 1997, 1998, 1999, 2000, 2001 The PHP Group             |
+// +----------------------------------------------------------------------+
+// | This source file is subject to version 2.0 of the PHP license,       |
+// | that is bundled with this package in the file LICENSE, and is        |
+// | available at through the world-wide-web at                           |
+// | http://www.php.net/license/2_02.txt.                                 |
+// | If you did not receive a copy of the PHP license and are unable to   |
+// | obtain it through the world-wide-web, please send a note to          |
+// | license@php.net so we can mail you a copy immediately.               |
+// +----------------------------------------------------------------------+
+// | Author: Adam Daniel <adaniel1@eesus.jnj.com>                         |
+// +----------------------------------------------------------------------+
+//
+// $Id$
+/**
+ * Base class for all HTML classes
+ * 
+ * @author    Adam Daniel <adaniel1@eesus.jnj.com>
+ * @category  HTML
+ * @package   HTML_Common
+ * @version   1.2.2
+ * @abstract
+ */
+/**
+ * Base class for all HTML classes
+ *
+ * @author      Adam Daniel <adaniel1@eesus.jnj.com>
+ * @version     1.7
+ * @since       PHP 4.0.3pl1
+ * @abstract
+ */
+class HTML_Common
+{
+    /**
+     * Associative array of table attributes
+     * @var     array
+     * @access  private
+     */
+    var $_attributes = array();
+    /**
+     * Tab offset of the table
+     * @var     int
+     * @access  private
+     */
+    var $_tabOffset = 0;
+    /**
+     * Tab string
+     * @var       string
+     * @since     1.7
+     * @access    private
+     */
+    var $_tab = "\t";
+    /**
+     * Contains the line end string
+     * @var       string
+     * @since     1.7
+     * @access    private
+     */
+    var $_lineEnd = "\n";
+    /**
+     * HTML comment on the object
+     * @var       string
+     * @since     1.5
+     * @access    private
+     */
+    var $_comment = '';
+    /**
+     * Class constructor
+     * @param    mixed   $attributes     Associative array of table tag attributes 
+     *                                   or HTML attributes name="value" pairs
+     * @param    int     $tabOffset      Indent offset in tabs
+     * @access   public
+     */
+    public function __construct($attributes = \null, $tabOffset = 0)
+    {
+    }
+    // end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_Common($attributes = \null, $tabOffset = 0)
+    {
+    }
+    public static function raiseError($message = \null, $code = \null, $mode = \null, $options = \null, $userinfo = \null, $error_class = \null, $skipmsg = \false)
+    {
+    }
+    /**
+     * Returns the current API version
+     * @access   public
+     * @returns  double
+     */
+    function apiVersion()
+    {
+    }
+    // end func apiVersion
+    /**
+     * Returns the lineEnd
+     * 
+     * @since     1.7
+     * @access    private
+     * @return    string
+     * @throws
+     */
+    function _getLineEnd()
+    {
+    }
+    // end func getLineEnd
+    /**
+     * Returns a string containing the unit for indenting HTML
+     * 
+     * @since     1.7
+     * @access    private
+     * @return    string
+     */
+    function _getTab()
+    {
+    }
+    // end func _getTab
+    /**
+     * Returns a string containing the offset for the whole HTML code
+     * 
+     * @return    string
+     * @access   private
+     */
+    function _getTabs()
+    {
+    }
+    // end func _getTabs
+    /**
+     * Returns an HTML formatted attribute string
+     * @param    array   $attributes
+     * @return   string
+     * @access   private
+     */
+    function _getAttrString($attributes)
+    {
+    }
+    // end func _getAttrString
+    /**
+     * Returns a valid atrributes array from either a string or array
+     * @param    mixed   $attributes     Either a typical HTML attribute string or an associative array
+     * @access   private
+     */
+    function _parseAttributes($attributes)
+    {
+    }
+    // end func _parseAttributes
+    /**
+     * Returns the array key for the given non-name-value pair attribute
+     * 
+     * @param     string    $attr         Attribute
+     * @param     array     $attributes   Array of attribute
+     * @since     1.0
+     * @access    private
+     * @return    bool
+     * @throws
+     */
+    function _getAttrKey($attr, $attributes)
+    {
+    }
+    //end func _getAttrKey
+    /**
+     * Updates the attributes in $attr1 with the values in $attr2 without changing the other existing attributes
+     * @param    array   $attr1      Original attributes array
+     * @param    array   $attr2      New attributes array
+     * @access   private
+     */
+    function _updateAttrArray(&$attr1, $attr2)
+    {
+    }
+    // end func _updateAtrrArray
+    /**
+     * Removes the given attribute from the given array
+     * 
+     * @param     string    $attr           Attribute name
+     * @param     array     $attributes     Attribute array
+     * @since     1.4
+     * @access    private
+     * @return    void
+     * @throws
+     */
+    function _removeAttr($attr, &$attributes)
+    {
+    }
+    //end func _removeAttr
+    /**
+     * Returns the value of the given attribute
+     * 
+     * @param     string    $attr   Attribute name
+     * @since     1.5
+     * @access    public
+     * @return    void
+     * @throws
+     */
+    function getAttribute($attr)
+    {
+    }
+    //end func getAttribute
+    /**
+     * Sets the HTML attributes
+     * @param    mixed   $attributes     Either a typical HTML attribute string or an associative array
+     * @access   public
+     */
+    function setAttributes($attributes)
+    {
+    }
+    // end func setAttributes
+    /**
+     * Returns the assoc array (default) or string of attributes
+     *
+     * @param     bool    Whether to return the attributes as string 
+     * @since     1.6
+     * @access    public
+     * @return    mixed   attributes
+     */
+    function getAttributes($asString = \false)
+    {
+    }
+    //end func getAttributes
+    /**
+     * Updates the passed attributes without changing the other existing attributes
+     * @param    mixed   $attributes     Either a typical HTML attribute string or an associative array
+     * @access   public
+     */
+    function updateAttributes($attributes)
+    {
+    }
+    // end func updateAttributes
+    /**
+     * Removes an attribute
+     * 
+     * @param     string    $attr   Attribute name
+     * @since     1.4
+     * @access    public
+     * @return    void
+     * @throws
+     */
+    function removeAttribute($attr)
+    {
+    }
+    //end func removeAttribute
+    /**
+     * Sets the line end style to Windows, Mac, Unix or a custom string.
+     * 
+     * @param   string  $style  "win", "mac", "unix" or custom string.
+     * @since   1.7
+     * @access  public
+     * @return  void
+     */
+    function setLineEnd($style)
+    {
+    }
+    // end func setLineEnd
+    /**
+     * Sets the tab offset
+     *
+     * @param    int     $offset
+     * @access   public
+     */
+    function setTabOffset($offset)
+    {
+    }
+    // end func setTabOffset
+    /**
+     * Returns the tabOffset
+     * 
+     * @since     1.5
+     * @access    public
+     * @return    int
+     */
+    function getTabOffset()
+    {
+    }
+    //end func getTabOffset
+    /**
+     * Sets the string used to indent HTML
+     * 
+     * @since     1.7
+     * @param     string    $string     String used to indent ("\11", "\t", '  ', etc.).
+     * @access    public
+     * @return    void
+     */
+    function setTab($string)
+    {
+    }
+    // end func setTab
+    /**
+     * Sets the HTML comment to be displayed at the beginning of the HTML string
+     *
+     * @param     string
+     * @since     1.4
+     * @access    public
+     * @return    void
+     */
+    function setComment($comment)
+    {
+    }
+    // end func setHtmlComment
+    /**
+     * Returns the HTML comment
+     * 
+     * @since     1.5
+     * @access    public
+     * @return    string
+     */
+    function getComment()
+    {
+    }
+    //end func getComment
+    /**
+     * Abstract method.  Must be extended to return the objects HTML
+     *
+     * @access    public
+     * @return    string
+     * @abstract
+     */
+    function toHtml()
+    {
+    }
+    // end func toHtml
+    /**
+     * Displays the HTML to the screen
+     *
+     * @access    public
+     */
+    function display()
+    {
+    }
+    // end func display
+}
+// }}}
+/**
+* Create, validate and process HTML forms
+*
+* @author      Adam Daniel <adaniel1@eesus.jnj.com>
+* @author      Bertrand Mansion <bmansion@mamasam.com>
+* @version     2.0
+* @since       PHP 4.0.3pl1
+*/
+class HTML_QuickForm extends \HTML_Common
+{
+    // {{{ properties
+    /**
+     * Array containing the form fields
+     * @since     1.0
+     * @var  array
+     * @access   private
+     */
+    var $_elements = array();
+    /**
+     * Array containing element name to index map
+     * @since     1.1
+     * @var  array
+     * @access   private
+     */
+    var $_elementIndex = array();
+    /**
+     * Array containing indexes of duplicate elements
+     * @since     2.10
+     * @var  array
+     * @access   private
+     */
+    var $_duplicateIndex = array();
+    /**
+     * Array containing required field IDs
+     * @since     1.0
+     * @var  array
+     * @access   private
+     */
+    var $_required = array();
+    /**
+     * Prefix message in javascript alert if error
+     * @since     1.0
+     * @var  string
+     * @access   public
+     */
+    var $_jsPrefix = 'Invalid information entered.';
+    /**
+     * Postfix message in javascript alert if error
+     * @since     1.0
+     * @var  string
+     * @access   public
+     */
+    var $_jsPostfix = 'Please correct these fields.';
+    /**
+     * Datasource object implementing the informal
+     * datasource protocol
+     * @since     3.3
+     * @var  object
+     * @access   private
+     */
+    var $_datasource;
+    /**
+     * Array of default form values
+     * @since     2.0
+     * @var  array
+     * @access   private
+     */
+    var $_defaultValues = array();
+    /**
+     * Array of constant form values
+     * @since     2.0
+     * @var  array
+     * @access   private
+     */
+    var $_constantValues = array();
+    /**
+     * Array of submitted form values
+     * @since     1.0
+     * @var  array
+     * @access   private
+     */
+    var $_submitValues = array();
+    /**
+     * Array of submitted form files
+     * @since     1.0
+     * @var  integer
+     * @access   public
+     */
+    var $_submitFiles = array();
+    /**
+     * Value for maxfilesize hidden element if form contains file input
+     * @since     1.0
+     * @var  integer
+     * @access   public
+     */
+    var $_maxFileSize = 1048576;
+    // 1 Mb = 1048576
+    /**
+     * Flag to know if all fields are frozen
+     * @since     1.0
+     * @var  boolean
+     * @access   private
+     */
+    var $_freezeAll = \false;
+    /**
+     * Array containing the form rules
+     * @since     1.0
+     * @var  array
+     * @access   private
+     */
+    var $_rules = array();
+    /**
+     * Form rules, global variety
+     * @var     array
+     * @access  private
+     */
+    var $_formRules = array();
+    /**
+     * Array containing the validation errors
+     * @since     1.0
+     * @var  array
+     * @access   private
+     */
+    var $_errors = array();
+    /**
+     * Note for required fields in the form
+     * @var       string
+     * @since     1.0
+     * @access    private
+     */
+    var $_requiredNote = '<span style="font-size:80%; color:#ff0000;">*</span><span style="font-size:80%;"> denotes required field</span>';
+    /**
+     * Whether the form was submitted
+     * @var       boolean
+     * @access    private
+     */
+    var $_flagSubmitted = \false;
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * @param    string      $formName          Form's name.
+     * @param    string      $method            (optional)Form's method defaults to 'POST'
+     * @param    string      $action            (optional)Form's action
+     * @param    string      $target            (optional)Form's target defaults to '_self'
+     * @param    mixed       $attributes        (optional)Extra attributes for <form> tag
+     * @param    bool        $trackSubmit       (optional)Whether to track if the form was submitted by adding a special hidden field
+     * @access   public
+     */
+    public function __construct($formName = '', $method = 'post', $action = '', $target = '', $attributes = \null, $trackSubmit = \false)
+    {
+    }
+    // end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm($formName = '', $method = 'post', $action = '', $target = '', $attributes = \null, $trackSubmit = \false)
+    {
+    }
+    // }}}
+    // {{{ apiVersion()
+    /**
+     * Returns the current API version
+     *
+     * @since     1.0
+     * @access    public
+     * @return    float
+     */
+    function apiVersion()
+    {
+    }
+    // end func apiVersion
+    // }}}
+    // {{{ registerElementType()
+    /**
+     * Registers a new element type
+     *
+     * @param     string    $typeName   Name of element type
+     * @param     string    $include    Include path for element type
+     * @param     string    $className  Element class name
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    static function registerElementType($typeName, $include, $className)
+    {
+    }
+    // end func registerElementType
+    // }}}
+    // {{{ registerRule()
+    /**
+     * Registers a new validation rule
+     *
+     * @param     string    $ruleName   Name of validation rule
+     * @param     string    $type       Either: 'regex', 'function' or 'rule' for an HTML_QuickForm_Rule object
+     * @param     string    $data1      Name of function, regular expression or HTML_QuickForm_Rule classname
+     * @param     string    $data2      Object parent of above function or HTML_QuickForm_Rule file path
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    static function registerRule($ruleName, $type, $data1, $data2 = \null)
+    {
+    }
+    // end func registerRule
+    // }}}
+    // {{{ elementExists()
+    /**
+     * Returns true if element is in the form
+     *
+     * @param     string   $element         form name of element to check
+     * @since     1.0
+     * @access    public
+     * @return    boolean
+     */
+    function elementExists($element = \null)
+    {
+    }
+    // end func elementExists
+    // }}}
+    // {{{ setDatasource()
+    /**
+     * Sets a datasource object for this form object
+     *
+     * Datasource default and constant values will feed the QuickForm object if
+     * the datasource implements defaultValues() and constantValues() methods.
+     *
+     * @param     object   $datasource          datasource object implementing the informal datasource protocol
+     * @param     mixed    $defaultsFilter      string or array of filter(s) to apply to default values
+     * @param     mixed    $constantsFilter     string or array of filter(s) to apply to constants values
+     * @since     3.3
+     * @access    public
+     * @return    void
+     */
+    function setDatasource(&$datasource, $defaultsFilter = \null, $constantsFilter = \null)
+    {
+    }
+    // end func setDatasource
+    // }}}
+    // {{{ setDefaults()
+    /**
+     * Initializes default form values
+     *
+     * @param     array    $defaultValues       values used to fill the form
+     * @param     mixed    $filter              (optional) filter(s) to apply to all default values
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setDefaults($defaultValues = \null, $filter = \null)
+    {
+    }
+    // end func setDefaults
+    // }}}
+    // {{{ setConstants()
+    /**
+     * Initializes constant form values.
+     * These values won't get overridden by POST or GET vars
+     *
+     * @param     array   $constantValues        values used to fill the form
+     * @param     mixed    $filter              (optional) filter(s) to apply to all default values
+     *
+     * @since     2.0
+     * @access    public
+     * @return    void
+     */
+    function setConstants($constantValues = \null, $filter = \null)
+    {
+    }
+    // end func setConstants
+    // }}}
+    // {{{ setMaxFileSize()
+    /**
+     * Sets the value of MAX_FILE_SIZE hidden element
+     *
+     * @param     int    $bytes    Size in bytes
+     * @since     3.0
+     * @access    public
+     * @return    void
+     */
+    function setMaxFileSize($bytes = 0)
+    {
+    }
+    // end func setMaxFileSize
+    // }}}
+    // {{{ getMaxFileSize()
+    /**
+     * Returns the value of MAX_FILE_SIZE hidden element
+     *
+     * @since     3.0
+     * @access    public
+     * @return    int   max file size in bytes
+     */
+    function getMaxFileSize()
+    {
+    }
+    // end func getMaxFileSize
+    // }}}
+    // {{{ &createElement()
+    /**
+     * Creates a new form element of the given type.
+     *
+     * This method accepts variable number of parameters, their
+     * meaning and count depending on $elementType
+     *
+     * @param     string     $elementType    type of element to add (text, textarea, file...)
+     * @since     1.0
+     * @access    public
+     * @return    object extended class of HTML_element
+     * @throws    HTML_QuickForm_Error
+     */
+    function &createElement($elementType)
+    {
+    }
+    // end func createElement
+    // }}}
+    // {{{ _loadElement()
+    /**
+     * Returns a form element of the given type
+     *
+     * @param     string   $event   event to send to newly created element ('createElement' or 'addElement')
+     * @param     string   $type    element type
+     * @param     array    $args    arguments for event
+     * @since     2.0
+     * @access    private
+     * @return    object    a new element
+     * @throws    HTML_QuickForm_Error
+     */
+    function &_loadElement($event, $type, $args)
+    {
+    }
+    // end func _loadElement
+    // }}}
+    // {{{ addElement()
+    /**
+     * Adds an element into the form
+     *
+     * If $element is a string representing element type, then this
+     * method accepts variable number of parameters, their meaning
+     * and count depending on $element
+     *
+     * @param    mixed      $element        element object or type of element to add (text, textarea, file...)
+     * @since    1.0
+     * @return   object     reference to element
+     * @access   public
+     * @throws   HTML_QuickForm_Error
+     */
+    function &addElement($element)
+    {
+    }
+    // end func addElement
+    // }}}
+    // {{{ insertElementBefore()
+    /**
+     * Inserts a new element right before the other element
+     *
+     * Warning: it is not possible to check whether the $element is already
+     * added to the form, therefore if you want to move the existing form
+     * element to a new position, you'll have to use removeElement():
+     * $form->insertElementBefore($form->removeElement('foo', false), 'bar');
+     *
+     * @access   public
+     * @since    3.2.4
+     * @param    object  HTML_QuickForm_element  Element to insert
+     * @param    string  Name of the element before which the new one is inserted
+     * @return   object  HTML_QuickForm_element  reference to inserted element
+     * @throws   HTML_QuickForm_Error
+     */
+    function &insertElementBefore(&$element, $nameAfter)
+    {
+    }
+    // }}}
+    // {{{ addGroup()
+    /**
+     * Adds an element group
+     * @param    array      $elements       array of elements composing the group
+     * @param    string     $name           (optional)group name
+     * @param    string     $groupLabel     (optional)group label
+     * @param    string     $separator      (optional)string to separate elements
+     * @param    string     $appendName     (optional)specify whether the group name should be
+     *                                      used in the form element name ex: group[element]
+     * @return   object     reference to added group of elements
+     * @since    2.8
+     * @access   public
+     * @throws   PEAR_Error
+     */
+    function &addGroup($elements, $name = \null, $groupLabel = '', $separator = \null, $appendName = \true)
+    {
+    }
+    // end func addGroup
+    // }}}
+    // {{{ &getElement()
+    /**
+     * Returns a reference to the element
+     *
+     * @param     string     $element    Element name
+     * @since     2.0
+     * @access    public
+     * @return    object     reference to element
+     * @throws    HTML_QuickForm_Error
+     */
+    function &getElement($element)
+    {
+    }
+    // end func getElement
+    // }}}
+    // {{{ &getElementValue()
+    /**
+     * Returns the element's raw value
+     *
+     * This returns the value as submitted by the form (not filtered)
+     * or set via setDefaults() or setConstants()
+     *
+     * @param     string     $element    Element name
+     * @since     2.0
+     * @access    public
+     * @return    mixed     element value
+     * @throws    HTML_QuickForm_Error
+     */
+    function &getElementValue($element)
+    {
+    }
+    // end func getElementValue
+    // }}}
+    // {{{ getSubmitValue()
+    /**
+     * Returns the elements value after submit and filter
+     *
+     * @param     string     Element name
+     * @since     2.0
+     * @access    public
+     * @return    mixed     submitted element value or null if not set
+     */
+    function getSubmitValue($elementName)
+    {
+    }
+    // end func getSubmitValue
+    // }}}
+    // {{{ _reindexFiles()
+    /**
+     * A helper function to change the indexes in $_FILES array
+     *
+     * @param  mixed   Some value from the $_FILES array
+     * @param  string  The key from the $_FILES array that should be appended
+     * @return array
+     */
+    function _reindexFiles($value, $key)
+    {
+    }
+    // }}}
+    // {{{ getElementError()
+    /**
+     * Returns error corresponding to validated element
+     *
+     * @param     string    $element        Name of form element to check
+     * @since     1.0
+     * @access    public
+     * @return    string    error message corresponding to checked element
+     */
+    function getElementError($element)
+    {
+    }
+    // end func getElementError
+    // }}}
+    // {{{ setElementError()
+    /**
+     * Set error message for a form element
+     *
+     * @param     string    $element    Name of form element to set error for
+     * @param     string    $message    Error message, if empty then removes the current error message
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setElementError($element, $message = \null)
+    {
+    }
+    // end func setElementError
+    // }}}
+    // {{{ getElementType()
+    /**
+     * Returns the type of the given element
+     *
+     * @param      string    $element    Name of form element
+     * @since      1.1
+     * @access     public
+     * @return     string    Type of the element, false if the element is not found
+     */
+    function getElementType($element)
+    {
+    }
+    // end func getElementType
+    // }}}
+    // {{{ updateElementAttr()
+    /**
+     * Updates Attributes for one or more elements
+     *
+     * @param      mixed    $elements   Array of element names/objects or string of elements to be updated
+     * @param      mixed    $attrs      Array or sting of html attributes
+     * @since      2.10
+     * @access     public
+     * @return     void
+     */
+    function updateElementAttr($elements, $attrs)
+    {
+    }
+    // end func updateElementAttr
+    // }}}
+    // {{{ removeElement()
+    /**
+     * Removes an element
+     *
+     * The method "unlinks" an element from the form, returning the reference
+     * to the element object. If several elements named $elementName exist,
+     * it removes the first one, leaving the others intact.
+     *
+     * @param string    $elementName The element name
+     * @param boolean   $removeRules True if rules for this element are to be removed too
+     * @access public
+     * @since 2.0
+     * @return object HTML_QuickForm_element    a reference to the removed element
+     * @throws HTML_QuickForm_Error
+     */
+    function &removeElement($elementName, $removeRules = \true)
+    {
+    }
+    // end func removeElement
+    // }}}
+    // {{{ addRule()
+    /**
+     * Adds a validation rule for the given field
+     *
+     * If the element is in fact a group, it will be considered as a whole.
+     * To validate grouped elements as separated entities,
+     * use addGroupRule instead of addRule.
+     *
+     * @param    string     $element       Form element name
+     * @param    string     $message       Message to display for invalid data
+     * @param    string     $type          Rule type, use getRegisteredRules() to get types
+     * @param    string     $format        (optional)Required for extra rule data
+     * @param    string     $validation    (optional)Where to perform validation: "server", "client"
+     * @param    boolean    $reset         Client-side validation: reset the form element to its original value if there is an error?
+     * @param    boolean    $force         Force the rule to be applied, even if the target form element does not exist
+     * @since    1.0
+     * @access   public
+     * @throws   HTML_QuickForm_Error
+     */
+    function addRule($element, $message, $type, $format = \null, $validation = 'server', $reset = \false, $force = \false)
+    {
+    }
+    // end func addRule
+    // }}}
+    // {{{ addGroupRule()
+    /**
+     * Adds a validation rule for the given group of elements
+     *
+     * Only groups with a name can be assigned a validation rule
+     * Use addGroupRule when you need to validate elements inside the group.
+     * Use addRule if you need to validate the group as a whole. In this case,
+     * the same rule will be applied to all elements in the group.
+     * Use addRule if you need to validate the group against a function.
+     *
+     * @param    string     $group         Form group name
+     * @param    mixed      $arg1          Array for multiple elements or error message string for one element
+     * @param    string     $type          (optional)Rule type use getRegisteredRules() to get types
+     * @param    string     $format        (optional)Required for extra rule data
+     * @param    int        $howmany       (optional)How many valid elements should be in the group
+     * @param    string     $validation    (optional)Where to perform validation: "server", "client"
+     * @param    bool       $reset         Client-side: whether to reset the element's value to its original state if validation failed.
+     * @since    2.5
+     * @access   public
+     * @throws   HTML_QuickForm_Error
+     */
+    function addGroupRule($group, $arg1, $type = '', $format = \null, $howmany = 0, $validation = 'server', $reset = \false)
+    {
+    }
+    // end func addGroupRule
+    // }}}
+    // {{{ addFormRule()
+    /**
+     * Adds a global validation rule
+     *
+     * This should be used when for a rule involving several fields or if
+     * you want to use some completely custom validation for your form.
+     * The rule function/method should return true in case of successful
+     * validation and array('element name' => 'error') when there were errors.
+     *
+     * @access   public
+     * @param    mixed   Callback, either function name or array(&$object, 'method')
+     * @throws   HTML_QuickForm_Error
+     */
+    function addFormRule($rule)
+    {
+    }
+    // }}}
+    // {{{ applyFilter()
+    /**
+     * Applies a data filter for the given field(s)
+     *
+     * @param    mixed     $element       Form element name or array of such names
+     * @param    mixed     $filter        Callback, either function name or array(&$object, 'method')
+     * @since    2.0
+     * @access   public
+     */
+    function applyFilter($element, $filter)
+    {
+    }
+    // end func applyFilter
+    // }}}
+    // {{{ _recursiveFilter()
+    /**
+     * Recursively apply a filter function
+     *
+     * @param     string   $filter    filter to apply
+     * @param     mixed    $value     submitted values
+     * @since     2.0
+     * @access    private
+     * @return    cleaned values
+     */
+    function _recursiveFilter($filter, $value)
+    {
+    }
+    // end func _recursiveFilter
+    // }}}
+    // {{{ arrayMerge()
+    /**
+     * Merges two arrays
+     *
+     * Merges two array like the PHP function array_merge but recursively.
+     * The main difference is that existing keys will not be renumbered
+     * if they are integers.
+     *
+     * @access   puplic
+     * @param    array   $a  original array
+     * @param    array   $b  array which will be merged into first one
+     * @return   array   merged array
+     */
+    static function arrayMerge($a, $b)
+    {
+    }
+    // end func arrayMerge
+    // }}}
+    // {{{ isTypeRegistered()
+    /**
+     * Returns whether or not the form element type is supported
+     *
+     * @param     string   $type     Form element type
+     * @since     1.0
+     * @access    public
+     * @return    boolean
+     */
+    function isTypeRegistered($type)
+    {
+    }
+    // end func isTypeRegistered
+    // }}}
+    // {{{ getRegisteredTypes()
+    /**
+     * Returns an array of registered element types
+     *
+     * @since     1.0
+     * @access    public
+     * @return    array
+     */
+    function getRegisteredTypes()
+    {
+    }
+    // end func getRegisteredTypes
+    // }}}
+    // {{{ isRuleRegistered()
+    /**
+     * Returns whether or not the given rule is supported
+     *
+     * @param     string   $name    Validation rule name
+     * @param     bool     Whether to automatically register subclasses of HTML_QuickForm_Rule
+     * @since     1.0
+     * @access    public
+     * @return    mixed    true if previously registered, false if not, new rule name if auto-registering worked
+     */
+    function isRuleRegistered($name, $autoRegister = \false)
+    {
+    }
+    // end func isRuleRegistered
+    // }}}
+    // {{{ getRegisteredRules()
+    /**
+     * Returns an array of registered validation rules
+     *
+     * @since     1.0
+     * @access    public
+     * @return    array
+     */
+    function getRegisteredRules()
+    {
+    }
+    // end func getRegisteredRules
+    // }}}
+    // {{{ isElementRequired()
+    /**
+     * Returns whether or not the form element is required
+     *
+     * @param     string   $element     Form element name
+     * @since     1.0
+     * @access    public
+     * @return    boolean
+     */
+    function isElementRequired($element)
+    {
+    }
+    // end func isElementRequired
+    // }}}
+    // {{{ isElementFrozen()
+    /**
+     * Returns whether or not the form element is frozen
+     *
+     * @param     string   $element     Form element name
+     * @since     1.0
+     * @access    public
+     * @return    boolean
+     */
+    function isElementFrozen($element)
+    {
+    }
+    // end func isElementFrozen
+    // }}}
+    // {{{ setJsWarnings()
+    /**
+     * Sets JavaScript warning messages
+     *
+     * @param     string   $pref        Prefix warning
+     * @param     string   $post        Postfix warning
+     * @since     1.1
+     * @access    public
+     * @return    void
+     */
+    function setJsWarnings($pref, $post)
+    {
+    }
+    // end func setJsWarnings
+    // }}}
+    // {{{ setRequiredNote()
+    /**
+     * Sets required-note
+     *
+     * @param     string   $note        Message indicating some elements are required
+     * @since     1.1
+     * @access    public
+     * @return    void
+     */
+    function setRequiredNote($note)
+    {
+    }
+    // end func setRequiredNote
+    // }}}
+    // {{{ getRequiredNote()
+    /**
+     * Returns the required note
+     *
+     * @since     2.0
+     * @access    public
+     * @return    string
+     */
+    function getRequiredNote()
+    {
+    }
+    // end func getRequiredNote
+    // }}}
+    // {{{ validate()
+    /**
+     * Performs the server side validation
+     * @access    public
+     * @since     1.0
+     * @return    boolean   true if no error found
+     */
+    function validate()
+    {
+    }
+    // end func validate
+    // }}}
+    // {{{ freeze()
+    /**
+     * Displays elements without HTML input tags
+     *
+     * @param    mixed   $elementList       array or string of element(s) to be frozen
+     * @since     1.0
+     * @access   public
+     * @throws   HTML_QuickForm_Error
+     */
+    function freeze($elementList = \null)
+    {
+    }
+    // end func freeze
+    // }}}
+    // {{{ isFrozen()
+    /**
+     * Returns whether or not the whole form is frozen
+     *
+     * @since     3.0
+     * @access    public
+     * @return    boolean
+     */
+    function isFrozen()
+    {
+    }
+    // end func isFrozen
+    // }}}
+    // {{{ process()
+    /**
+     * Performs the form data processing
+     *
+     * @param    mixed     $callback        Callback, either function name or array(&$object, 'method')
+     * @param    bool      $mergeFiles      Whether uploaded files should be processed too
+     * @since    1.0
+     * @access   public
+     * @throws   HTML_QuickForm_Error
+     */
+    function process($callback, $mergeFiles = \true)
+    {
+    }
+    // end func process
+    // }}}
+    // {{{ accept()
+    /**
+     * Accepts a renderer
+     *
+     * @param object     An HTML_QuickForm_Renderer object
+     * @since 3.0
+     * @access public
+     * @return void
+     */
+    function accept(&$renderer)
+    {
+    }
+    // end func accept
+    // }}}
+    // {{{ defaultRenderer()
+    /**
+     * Returns a reference to default renderer object
+     *
+     * @access public
+     * @since 3.0
+     * @return object a default renderer object
+     */
+    function &defaultRenderer()
+    {
+    }
+    // end func defaultRenderer
+    // }}}
+    // {{{ toHtml ()
+    /**
+     * Returns an HTML version of the form
+     *
+     * @param string $in_data (optional) Any extra data to insert right
+     *               before form is rendered.  Useful when using templates.
+     *
+     * @return   string     Html version of the form
+     * @since     1.0
+     * @access   public
+     */
+    function toHtml($in_data = \null)
+    {
+    }
+    // end func toHtml
+    // }}}
+    // {{{ getValidationScript()
+    /**
+     * Returns the client side validation script
+     *
+     * @since     2.0
+     * @access    public
+     * @return    string    Javascript to perform validation, empty string if no 'client' rules were added
+     */
+    function getValidationScript()
+    {
+    }
+    // end func getValidationScript
+    // }}}
+    // {{{ getSubmitValues()
+    /**
+     * Returns the values submitted by the form
+     *
+     * @since     2.0
+     * @access    public
+     * @param     bool      Whether uploaded files should be returned too
+     * @return    array
+     */
+    function getSubmitValues($mergeFiles = \false)
+    {
+    }
+    // end func getSubmitValues
+    // }}}
+    // {{{ toArray()
+    /**
+     * Returns the form's contents in an array.
+     *
+     * The description of the array structure is in HTML_QuickForm_Renderer_Array docs
+     *
+     * @since     2.0
+     * @access    public
+     * @param     bool      Whether to collect hidden elements (passed to the Renderer's constructor)
+     * @return    array of form contents
+     */
+    function toArray($collectHidden = \false)
+    {
+    }
+    // end func toArray
+    // }}}
+    // {{{ exportValue()
+    /**
+     * Returns a 'safe' element's value
+     *
+     * This method first tries to find a cleaned-up submitted value,
+     * it will return a value set by setValue()/setDefaults()/setConstants()
+     * if submitted value does not exist for the given element.
+     *
+     * @param  string   Name of an element
+     * @access public
+     * @return mixed
+     */
+    function exportValue($element)
+    {
+    }
+    // }}}
+    // {{{ exportValues()
+    /**
+     * Returns 'safe' elements' values
+     *
+     * Unlike getSubmitValues(), this will return only the values
+     * corresponding to the elements present in the form.
+     *
+     * @param   mixed   Array/string of element names, whose values we want. If not set then return all elements.
+     * @access  public
+     * @return  array   An assoc array of elements' values
+     * @throws  HTML_QuickForm_Error
+     */
+    function exportValues($elementList = \null)
+    {
+    }
+    // }}}
+    // {{{ isSubmitted()
+    /**
+     * Tells whether the form was already submitted
+     *
+     * This is useful since the _submitFiles and _submitValues arrays
+     * may be completely empty after the trackSubmit value is removed.
+     *
+     * @access public
+     * @return bool
+     */
+    function isSubmitted()
+    {
+    }
+    // }}}
+    // {{{ isError()
+    /**
+     * Tell whether a result from a QuickForm method is an error (an instance of HTML_QuickForm_Error)
+     *
+     * @access public
+     * @param mixed     result code
+     * @return bool     whether $value is an error
+     */
+    static function isError($value)
+    {
+    }
+    // end func isError
+    // }}}
+    // {{{ errorMessage()
+    /**
+     * Return a textual error message for an QuickForm error code
+     *
+     * @access  public
+     * @param   int     error code
+     * @return  string  error message
+     */
+    static function errorMessage($value)
+    {
+    }
+    // end func errorMessage
+    // }}}
+}
+/**
+ * This is a DHTML replacement for the standard JavaScript alert window for
+ * client-side validation of forms built with HTML_QuickForm
+ *
+ * @category   HTML
+ * @package    HTML_QuickForm_DHTMLRulesTableless
+ * @author     Alexey Borzov <borz_off@cs.msu.su>
+ * @author     Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author     Bertrand Mansion <bmansion@mamasam.com>
+ * @author     Justin Patrin <papercrane@gmail.com>
+ * @author     Mark Wiesemann <wiesemann@php.net>
+ * @license    http://www.php.net/license/3_01.txt  PHP License 3.01
+ * @version    Release: 0.1.3
+ * @link       http://pear.php.net/package/HTML_QuickForm_DHTMLRulesTableless
+ */
+class HTML_QuickForm_DHTMLRulesTableless extends \HTML_QuickForm
+{
+    // {{{ getValidationScript()
+    /**
+     * Returns the client side validation script
+     *
+     * The code here was copied from HTML_QuickForm and slightly modified to run rules per-element
+     *
+     * @access    public
+     * @return    string    Javascript to perform validation, empty string if no 'client' rules were added
+     */
+    function getValidationScript()
+    {
+    }
+    // end func getValidationScript
+    // }}}
+}
 /**
  * MoodleQuickForm implementation
  *
@@ -1938,6 +3289,64 @@ class MoodleQuickForm_Renderer extends \HTML_QuickForm_Renderer_Tableless
      * @return array
      */
     function getStopFieldsetElements()
+    {
+    }
+}
+/* vim: set expandtab tabstop=4 shiftwidth=4: */
+// +----------------------------------------------------------------------+
+// | PHP version 4.0                                                      |
+// +----------------------------------------------------------------------+
+// | Copyright (c) 1997-2003 The PHP Group                                |
+// +----------------------------------------------------------------------+
+// | This source file is subject to version 2.0 of the PHP license,       |
+// | that is bundled with this package in the file LICENSE, and is        |
+// | available at through the world-wide-web at                           |
+// | http://www.php.net/license/2_02.txt.                                 |
+// | If you did not receive a copy of the PHP license and are unable to   |
+// | obtain it through the world-wide-web, please send a note to          |
+// | license@php.net so we can mail you a copy immediately.               |
+// +----------------------------------------------------------------------+
+// | Authors: Bertrand Mansion <bmansion@mamasam.com>                     |
+// +----------------------------------------------------------------------+
+//
+// $Id$
+class HTML_QuickForm_Rule
+{
+    /**
+     * Name of the rule to use in validate method
+     *
+     * This property is used in more global rules like Callback and Regex
+     * to determine which callback and which regex is to be used for validation
+     *
+     * @var  string
+     * @access   public
+     */
+    var $name;
+    /**
+     * Validates a value
+     *
+     * @access public
+     * @abstract
+     */
+    function validate($value, $options = \null)
+    {
+    }
+    /**
+     * Sets the rule name
+     *
+     * @access public
+     */
+    function setName($ruleName)
+    {
+    }
+    /**
+     * Returns the javascript test (the test should return true if the value is INVALID)
+     *
+     * @param     mixed     Options for the rule
+     * @access    public
+     * @return    array     first element is code to setup validation, second is the check itself
+     */
+    function getValidationScript($options = \null)
     {
     }
 }
@@ -13159,6 +14568,3734 @@ class mysqli_native_moodle_database extends \moodle_database
      * @return string The fixed table name
      */
     protected function fix_table_name($tablename)
+    {
+    }
+}
+// end class HTML_QuickForm
+class HTML_QuickForm_Error extends \PEAR_Error
+{
+    // {{{ properties
+    /**
+     * Prefix for all error messages
+     * @var string
+     */
+    var $error_message_prefix = 'QuickForm Error: ';
+    // }}}
+    // {{{ constructor
+    /**
+     * Creates a quickform error object, extending the PEAR_Error class
+     *
+     * @param int   $code the error code
+     * @param int   $mode the reaction to the error, either return, die or trigger/callback
+     * @param int   $level intensity of the error (PHP error code)
+     * @param mixed $debuginfo any information that can inform user as to nature of the error
+     */
+    public function __construct($code = \QUICKFORM_ERROR, $mode = \PEAR_ERROR_RETURN, $level = \E_USER_NOTICE, $debuginfo = \null)
+    {
+    }
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_Error($code = \QUICKFORM_ERROR, $mode = \PEAR_ERROR_RETURN, $level = \E_USER_NOTICE, $debuginfo = \null)
+    {
+    }
+    // }}}
+}
+/* vim: set expandtab tabstop=4 shiftwidth=4: */
+// +----------------------------------------------------------------------+
+// | PHP version 4.0                                                      |
+// +----------------------------------------------------------------------+
+// | Copyright (c) 1997-2003 The PHP Group                                |
+// +----------------------------------------------------------------------+
+// | This source file is subject to version 2.0 of the PHP license,       |
+// | that is bundled with this package in the file LICENSE, and is        |
+// | available at through the world-wide-web at                           |
+// | http://www.php.net/license/2_02.txt.                                 |
+// | If you did not receive a copy of the PHP license and are unable to   |
+// | obtain it through the world-wide-web, please send a note to          |
+// | license@php.net so we can mail you a copy immediately.               |
+// +----------------------------------------------------------------------+
+// | Authors: Adam Daniel <adaniel1@eesus.jnj.com>                        |
+// |          Alexey Borzov <borz_off@cs.msu.su>                          |
+// |          Bertrand Mansion <bmansion@mamasam.com>                     |
+// +----------------------------------------------------------------------+
+//
+// $Id$
+/**
+* Registers rule objects and uses them for validation
+*
+*/
+class HTML_QuickForm_RuleRegistry
+{
+    /**
+     * Array containing references to used rules
+     * @var     array
+     * @access  private
+     */
+    var $_rules = array();
+    /**
+     * Returns a singleton of HTML_QuickForm_RuleRegistry
+     *
+     * Usually, only one RuleRegistry object is needed, this is the reason
+     * why it is recommended to use this method to get the validation object.
+     *
+     * @access    public
+     * @static
+     * @return    object    Reference to the HTML_QuickForm_RuleRegistry singleton
+     */
+    static function &singleton()
+    {
+    }
+    // end func singleton
+    /**
+     * Registers a new validation rule
+     *
+     * In order to use a custom rule in your form, you need to register it
+     * first. For regular expressions, one can directly use the 'regex' type
+     * rule in addRule(), this is faster than registering the rule.
+     *
+     * Functions and methods can be registered. Use the 'function' type.
+     * When registering a method, specify the class name as second parameter.
+     *
+     * You can also register an HTML_QuickForm_Rule subclass with its own
+     * validate() method.
+     *
+     * @param     string    $ruleName   Name of validation rule
+     * @param     string    $type       Either: 'regex', 'function' or null
+     * @param     string    $data1      Name of function, regular expression or
+     *                                  HTML_QuickForm_Rule object class name
+     * @param     string    $data2      Object parent of above function or HTML_QuickForm_Rule file path
+     * @access    public
+     * @return    void
+     */
+    function registerRule($ruleName, $type, $data1, $data2 = \null)
+    {
+    }
+    // end func registerRule
+    /**
+     * Returns a reference to the requested rule object
+     *
+     * @param     string   $ruleName        Name of the requested rule
+     * @access    public
+     * @return    object
+     */
+    function &getRule($ruleName)
+    {
+    }
+    // end func getRule
+    /**
+     * Performs validation on the given values
+     *
+     * @param     string   $ruleName        Name of the rule to be used
+     * @param     mixed    $values          Can be a scalar or an array of values
+     *                                      to be validated
+     * @param     mixed    $options         Options used by the rule
+     * @param     mixed    $multiple        Whether to validate an array of values altogether
+     * @access    public
+     * @return    mixed    true if no error found, int of valid values (when an array of values is given) or false if error
+     */
+    function validate($ruleName, $values, $options = \null, $multiple = \false)
+    {
+    }
+    // end func validate
+    /**
+     * Returns the validation test in javascript code
+     *
+     * @param     mixed     Element(s) the rule applies to
+     * @param     string    Element name, in case $element is not array
+     * @param     array     Rule data
+     * @access    public
+     * @return    string    JavaScript for the rule
+     */
+    function getValidationScript(&$element, $elementName, $ruleData)
+    {
+    }
+    // end func getValidationScript
+    /**
+     * Returns JavaScript to get and to reset the element's value
+     *
+     * @access private
+     * @param  object HTML_QuickForm_element     element being processed
+     * @param  string    element's name
+     * @param  bool      whether to generate JavaScript to reset the value
+     * @param  integer   value's index in the array (only used for multielement rules)
+     * @return array     first item is value javascript, second is reset
+     */
+    function _getJsValue(&$element, $elementName, $reset = \false, $index = \null)
+    {
+    }
+}
+/**
+ * Base class for form elements
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.3
+ * @since        PHP4.04pl1
+ * @access       public
+ * @abstract
+ */
+class HTML_QuickForm_element extends \HTML_Common
+{
+    // {{{ properties
+    /**
+     * Label of the field
+     * @var       string
+     * @since     1.3
+     * @access    private
+     */
+    var $_label = '';
+    /**
+     * Form element type
+     * @var       string
+     * @since     1.0
+     * @access    private
+     */
+    var $_type = '';
+    /**
+     * Flag to tell if element is frozen
+     * @var       boolean
+     * @since     1.0
+     * @access    private
+     */
+    var $_flagFrozen = \false;
+    /**
+     * Does the element support persistant data when frozen
+     * @var       boolean
+     * @since     1.3
+     * @access    private
+     */
+    var $_persistantFreeze = \false;
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param    string     Name of the element
+     * @param    mixed      Label(s) for the element
+     * @param    mixed      Associative array of tag attributes or HTML attributes name="value" pairs
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_element($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ apiVersion()
+    /**
+     * Returns the current API version
+     *
+     * @since     1.0
+     * @access    public
+     * @return    float
+     */
+    function apiVersion()
+    {
+    }
+    // end func apiVersion
+    // }}}
+    // {{{ getType()
+    /**
+     * Returns element type
+     *
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getType()
+    {
+    }
+    // end func getType
+    // }}}
+    // {{{ setName()
+    /**
+     * Sets the input field name
+     * 
+     * @param     string    $name   Input field name attribute
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setName($name)
+    {
+    }
+    //end func setName
+    // }}}
+    // {{{ getName()
+    /**
+     * Returns the element name
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getName()
+    {
+    }
+    //end func getName
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets the value of the form element
+     *
+     * @param     string    $value      Default value of the form element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setValue($value)
+    {
+    }
+    // end func setValue
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns the value of the form element
+     *
+     * @since     1.0
+     * @access    public
+     * @return    mixed
+     */
+    function getValue()
+    {
+    }
+    // end func getValue
+    // }}}
+    // {{{ freeze()
+    /**
+     * Freeze the element so that only its value is returned
+     * 
+     * @access    public
+     * @return    void
+     */
+    function freeze()
+    {
+    }
+    //end func freeze
+    // }}}
+    // {{{ unfreeze()
+    /**
+     * Unfreezes the element so that it becomes editable
+     *
+     * @access public
+     * @return void
+     * @since  3.2.4
+     */
+    function unfreeze()
+    {
+    }
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+    // {{{ _getPersistantData()
+    /**
+     * Used by getFrozenHtml() to pass the element's value if _persistantFreeze is on
+     * 
+     * @access private
+     * @return string
+     */
+    function _getPersistantData()
+    {
+    }
+    // }}}
+    // {{{ isFrozen()
+    /**
+     * Returns whether or not the element is frozen
+     *
+     * @since     1.3
+     * @access    public
+     * @return    bool
+     */
+    function isFrozen()
+    {
+    }
+    // end func isFrozen
+    // }}}
+    // {{{ setPersistantFreeze()
+    /**
+     * Sets wether an element value should be kept in an hidden field
+     * when the element is frozen or not
+     * 
+     * @param     bool    $persistant   True if persistant value
+     * @since     2.0
+     * @access    public
+     * @return    void
+     */
+    function setPersistantFreeze($persistant = \false)
+    {
+    }
+    //end func setPersistantFreeze
+    // }}}
+    // {{{ setLabel()
+    /**
+     * Sets display text for the element
+     * 
+     * @param     string    $label  Display text for the element
+     * @since     1.3
+     * @access    public
+     * @return    void
+     */
+    function setLabel($label)
+    {
+    }
+    //end func setLabel
+    // }}}
+    // {{{ getLabel()
+    /**
+     * Returns display text for the element
+     * 
+     * @since     1.3
+     * @access    public
+     * @return    string
+     */
+    function getLabel()
+    {
+    }
+    //end func getLabel
+    // }}}
+    // {{{ _findValue()
+    /**
+     * Tries to find the element value from the values array
+     * 
+     * @since     2.7
+     * @access    private
+     * @return    mixed
+     */
+    function _findValue(&$values)
+    {
+    }
+    //end func _findValue
+    // }}}
+    // {{{ onQuickFormEvent()
+    /**
+     * Called by HTML_QuickForm whenever form event is made on this element
+     *
+     * @param     string    $event  Name of event
+     * @param     mixed     $arg    event arguments
+     * @param     object    $caller calling object
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormEvent
+    // }}}
+    // {{{ accept()
+    /**
+     * Accepts a renderer
+     *
+     * @param object     An HTML_QuickForm_Renderer object
+     * @param bool       Whether an element is required
+     * @param string     An error message associated with an element
+     * @access public
+     * @return void 
+     */
+    function accept(&$renderer, $required = \false, $error = \null)
+    {
+    }
+    // end func accept
+    // }}}
+    // {{{ _generateId()
+    /**
+     * Automatically generates and assigns an 'id' attribute for the element.
+     * 
+     * Currently used to ensure that labels work on radio buttons and
+     * checkboxes. Per idea of Alexander Radivanovich.
+     *
+     * @access private
+     * @return void 
+     */
+    function _generateId()
+    {
+    }
+    // }}}
+    // {{{ exportValue()
+    /**
+     * Returns a 'safe' element's value
+     *
+     * @param  array   array of submitted values to search
+     * @param  bool    whether to return the value as associative array
+     * @access public
+     * @return mixed
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+    // {{{ _prepareValue()
+    /**
+     * Used by exportValue() to prepare the value for returning
+     *
+     * @param  mixed   the value found in exportValue()
+     * @param  bool    whether to return the value as associative array
+     * @access private
+     * @return mixed
+     */
+    function _prepareValue($value, $assoc)
+    {
+    }
+    // }}}
+}
+/**
+ * Base class for input form elements
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ * @abstract
+ */
+class HTML_QuickForm_input extends \HTML_QuickForm_element
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param    string     Input field name attribute
+     * @param    mixed      Label(s) for the input field
+     * @param    mixed      Either a typical HTML attribute string or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_input($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setType()
+    /**
+     * Sets the element type
+     *
+     * @param     string    $type   Element type
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setType($type)
+    {
+    }
+    // end func setType
+    // }}}
+    // {{{ setName()
+    /**
+     * Sets the input field name
+     * 
+     * @param     string    $name   Input field name attribute
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setName($name)
+    {
+    }
+    //end func setName
+    // }}}
+    // {{{ getName()
+    /**
+     * Returns the element name
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getName()
+    {
+    }
+    //end func getName
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets the value of the form element
+     *
+     * @param     string    $value      Default value of the form element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setValue($value)
+    {
+    }
+    // end func setValue
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns the value of the form element
+     *
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getValue()
+    {
+    }
+    // end func getValue
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the input field in HTML
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ onQuickFormEvent()
+    /**
+     * Called by HTML_QuickForm whenever form event is made on this element
+     *
+     * @param     string    $event  Name of event
+     * @param     mixed     $arg    event arguments
+     * @param     object    $caller calling object
+     * @since     1.0
+     * @access    public
+     * @return    void
+     * @throws    
+     */
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormEvent
+    // }}}
+    // {{{ exportValue()
+    /**
+     * We don't need values from button-type elements (except submit) and files
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+}
+/**
+ * HTML class for a checkbox type field
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.1
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_checkbox extends \HTML_QuickForm_input
+{
+    // {{{ properties
+    /**
+     * Checkbox display text
+     * @var       string
+     * @since     1.1
+     * @access    private
+     */
+    var $_text = '';
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $elementLabel   (optional)Input field value
+     * @param     string    $text           (optional)Checkbox display text
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string 
+     *                                      or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $text = '', $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_checkbox($elementName = \null, $elementLabel = \null, $text = '', $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setChecked()
+    /**
+     * Sets whether a checkbox is checked
+     * 
+     * @param     bool    $checked  Whether the field is checked or not
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setChecked($checked)
+    {
+    }
+    //end func setChecked
+    // }}}
+    // {{{ getChecked()
+    /**
+     * Returns whether a checkbox is checked
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    bool
+     */
+    function getChecked()
+    {
+    }
+    //end func getChecked
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the checkbox element in HTML
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+    // {{{ setText()
+    /**
+     * Sets the checkbox text
+     * 
+     * @param     string    $text  
+     * @since     1.1
+     * @access    public
+     * @return    void
+     */
+    function setText($text)
+    {
+    }
+    //end func setText
+    // }}}
+    // {{{ getText()
+    /**
+     * Returns the checkbox text 
+     * 
+     * @since     1.1
+     * @access    public
+     * @return    string
+     */
+    function getText()
+    {
+    }
+    //end func getText
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets the value of the form element
+     *
+     * @param     string    $value      Default value of the form element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setValue($value)
+    {
+    }
+    // end func setValue
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns the value of the form element
+     *
+     * @since     1.0
+     * @access    public
+     * @return    bool
+     */
+    function getValue()
+    {
+    }
+    // end func getValue
+    // }}}
+    // {{{ onQuickFormEvent()
+    /**
+     * Called by HTML_QuickForm whenever form event is made on this element
+     *
+     * @param     string    $event  Name of event
+     * @param     mixed     $arg    event arguments
+     * @param     object    $caller calling object
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormEvent
+    // }}}
+    // {{{ exportValue()
+    /**
+     * Return true if the checkbox is checked, null if it is not checked (getValue() returns false)
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+}
+/**
+ * HTML class for an advanced checkbox type field
+ *
+ * Basically this fixes a problem that HTML has had
+ * where checkboxes can only pass a single value (the
+ * value of the checkbox when checked).  A value for when
+ * the checkbox is not checked cannot be passed, and
+ * furthermore the checkbox variable doesn't even exist if
+ * the checkbox was submitted unchecked.
+ *
+ * It works by prepending a hidden field with the same name and
+ * another "unchecked" value to the checbox. If the checkbox is
+ * checked, PHP overwrites the value of the hidden field with
+ * its value.
+ *
+ * @author       Jason Rust <jrust@php.net>
+ * @since        2.0
+ * @access       public
+ */
+class HTML_QuickForm_advcheckbox extends \HTML_QuickForm_checkbox
+{
+    // {{{ properties
+    /**
+     * The values passed by the hidden elment
+     *
+     * @var array
+     * @access private
+     */
+    var $_values = \null;
+    /**
+     * The default value
+     *
+     * @var boolean
+     * @access private
+     */
+    var $_currentValue = \null;
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $elementLabel   (optional)Input field label
+     * @param     string    $text           (optional)Text to put after the checkbox
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string
+     *                                      or an associative array
+     * @param     mixed     $values         (optional)Values to pass if checked or not checked
+     *
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $text = \null, $attributes = \null, $values = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_advcheckbox($elementName = \null, $elementLabel = \null, $text = \null, $attributes = \null, $values = \null)
+    {
+    }
+    // }}}
+    // {{{ getPrivateName()
+    /**
+     * Gets the private name for the element
+     *
+     * @param   string  $elementName The element name to make private
+     *
+     * @access public
+     * @return string
+     *
+     * @deprecated          Deprecated since 3.2.6, both generated elements have the same name
+     */
+    function getPrivateName($elementName)
+    {
+    }
+    // }}}
+    // {{{ getOnclickJs()
+    /**
+     * Create the javascript for the onclick event which will
+     * set the value of the hidden field
+     *
+     * @param     string    $elementName    The element name
+     *
+     * @access public
+     * @return string
+     *
+     * @deprecated          Deprecated since 3.2.6, this element no longer uses any javascript
+     */
+    function getOnclickJs($elementName)
+    {
+    }
+    // }}}
+    // {{{ setValues()
+    /**
+     * Sets the values used by the hidden element
+     *
+     * @param   mixed   $values The values, either a string or an array
+     *
+     * @access public
+     * @return void
+     */
+    function setValues($values)
+    {
+    }
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets the element's value
+     *
+     * @param    mixed   Element's value
+     * @access   public
+     */
+    function setValue($value)
+    {
+    }
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns the element's value
+     *
+     * @access   public
+     * @return   mixed
+     */
+    function getValue()
+    {
+    }
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the checkbox element in HTML
+     * and the additional hidden element in HTML
+     *
+     * @access    public
+     * @return    string
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Unlike checkbox, this has to append a hidden input in both
+     * checked and non-checked states
+     */
+    function getFrozenHtml()
+    {
+    }
+    // }}}
+    // {{{ onQuickFormEvent()
+    /**
+     * Called by HTML_QuickForm whenever form event is made on this element
+     *
+     * @param     string    $event  Name of event
+     * @param     mixed     $arg    event arguments
+     * @param     object    $caller calling object
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormLoad
+    // }}}
+    // {{{ exportValue()
+    /**
+     * This element has a value even if it is not checked, thus we override
+     * checkbox's behaviour here
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+}
+/**
+ * HTML class for a text field
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_text extends \HTML_QuickForm_input
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $elementLabel   (optional)Input field label
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string 
+     *                                      or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_text($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setSize()
+    /**
+     * Sets size of text field
+     * 
+     * @param     string    $size  Size of text field
+     * @since     1.3
+     * @access    public
+     * @return    void
+     */
+    function setSize($size)
+    {
+    }
+    //end func setSize
+    // }}}
+    // {{{ setMaxlength()
+    /**
+     * Sets maxlength of text field
+     * 
+     * @param     string    $maxlength  Maximum length of text field
+     * @since     1.3
+     * @access    public
+     * @return    void
+     */
+    function setMaxlength($maxlength)
+    {
+    }
+    //end func setMaxlength
+    // }}}
+}
+/**
+ * Class to dynamically create an HTML input text element that
+ * at every keypressed javascript event, check in an array of options
+ * if there's a match and autocomplete the text in case of match.
+ *
+ * Ex:
+ * $autocomplete =& $form->addElement('autocomplete', 'fruit', 'Favourite fruit:');
+ * $options = array("Apple", "Orange", "Pear", "Strawberry");
+ * $autocomplete->setOptions($options);
+ *
+ * @author       Matteo Di Giovinazzo <matteodg@infinito.it>
+ */
+class HTML_QuickForm_autocomplete extends \HTML_QuickForm_text
+{
+    // {{{ properties
+    /**
+     * Options for the autocomplete input text element
+     *
+     * @var       array
+     * @access    private
+     */
+    var $_options = array();
+    /**
+     * "One-time" javascript (containing functions), see bug #4611
+     *
+     * @var     string
+     * @access  private
+     */
+    var $_js = '';
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $elementLabel   (optional)Input field label in form
+     * @param     array     $options        (optional)Autocomplete options
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string
+     *                                      or an associative array. Date format is passed along the attributes.
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $options = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_autocomplete($elementName = \null, $elementLabel = \null, $options = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setOptions()
+    /**
+     * Sets the options for the autocomplete input text element
+     *
+     * @param     array    $options    Array of options for the autocomplete input text element
+     * @access    public
+     * @return    void
+     */
+    function setOptions($options)
+    {
+    }
+    // end func setOptions
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns Html for the autocomplete input text element
+     *
+     * @access      public
+     * @return      string
+     */
+    function toHtml()
+    {
+    }
+    // end func toHtml
+    // }}}
+}
+/**
+ * HTML class for a button type element
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.1
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_button extends \HTML_QuickForm_input
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $value          (optional)Input field value
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string 
+     *                                      or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $value = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_button($elementName = \null, $value = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ freeze()
+    /**
+     * Freeze the element so that only its value is returned
+     * 
+     * @access    public
+     * @return    void
+     */
+    function freeze()
+    {
+    }
+    //end func freeze
+    // }}}
+}
+/**
+ * HTML class for a form element group
+ *
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_group extends \HTML_QuickForm_element
+{
+    // {{{ properties
+    /**
+     * Name of the element
+     * @var       string
+     * @since     1.0
+     * @access    private
+     */
+    var $_name = '';
+    /**
+     * Array of grouped elements
+     * @var       array
+     * @since     1.0
+     * @access    private
+     */
+    var $_elements = array();
+    /**
+     * String to separate elements
+     * @var       mixed
+     * @since     2.5
+     * @access    private
+     */
+    var $_separator = \null;
+    /**
+     * Required elements in this group
+     * @var       array
+     * @since     2.5
+     * @access    private
+     */
+    var $_required = array();
+    /**
+     * Whether to change elements' names to $groupName[$elementName] or leave them as is
+     * @var      bool
+     * @since    3.0
+     * @access   private
+     */
+    var $_appendName = \true;
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @param     string    $elementName    (optional)Group name
+     * @param     array     $elementLabel   (optional)Group label
+     * @param     array     $elements       (optional)Group elements
+     * @param     mixed     $separator      (optional)Use a string for one separator,
+     *                                      use an array to alternate the separators.
+     * @param     bool      $appendName     (optional)whether to change elements' names to
+     *                                      the form $groupName[$elementName] or leave
+     *                                      them as is.
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $elements = \null, $separator = \null, $appendName = \true)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_group($elementName = \null, $elementLabel = \null, $elements = \null, $separator = \null, $appendName = \true)
+    {
+    }
+    // }}}
+    // {{{ setName()
+    /**
+     * Sets the group name
+     *
+     * @param     string    $name   Group name
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setName($name)
+    {
+    }
+    //end func setName
+    // }}}
+    // {{{ getName()
+    /**
+     * Returns the group name
+     *
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getName()
+    {
+    }
+    //end func getName
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets values for group's elements
+     *
+     * @param     mixed    Values for group's elements
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setValue($value)
+    {
+    }
+    //end func setValue
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns the value of the group
+     *
+     * @since     1.0
+     * @access    public
+     * @return    mixed
+     */
+    function getValue()
+    {
+    }
+    // end func getValue
+    // }}}
+    // {{{ setElements()
+    /**
+     * Sets the grouped elements
+     *
+     * @param     array     $elements   Array of elements
+     * @since     1.1
+     * @access    public
+     * @return    void
+     */
+    function setElements($elements)
+    {
+    }
+    // end func setElements
+    // }}}
+    // {{{ getElements()
+    /**
+     * Gets the grouped elements
+     *
+     * @since     2.4
+     * @access    public
+     * @return    array
+     */
+    function &getElements()
+    {
+    }
+    // end func getElements
+    // }}}
+    // {{{ getGroupType()
+    /**
+     * Gets the group type based on its elements
+     * Will return 'mixed' if elements contained in the group
+     * are of different types.
+     *
+     * @access    public
+     * @return    string    group elements type
+     */
+    function getGroupType()
+    {
+    }
+    // end func getGroupType
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns Html for the group
+     *
+     * @since       1.0
+     * @access      public
+     * @return      string
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ getElementName()
+    /**
+     * Returns the element name inside the group such as found in the html form
+     *
+     * @param     mixed     $index  Element name or element index in the group
+     * @since     3.0
+     * @access    public
+     * @return    mixed     string with element name, false if not found
+     */
+    function getElementName($index)
+    {
+    }
+    //end func getElementName
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags
+     *
+     * @since     1.3
+     * @access    public
+     * @return    string
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+    // {{{ onQuickFormEvent()
+    /**
+     * Called by HTML_QuickForm whenever form event is made on this element
+     *
+     * @param     string    $event  Name of event
+     * @param     mixed     $arg    event arguments
+     * @param     object    $caller calling object
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormEvent
+    // }}}
+    // {{{ accept()
+    /**
+     * Accepts a renderer
+     *
+     * @param object     An HTML_QuickForm_Renderer object
+     * @param bool       Whether a group is required
+     * @param string     An error message associated with a group
+     * @access public
+     * @return void
+     */
+    function accept(&$renderer, $required = \false, $error = \null)
+    {
+    }
+    // end func accept
+    // }}}
+    // {{{ exportValue()
+    /**
+     * As usual, to get the group's value we access its elements and call
+     * their exportValue() methods
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+    // {{{ _createElements()
+    /**
+     * Creates the group's elements.
+     *
+     * This should be overriden by child classes that need to create their
+     * elements. The method will be called automatically when needed, calling
+     * it from the constructor is discouraged as the constructor is usually
+     * called _twice_ on element creation, first time with _no_ parameters.
+     *
+     * @access private
+     * @abstract
+     */
+    function _createElements()
+    {
+    }
+    // }}}
+    // {{{ _createElementsIfNotExist()
+    /**
+     * A wrapper around _createElements()
+     *
+     * This method calls _createElements() if the group's _elements array
+     * is empty. It also performs some updates, e.g. freezes the created
+     * elements if the group is already frozen.
+     *
+     * @access private
+     */
+    function _createElementsIfNotExist()
+    {
+    }
+    // }}}
+    // {{{ freeze()
+    function freeze()
+    {
+    }
+    // }}}
+    // {{{ unfreeze()
+    function unfreeze()
+    {
+    }
+    // }}}
+    // {{{ setPersistantFreeze()
+    function setPersistantFreeze($persistant = \false)
+    {
+    }
+    // }}}
+}
+/**
+ * Class for a group of elements used to input dates (and times).
+ *
+ * Inspired by original 'date' element but reimplemented as a subclass
+ * of HTML_QuickForm_group
+ *
+ * @author Alexey Borzov <avb@php.net>
+ * @access public
+ */
+class HTML_QuickForm_date extends \HTML_QuickForm_group
+{
+    // {{{ properties
+    /**
+     * Various options to control the element's display.
+     *
+     * Currently known options are
+     * 'language': date language
+     * 'format': Format of the date, based on PHP's date() function.
+     *     The following characters are recognised in format string:
+     *       D => Short names of days
+     *       l => Long names of days
+     *       d => Day numbers
+     *       M => Short names of months
+     *       F => Long names of months
+     *       m => Month numbers
+     *       Y => Four digit year
+     *       y => Two digit year
+     *       h => 12 hour format
+     *       H => 23 hour  format
+     *       i => Minutes
+     *       s => Seconds
+     *       a => am/pm
+     *       A => AM/PM
+     * 'minYear': Minimum year in year select
+     * 'maxYear': Maximum year in year select
+     * 'addEmptyOption': Should an empty option be added to the top of
+     *     each select box?
+     * 'emptyOptionValue': The value passed by the empty option.
+     * 'emptyOptionText': The text displayed for the empty option.
+     * 'optionIncrement': Step to increase the option values by (works for 'i' and 's')
+     *
+     * @access   private
+     * @var      array
+     */
+    var $_options = array('language' => 'en', 'format' => 'dMY', 'minYear' => 2001, 'maxYear' => 2010, 'addEmptyOption' => \false, 'emptyOptionValue' => '', 'emptyOptionText' => '&nbsp;', 'optionIncrement' => array('i' => 1, 's' => 1));
+    /**
+     * These complement separators, they are appended to the resultant HTML
+     * @access   private
+     * @var      array
+     */
+    var $_wrap = array('', '');
+    /**
+     * Options in different languages
+     *
+     * Note to potential translators: to avoid encoding problems please send
+     * your translations with "weird" letters encoded as HTML Unicode entities
+     *
+     * @access   private
+     * @var      array
+     */
+    var $_locale = array('en' => array('weekdays_short' => array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'), 'weekdays_long' => array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'), 'months_long' => array('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')), 'de' => array('weekdays_short' => array('So', 'Mon', 'Di', 'Mi', 'Do', 'Fr', 'Sa'), 'weekdays_long' => array('Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'), 'months_short' => array('Jan', 'Feb', 'M&#xe4;rz', 'April', 'Mai', 'Juni', 'Juli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dez'), 'months_long' => array('Januar', 'Februar', 'M&#xe4;rz', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember')), 'fr' => array('weekdays_short' => array('Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'), 'weekdays_long' => array('Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'), 'months_short' => array('Jan', 'F&#xe9;v', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Ao&#xfb;t', 'Sep', 'Oct', 'Nov', 'D&#xe9;c'), 'months_long' => array('Janvier', 'F&#xe9;vrier', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Ao&#xfb;t', 'Septembre', 'Octobre', 'Novembre', 'D&#xe9;cembre')), 'hu' => array('weekdays_short' => array('V', 'H', 'K', 'Sze', 'Cs', 'P', 'Szo'), 'weekdays_long' => array('vas&#xe1;rnap', 'h&#xe9;tf&#x151;', 'kedd', 'szerda', 'cs&#xfc;t&#xf6;rt&#xf6;k', 'p&#xe9;ntek', 'szombat'), 'months_short' => array('jan', 'feb', 'm&#xe1;rc', '&#xe1;pr', 'm&#xe1;j', 'j&#xfa;n', 'j&#xfa;l', 'aug', 'szept', 'okt', 'nov', 'dec'), 'months_long' => array('janu&#xe1;r', 'febru&#xe1;r', 'm&#xe1;rcius', '&#xe1;prilis', 'm&#xe1;jus', 'j&#xfa;nius', 'j&#xfa;lius', 'augusztus', 'szeptember', 'okt&#xf3;ber', 'november', 'december')), 'pl' => array('weekdays_short' => array('Nie', 'Pn', 'Wt', '&#x15a;r', 'Czw', 'Pt', 'Sob'), 'weekdays_long' => array('Niedziela', 'Poniedzia&#x142;ek', 'Wtorek', '&#x15a;roda', 'Czwartek', 'Pi&#x105;tek', 'Sobota'), 'months_short' => array('Sty', 'Lut', 'Mar', 'Kwi', 'Maj', 'Cze', 'Lip', 'Sie', 'Wrz', 'Pa&#x17a;', 'Lis', 'Gru'), 'months_long' => array('Stycze&#x144;', 'Luty', 'Marzec', 'Kwiecie&#x144;', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpie&#x144;', 'Wrzesie&#x144;', 'Pa&#x17a;dziernik', 'Listopad', 'Grudzie&#x144;')), 'sl' => array('weekdays_short' => array('Ned', 'Pon', 'Tor', 'Sre', 'Cet', 'Pet', 'Sob'), 'weekdays_long' => array('Nedelja', 'Ponedeljek', 'Torek', 'Sreda', 'Cetrtek', 'Petek', 'Sobota'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Avg', 'Sep', 'Okt', 'Nov', 'Dec'), 'months_long' => array('Januar', 'Februar', 'Marec', 'April', 'Maj', 'Junij', 'Julij', 'Avgust', 'September', 'Oktober', 'November', 'December')), 'ru' => array('weekdays_short' => array('&#x412;&#x441;', '&#x41f;&#x43d;', '&#x412;&#x442;', '&#x421;&#x440;', '&#x427;&#x442;', '&#x41f;&#x442;', '&#x421;&#x431;'), 'weekdays_long' => array('&#x412;&#x43e;&#x441;&#x43a;&#x440;&#x435;&#x441;&#x435;&#x43d;&#x44c;&#x435;', '&#x41f;&#x43e;&#x43d;&#x435;&#x434;&#x435;&#x43b;&#x44c;&#x43d;&#x438;&#x43a;', '&#x412;&#x442;&#x43e;&#x440;&#x43d;&#x438;&#x43a;', '&#x421;&#x440;&#x435;&#x434;&#x430;', '&#x427;&#x435;&#x442;&#x432;&#x435;&#x440;&#x433;', '&#x41f;&#x44f;&#x442;&#x43d;&#x438;&#x446;&#x430;', '&#x421;&#x443;&#x431;&#x431;&#x43e;&#x442;&#x430;'), 'months_short' => array('&#x42f;&#x43d;&#x432;', '&#x424;&#x435;&#x432;', '&#x41c;&#x430;&#x440;', '&#x410;&#x43f;&#x440;', '&#x41c;&#x430;&#x439;', '&#x418;&#x44e;&#x43d;', '&#x418;&#x44e;&#x43b;', '&#x410;&#x432;&#x433;', '&#x421;&#x435;&#x43d;', '&#x41e;&#x43a;&#x442;', '&#x41d;&#x43e;&#x44f;', '&#x414;&#x435;&#x43a;'), 'months_long' => array('&#x42f;&#x43d;&#x432;&#x430;&#x440;&#x44c;', '&#x424;&#x435;&#x432;&#x440;&#x430;&#x43b;&#x44c;', '&#x41c;&#x430;&#x440;&#x442;', '&#x410;&#x43f;&#x440;&#x435;&#x43b;&#x44c;', '&#x41c;&#x430;&#x439;', '&#x418;&#x44e;&#x43d;&#x44c;', '&#x418;&#x44e;&#x43b;&#x44c;', '&#x410;&#x432;&#x433;&#x443;&#x441;&#x442;', '&#x421;&#x435;&#x43d;&#x442;&#x44f;&#x431;&#x440;&#x44c;', '&#x41e;&#x43a;&#x442;&#x44f;&#x431;&#x440;&#x44c;', '&#x41d;&#x43e;&#x44f;&#x431;&#x440;&#x44c;', '&#x414;&#x435;&#x43a;&#x430;&#x431;&#x440;&#x44c;')), 'es' => array('weekdays_short' => array('Dom', 'Lun', 'Mar', 'Mi&#xe9;', 'Jue', 'Vie', 'S&#xe1;b'), 'weekdays_long' => array('Domingo', 'Lunes', 'Martes', 'Mi&#xe9;rcoles', 'Jueves', 'Viernes', 'S&#xe1;bado'), 'months_short' => array('Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'), 'months_long' => array('Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre')), 'da' => array('weekdays_short' => array('S&#xf8;n', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'L&#xf8;r'), 'weekdays_long' => array('S&#xf8;ndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'L&#xf8;rdag'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'), 'months_long' => array('Januar', 'Februar', 'Marts', 'April', 'Maj', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'December')), 'is' => array('weekdays_short' => array('Sun', 'M&#xe1;n', '&#xde;ri', 'Mi&#xf0;', 'Fim', 'F&#xf6;s', 'Lau'), 'weekdays_long' => array('Sunnudagur', 'M&#xe1;nudagur', '&#xde;ri&#xf0;judagur', 'Mi&#xf0;vikudagur', 'Fimmtudagur', 'F&#xf6;studagur', 'Laugardagur'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'Ma&#xed;', 'J&#xfa;n', 'J&#xfa;l', '&#xc1;g&#xfa;', 'Sep', 'Okt', 'N&#xf3;v', 'Des'), 'months_long' => array('Jan&#xfa;ar', 'Febr&#xfa;ar', 'Mars', 'Apr&#xed;l', 'Ma&#xed;', 'J&#xfa;n&#xed;', 'J&#xfa;l&#xed;', '&#xc1;g&#xfa;st', 'September', 'Okt&#xf3;ber', 'N&#xf3;vember', 'Desember')), 'it' => array('weekdays_short' => array('Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'), 'weekdays_long' => array('Domenica', 'Luned&#xec;', 'Marted&#xec;', 'Mercoled&#xec;', 'Gioved&#xec;', 'Venerd&#xec;', 'Sabato'), 'months_short' => array('Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'), 'months_long' => array('Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre')), 'sk' => array('weekdays_short' => array('Ned', 'Pon', 'Uto', 'Str', '&#x8a;tv', 'Pia', 'Sob'), 'weekdays_long' => array('Nede&#x17e;a', 'Pondelok', 'Utorok', 'Streda', '&#x8a;tvrtok', 'Piatok', 'Sobota'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'M&#xe1;j', 'J&#xfa;n', 'J&#xfa;l', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'), 'months_long' => array('Janu&#xe1;r', 'Febru&#xe1;r', 'Marec', 'Apr&#xed;l', 'M&#xe1;j', 'J&#xfa;n', 'J&#xfa;l', 'August', 'September', 'Okt&#xf3;ber', 'November', 'December')), 'cs' => array('weekdays_short' => array('Ne', 'Po', '&#xda;t', 'St', '&#x10c;t', 'P&#xe1;', 'So'), 'weekdays_long' => array('Ned&#x11b;le', 'Pond&#x11b;l&#xed;', '&#xda;ter&#xfd;', 'St&#x159;eda', '&#x10c;tvrtek', 'P&#xe1;tek', 'Sobota'), 'months_short' => array('Led', '&#xda;no', 'B&#x159;e', 'Dub', 'Kv&#x11b;', '&#x10c;en', '&#x10c;ec', 'Srp', 'Z&#xe1;&#x159;', '&#x158;&#xed;j', 'Lis', 'Pro'), 'months_long' => array('Leden', '&#xda;nor', 'B&#x159;ezen', 'Duben', 'Kv&#x11b;ten', '&#x10c;erven', '&#x10c;ervenec', 'Srpen', 'Z&#xe1;&#x159;&#xed;', '&#x158;&#xed;jen', 'Listopad', 'Prosinec')), 'hy' => array('weekdays_short' => array('&#x53f;&#x580;&#x56f;', '&#x535;&#x580;&#x56f;', '&#x535;&#x580;&#x584;', '&#x549;&#x580;&#x584;', '&#x540;&#x576;&#x563;', '&#x548;&#x582;&#x580;', '&#x547;&#x562;&#x569;'), 'weekdays_long' => array('&#x53f;&#x56b;&#x580;&#x561;&#x56f;&#x56b;', '&#x535;&#x580;&#x56f;&#x578;&#x582;&#x577;&#x561;&#x562;&#x569;&#x56b;', '&#x535;&#x580;&#x565;&#x584;&#x577;&#x561;&#x562;&#x569;&#x56b;', '&#x549;&#x578;&#x580;&#x565;&#x584;&#x577;&#x561;&#x562;&#x569;&#x56b;', '&#x540;&#x56b;&#x576;&#x563;&#x577;&#x561;&#x562;&#x569;&#x56b;', '&#x548;&#x582;&#x580;&#x562;&#x561;&#x569;', '&#x547;&#x561;&#x562;&#x561;&#x569;'), 'months_short' => array('&#x540;&#x576;&#x57e;', '&#x553;&#x57f;&#x580;', '&#x544;&#x580;&#x57f;', '&#x531;&#x57a;&#x580;', '&#x544;&#x575;&#x57d;', '&#x540;&#x576;&#x57d;', '&#x540;&#x56c;&#x57d;', '&#x555;&#x563;&#x57d;', '&#x54d;&#x57a;&#x57f;', '&#x540;&#x56f;&#x57f;', '&#x546;&#x575;&#x574;', '&#x534;&#x56f;&#x57f;'), 'months_long' => array('&#x540;&#x578;&#x582;&#x576;&#x57e;&#x561;&#x580;', '&#x553;&#x565;&#x57f;&#x580;&#x57e;&#x561;&#x580;', '&#x544;&#x561;&#x580;&#x57f;', '&#x531;&#x57a;&#x580;&#x56b;&#x56c;', '&#x544;&#x561;&#x575;&#x56b;&#x57d;', '&#x540;&#x578;&#x582;&#x576;&#x56b;&#x57d;', '&#x540;&#x578;&#x582;&#x56c;&#x56b;&#x57d;', '&#x555;&#x563;&#x578;&#x57d;&#x57f;&#x578;&#x57d;', '&#x54d;&#x565;&#x57a;&#x57f;&#x565;&#x574;&#x562;&#x565;&#x580;', '&#x540;&#x578;&#x56f;&#x57f;&#x565;&#x574;&#x562;&#x565;&#x580;', '&#x546;&#x578;&#x575;&#x565;&#x574;&#x562;&#x565;&#x580;', '&#x534;&#x565;&#x56f;&#x57f;&#x565;&#x574;&#x562;&#x565;&#x580;')), 'nl' => array('weekdays_short' => array('Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'), 'weekdays_long' => array('Zondag', 'Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'), 'months_long' => array('Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni', 'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December')), 'et' => array('weekdays_short' => array('P', 'E', 'T', 'K', 'N', 'R', 'L'), 'weekdays_long' => array('P&#xfc;hap&#xe4;ev', 'Esmasp&#xe4;ev', 'Teisip&#xe4;ev', 'Kolmap&#xe4;ev', 'Neljap&#xe4;ev', 'Reede', 'Laup&#xe4;ev'), 'months_short' => array('Jaan', 'Veebr', 'M&#xe4;rts', 'Aprill', 'Mai', 'Juuni', 'Juuli', 'Aug', 'Sept', 'Okt', 'Nov', 'Dets'), 'months_long' => array('Jaanuar', 'Veebruar', 'M&#xe4;rts', 'Aprill', 'Mai', 'Juuni', 'Juuli', 'August', 'September', 'Oktoober', 'November', 'Detsember')), 'tr' => array('weekdays_short' => array('Paz', 'Pzt', 'Sal', '&#xc7;ar', 'Per', 'Cum', 'Cts'), 'weekdays_long' => array('Pazar', 'Pazartesi', 'Sal&#x131;', '&#xc7;ar&#x15f;amba', 'Per&#x15f;embe', 'Cuma', 'Cumartesi'), 'months_short' => array('Ock', '&#x15e;bt', 'Mrt', 'Nsn', 'Mys', 'Hzrn', 'Tmmz', 'A&#x11f;st', 'Eyl', 'Ekm', 'Ksm', 'Arlk'), 'months_long' => array('Ocak', '&#x15e;ubat', 'Mart', 'Nisan', 'May&#x131;s', 'Haziran', 'Temmuz', 'A&#x11f;ustos', 'Eyl&#xfc;l', 'Ekim', 'Kas&#x131;m', 'Aral&#x131;k')), 'no' => array('weekdays_short' => array('S&#xf8;n', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'L&#xf8;r'), 'weekdays_long' => array('S&#xf8;ndag', 'Mandag', 'Tirsdag', 'Onsdag', 'Torsdag', 'Fredag', 'L&#xf8;rdag'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Des'), 'months_long' => array('Januar', 'Februar', 'Mars', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Desember')), 'eo' => array('weekdays_short' => array('Dim', 'Lun', 'Mar', 'Mer', '&#x134;a&#x16D;', 'Ven', 'Sab'), 'weekdays_long' => array('Diman&#x109;o', 'Lundo', 'Mardo', 'Merkredo', '&#x134;a&#x16D;do', 'Vendredo', 'Sabato'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'A&#x16D;g', 'Sep', 'Okt', 'Nov', 'Dec'), 'months_long' => array('Januaro', 'Februaro', 'Marto', 'Aprilo', 'Majo', 'Junio', 'Julio', 'A&#x16D;gusto', 'Septembro', 'Oktobro', 'Novembro', 'Decembro')), 'ua' => array('weekdays_short' => array('&#x41d;&#x434;&#x43b;', '&#x41f;&#x43d;&#x434;', '&#x412;&#x442;&#x440;', '&#x421;&#x440;&#x434;', '&#x427;&#x442;&#x432;', '&#x41f;&#x442;&#x43d;', '&#x421;&#x431;&#x442;'), 'weekdays_long' => array('&#x41d;&#x435;&#x434;&#x456;&#x43b;&#x44f;', '&#x41f;&#x43e;&#x43d;&#x435;&#x434;&#x456;&#x43b;&#x43e;&#x43a;', '&#x412;&#x456;&#x432;&#x442;&#x43e;&#x440;&#x43e;&#x43a;', '&#x421;&#x435;&#x440;&#x435;&#x434;&#x430;', '&#x427;&#x435;&#x442;&#x432;&#x435;&#x440;', '&#x41f;\'&#x44f;&#x442;&#x43d;&#x438;&#x446;&#x44f;', '&#x421;&#x443;&#x431;&#x43e;&#x442;&#x430;'), 'months_short' => array('&#x421;&#x456;&#x447;', '&#x41b;&#x44e;&#x442;', '&#x411;&#x435;&#x440;', '&#x41a;&#x432;&#x456;', '&#x422;&#x440;&#x430;', '&#x427;&#x435;&#x440;', '&#x41b;&#x438;&#x43f;', '&#x421;&#x435;&#x440;', '&#x412;&#x435;&#x440;', '&#x416;&#x43e;&#x432;', '&#x41b;&#x438;&#x441;', '&#x413;&#x440;&#x443;'), 'months_long' => array('&#x421;&#x456;&#x447;&#x435;&#x43d;&#x44c;', '&#x41b;&#x44e;&#x442;&#x438;&#x439;', '&#x411;&#x435;&#x440;&#x435;&#x437;&#x435;&#x43d;&#x44c;', '&#x41a;&#x432;&#x456;&#x442;&#x435;&#x43d;&#x44c;', '&#x422;&#x440;&#x430;&#x432;&#x435;&#x43d;&#x44c;', '&#x427;&#x435;&#x440;&#x432;&#x435;&#x43d;&#x44c;', '&#x41b;&#x438;&#x43f;&#x435;&#x43d;&#x44c;', '&#x421;&#x435;&#x440;&#x43f;&#x435;&#x43d;&#x44c;', '&#x412;&#x435;&#x440;&#x435;&#x441;&#x435;&#x43d;&#x44c;', '&#x416;&#x43e;&#x432;&#x442;&#x435;&#x43d;&#x44c;', '&#x41b;&#x438;&#x441;&#x442;&#x43e;&#x43f;&#x430;&#x434;', '&#x413;&#x440;&#x443;&#x434;&#x435;&#x43d;&#x44c;')), 'ro' => array('weekdays_short' => array('Dum', 'Lun', 'Mar', 'Mie', 'Joi', 'Vin', 'Sam'), 'weekdays_long' => array('Duminica', 'Luni', 'Marti', 'Miercuri', 'Joi', 'Vineri', 'Sambata'), 'months_short' => array('Ian', 'Feb', 'Mar', 'Apr', 'Mai', 'Iun', 'Iul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'), 'months_long' => array('Ianuarie', 'Februarie', 'Martie', 'Aprilie', 'Mai', 'Iunie', 'Iulie', 'August', 'Septembrie', 'Octombrie', 'Noiembrie', 'Decembrie')), 'he' => array('weekdays_short' => array('&#1512;&#1488;&#1513;&#1493;&#1503;', '&#1513;&#1504;&#1497;', '&#1513;&#1500;&#1497;&#1513;&#1497;', '&#1512;&#1489;&#1497;&#1506;&#1497;', '&#1495;&#1502;&#1497;&#1513;&#1497;', '&#1513;&#1497;&#1513;&#1497;', '&#1513;&#1489;&#1514;'), 'weekdays_long' => array('&#1497;&#1493;&#1501; &#1512;&#1488;&#1513;&#1493;&#1503;', '&#1497;&#1493;&#1501; &#1513;&#1504;&#1497;', '&#1497;&#1493;&#1501; &#1513;&#1500;&#1497;&#1513;&#1497;', '&#1497;&#1493;&#1501; &#1512;&#1489;&#1497;&#1506;&#1497;', '&#1497;&#1493;&#1501; &#1495;&#1502;&#1497;&#1513;&#1497;', '&#1497;&#1493;&#1501; &#1513;&#1497;&#1513;&#1497;', '&#1513;&#1489;&#1514;'), 'months_short' => array('&#1497;&#1504;&#1493;&#1488;&#1512;', '&#1508;&#1489;&#1512;&#1493;&#1488;&#1512;', '&#1502;&#1512;&#1509;', '&#1488;&#1508;&#1512;&#1497;&#1500;', '&#1502;&#1488;&#1497;', '&#1497;&#1493;&#1504;&#1497;', '&#1497;&#1493;&#1500;&#1497;', '&#1488;&#1493;&#1490;&#1493;&#1505;&#1496;', '&#1505;&#1508;&#1496;&#1502;&#1489;&#1512;', '&#1488;&#1493;&#1511;&#1496;&#1493;&#1489;&#1512;', '&#1504;&#1493;&#1489;&#1502;&#1489;&#1512;', '&#1491;&#1510;&#1502;&#1489;&#1512;'), 'months_long' => array('&#1497;&#1504;&#1493;&#1488;&#1512;', '&#1508;&#1489;&#1512;&#1493;&#1488;&#1512;', '&#1502;&#1512;&#1509;', '&#1488;&#1508;&#1512;&#1497;&#1500;', '&#1502;&#1488;&#1497;', '&#1497;&#1493;&#1504;&#1497;', '&#1497;&#1493;&#1500;&#1497;', '&#1488;&#1493;&#1490;&#1493;&#1505;&#1496;', '&#1505;&#1508;&#1496;&#1502;&#1489;&#1512;', '&#1488;&#1493;&#1511;&#1496;&#1493;&#1489;&#1512;', '&#1504;&#1493;&#1489;&#1502;&#1489;&#1512;', '&#1491;&#1510;&#1502;&#1489;&#1512;')), 'sv' => array('weekdays_short' => array('S&#xf6;n', 'M&#xe5;n', 'Tis', 'Ons', 'Tor', 'Fre', 'L&#xf6;r'), 'weekdays_long' => array('S&#xf6;ndag', 'M&#xe5;ndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'L&#xf6;rdag'), 'months_short' => array('Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'), 'months_long' => array('Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December')), 'pt' => array('weekdays_short' => array('Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'S&aacute;b'), 'weekdays_long' => array('Domingo', 'Segunda-feira', 'Ter&ccedil;a-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'S&aacute;bado'), 'months_short' => array('Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'), 'months_long' => array('Janeiro', 'Fevereiro', 'Mar&ccedil;o', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')), 'tw' => array('weekdays_short' => array('&#36913;&#26085;', '&#36913;&#19968;', '&#36913;&#20108;', '&#36913;&#19977;', '&#36913;&#22235;', '&#36913;&#20116;', '&#36913;&#20845;'), 'weekdays_long' => array('&#26143;&#26399;&#26085;', '&#26143;&#26399;&#19968;', '&#26143;&#26399;&#20108;', '&#26143;&#26399;&#19977;', '&#26143;&#26399;&#22235;', '&#26143;&#26399;&#20116;', '&#26143;&#26399;&#20845;'), 'months_short' => array('&#19968;&#26376;', '&#20108;&#26376;', '&#19977;&#26376;', '&#22235;&#26376;', '&#20116;&#26376;', '&#20845;&#26376;', '&#19971;&#26376;', '&#20843;&#26376;', '&#20061;&#26376;', '&#21313;&#26376;', '&#21313;&#19968;&#26376;', '&#21313;&#20108;&#26376;'), 'months_long' => array('&#19968;&#26376;', '&#20108;&#26376;', '&#19977;&#26376;', '&#22235;&#26376;', '&#20116;&#26376;', '&#20845;&#26376;', '&#19971;&#26376;', '&#20843;&#26376;', '&#20061;&#26376;', '&#21313;&#26376;', '&#21313;&#19968;&#26376;', '&#21313;&#20108;&#26376;')), 'pt-br' => array('weekdays_short' => array('Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'S&aacute;b'), 'weekdays_long' => array('Domingo', 'Segunda', 'Ter&ccedil;a', 'Quarta', 'Quinta', 'Sexta', 'S&aacute;bado'), 'months_short' => array('Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'), 'months_long' => array('Janeiro', 'Fevereiro', 'Mar&ccedil;o', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro')));
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @access   public
+     * @param    string  Element's name
+     * @param    mixed   Label(s) for an element
+     * @param    array   Options to control the element's display
+     * @param    mixed   Either a typical HTML attribute string or an associative array
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $options = array(), $attributes = \null)
+    {
+    }
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_date($elementName = \null, $elementLabel = \null, $options = array(), $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ _createElements()
+    function _createElements()
+    {
+    }
+    // }}}
+    // {{{ _createOptionList()
+    /**
+     * Creates an option list containing the numbers from the start number to the end, inclusive
+     *
+     * @param    int     The start number
+     * @param    int     The end number
+     * @param    int     Increment by this value
+     * @access   private
+     * @return   array   An array of numeric options.
+     */
+    function _createOptionList($start, $end, $step = 1)
+    {
+    }
+    // }}}
+    // {{{ setValue()
+    function setValue($value)
+    {
+    }
+    // }}}
+    // {{{ toHtml()
+    function toHtml()
+    {
+    }
+    // }}}
+    // {{{ accept()
+    function accept(&$renderer, $required = \false, $error = \null)
+    {
+    }
+    // }}}
+    // {{{ onQuickFormEvent()
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // }}}
+}
+/**
+ * HTML class for a file type element
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_file extends \HTML_QuickForm_input
+{
+    // {{{ properties
+    /**
+     * Uploaded file data, from $_FILES
+     * @var array
+     */
+    var $_value = \null;
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    Input field name attribute
+     * @param     string    Input field label
+     * @param     mixed     (optional)Either a typical HTML attribute string 
+     *                      or an associative array
+     * @since     1.0
+     * @access    public
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_file($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setSize()
+    /**
+     * Sets size of file element
+     * 
+     * @param     int    Size of file element
+     * @since     1.0
+     * @access    public
+     */
+    function setSize($size)
+    {
+    }
+    //end func setSize
+    // }}}
+    // {{{ getSize()
+    /**
+     * Returns size of file element
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    int
+     */
+    function getSize()
+    {
+    }
+    //end func getSize
+    // }}}
+    // {{{ freeze()
+    /**
+     * Freeze the element so that only its value is returned
+     * 
+     * @access    public
+     * @return    bool
+     */
+    function freeze()
+    {
+    }
+    //end func freeze
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets value for file element.
+     * 
+     * Actually this does nothing. The function is defined here to override
+     * HTML_Quickform_input's behaviour of setting the 'value' attribute. As
+     * no sane user-agent uses <input type="file">'s value for anything 
+     * (because of security implications) we implement file's value as a 
+     * read-only property with a special meaning.
+     * 
+     * @param     mixed    Value for file element
+     * @since     3.0
+     * @access    public
+     */
+    function setValue($value)
+    {
+    }
+    //end func setValue
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns information about the uploaded file
+     *
+     * @since     3.0
+     * @access    public
+     * @return    array
+     */
+    function getValue()
+    {
+    }
+    // end func getValue
+    // }}}
+    // {{{ onQuickFormEvent()
+    /**
+     * Called by HTML_QuickForm whenever form event is made on this element
+     *
+     * @param     string    Name of event
+     * @param     mixed     event arguments
+     * @param     object    calling object
+     * @since     1.0
+     * @access    public
+     * @return    bool
+     */
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormEvent
+    // }}}
+    // {{{ moveUploadedFile()
+    /**
+     * Moves an uploaded file into the destination 
+     * 
+     * @param    string  Destination directory path
+     * @param    string  New file name
+     * @access   public
+     * @return   bool    Whether the file was moved successfully
+     */
+    function moveUploadedFile($dest, $fileName = '')
+    {
+    }
+    // end func moveUploadedFile
+    // }}}
+    // {{{ isUploadedFile()
+    /**
+     * Checks if the element contains an uploaded file
+     *
+     * @access    public
+     * @return    bool      true if file has been uploaded, false otherwise
+     */
+    function isUploadedFile()
+    {
+    }
+    // end func isUploadedFile
+    // }}}
+    // {{{ _ruleIsUploadedFile()
+    /**
+     * Checks if the given element contains an uploaded file
+     *
+     * @param     array     Uploaded file info (from $_FILES)
+     * @access    private
+     * @return    bool      true if file has been uploaded, false otherwise
+     */
+    function _ruleIsUploadedFile($elementValue)
+    {
+    }
+    // end func _ruleIsUploadedFile
+    // }}}
+    // {{{ _ruleCheckMaxFileSize()
+    /**
+     * Checks that the file does not exceed the max file size
+     *
+     * @param     array     Uploaded file info (from $_FILES)
+     * @param     int       Max file size
+     * @access    private
+     * @return    bool      true if filesize is lower than maxsize, false otherwise
+     */
+    function _ruleCheckMaxFileSize($elementValue, $maxSize)
+    {
+    }
+    // end func _ruleCheckMaxFileSize
+    // }}}
+    // {{{ _ruleCheckMimeType()
+    /**
+     * Checks if the given element contains an uploaded file of the right mime type
+     *
+     * @param     array     Uploaded file info (from $_FILES)
+     * @param     mixed     Mime Type (can be an array of allowed types)
+     * @access    private
+     * @return    bool      true if mimetype is correct, false otherwise
+     */
+    function _ruleCheckMimeType($elementValue, $mimeType)
+    {
+    }
+    // end func _ruleCheckMimeType
+    // }}}
+    // {{{ _ruleCheckFileName()
+    /**
+     * Checks if the given element contains an uploaded file of the filename regex
+     *
+     * @param     array     Uploaded file info (from $_FILES)
+     * @param     string    Regular expression
+     * @access    private
+     * @return    bool      true if name matches regex, false otherwise
+     */
+    function _ruleCheckFileName($elementValue, $regex)
+    {
+    }
+    // end func _ruleCheckFileName
+    // }}}
+    // {{{ _findValue()
+    /**
+     * Tries to find the element value from the values array
+     * 
+     * Needs to be redefined here as $_FILES is populated differently from 
+     * other arrays when element name is of the form foo[bar]
+     * 
+     * @access    private
+     * @return    mixed
+     */
+    function _findValue()
+    {
+    }
+    // }}}
+}
+/**
+ * HTML class for static data
+ * 
+ * @author       Wojciech Gdela <eltehaem@poczta.onet.pl>
+ * @access       public
+ */
+class HTML_QuickForm_static extends \HTML_QuickForm_element
+{
+    // {{{ properties
+    /**
+     * Display text
+     * @var       string
+     * @access    private
+     */
+    var $_text = \null;
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    $elementLabel   (optional)Label
+     * @param     string    $text           (optional)Display text
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $text = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_static($elementName = \null, $elementLabel = \null, $text = \null)
+    {
+    }
+    // }}}
+    // {{{ setName()
+    /**
+     * Sets the element name
+     * 
+     * @param     string    $name   Element name
+     * @access    public
+     * @return    void
+     */
+    function setName($name)
+    {
+    }
+    //end func setName
+    // }}}
+    // {{{ getName()
+    /**
+     * Returns the element name
+     * 
+     * @access    public
+     * @return    string
+     */
+    function getName()
+    {
+    }
+    //end func getName
+    // }}}
+    // {{{ setText()
+    /**
+     * Sets the text
+     *
+     * @param     string    $text
+     * @access    public
+     * @return    void
+     */
+    function setText($text)
+    {
+    }
+    // end func setText
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets the text (uses the standard setValue call to emulate a form element.
+     *
+     * @param     string    $text
+     * @access    public
+     * @return    void
+     */
+    function setValue($text)
+    {
+    }
+    // end func setValue
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the static text element in HTML
+     * 
+     * @access    public
+     * @return    string
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags
+     * 
+     * @access    public
+     * @return    string
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+    // {{{ onQuickFormEvent()
+    /**
+     * Called by HTML_QuickForm whenever form event is made on this element
+     *
+     * @param     string    $event  Name of event
+     * @param     mixed     $arg    event arguments
+     * @param     object    $caller calling object
+     * @since     1.0
+     * @access    public
+     * @return    void
+     * @throws    
+     */
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormEvent
+    // }}}
+    // {{{ exportValue()
+    /**
+     * We override this here because we don't want any values from static elements
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+}
+/**
+ * A pseudo-element used for adding headers to form
+ *
+ * @author Alexey Borzov <borz_off@cs.msu.su>
+ * @access public
+ */
+class HTML_QuickForm_header extends \HTML_QuickForm_static
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @param string $elementName    Header name
+     * @param string $text           Header text
+     * @access public
+     * @return void
+     */
+    public function __construct($elementName = \null, $text = \null)
+    {
+    }
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_header($elementName = \null, $text = \null)
+    {
+    }
+    // }}}
+    // {{{ accept()
+    /**
+     * Accepts a renderer
+     *
+     * @param object     An HTML_QuickForm_Renderer object
+     * @access public
+     * @return void
+     */
+    function accept(&$renderer, $required = \false, $error = \null)
+    {
+    }
+    // end func accept
+    // }}}
+}
+/**
+ * HTML class for a hidden type element
+ *
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_hidden extends \HTML_QuickForm_input
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $value          (optional)Input field value
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string
+     *                                      or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $value = '', $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_hidden($elementName = \null, $value = '', $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ freeze()
+    /**
+     * Freeze the element so that only its value is returned
+     *
+     * @access    public
+     * @return    void
+     */
+    function freeze()
+    {
+    }
+    //end func freeze
+    // }}}
+    // {{{ accept()
+    /**
+     * Accepts a renderer
+     *
+     * @param object     An HTML_QuickForm_Renderer object
+     * @access public
+     * @return void
+     */
+    function accept(&$renderer, $required = \false, $error = \null)
+    {
+    }
+    // end func accept
+    // }}}
+}
+/**
+ * Class to dynamically create an HTML SELECT
+ *
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_select extends \HTML_QuickForm_element
+{
+    // {{{ properties
+    /**
+     * Contains the select options
+     *
+     * @var       array
+     * @since     1.0
+     * @access    private
+     */
+    var $_options = array();
+    /**
+     * Default values of the SELECT
+     * 
+     * @var       string
+     * @since     1.0
+     * @access    private
+     */
+    var $_values = \null;
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    Select name attribute
+     * @param     mixed     Label(s) for the select
+     * @param     mixed     Data to be used to populate options
+     * @param     mixed     Either a typical HTML attribute string or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $options = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_select($elementName = \null, $elementLabel = \null, $options = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ apiVersion()
+    /**
+     * Returns the current API version 
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    double
+     */
+    function apiVersion()
+    {
+    }
+    //end func apiVersion
+    // }}}
+    // {{{ setSelected()
+    /**
+     * Sets the default values of the select box
+     * 
+     * @param     mixed    $values  Array or comma delimited string of selected values
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setSelected($values)
+    {
+    }
+    //end func setSelected
+    // }}}
+    // {{{ getSelected()
+    /**
+     * Returns an array of the selected values
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    array of selected values
+     */
+    function getSelected()
+    {
+    }
+    // end func getSelected
+    // }}}
+    // {{{ setName()
+    /**
+     * Sets the input field name
+     * 
+     * @param     string    $name   Input field name attribute
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setName($name)
+    {
+    }
+    //end func setName
+    // }}}
+    // {{{ getName()
+    /**
+     * Returns the element name
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getName()
+    {
+    }
+    //end func getName
+    // }}}
+    // {{{ getPrivateName()
+    /**
+     * Returns the element name (possibly with brackets appended)
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getPrivateName()
+    {
+    }
+    //end func getPrivateName
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets the value of the form element
+     *
+     * @param     mixed    $values  Array or comma delimited string of selected values
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setValue($value)
+    {
+    }
+    // end func setValue
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns an array of the selected values
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    array of selected values
+     */
+    function getValue()
+    {
+    }
+    // end func getValue
+    // }}}
+    // {{{ setSize()
+    /**
+     * Sets the select field size, only applies to 'multiple' selects
+     * 
+     * @param     int    $size  Size of select  field
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setSize($size)
+    {
+    }
+    //end func setSize
+    // }}}
+    // {{{ getSize()
+    /**
+     * Returns the select field size
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    int
+     */
+    function getSize()
+    {
+    }
+    //end func getSize
+    // }}}
+    // {{{ setMultiple()
+    /**
+     * Sets the select mutiple attribute
+     * 
+     * @param     bool    $multiple  Whether the select supports multi-selections
+     * @since     1.2
+     * @access    public
+     * @return    void
+     */
+    function setMultiple($multiple)
+    {
+    }
+    //end func setMultiple
+    // }}}
+    // {{{ getMultiple()
+    /**
+     * Returns the select mutiple attribute
+     * 
+     * @since     1.2
+     * @access    public
+     * @return    bool    true if multiple select, false otherwise
+     */
+    function getMultiple()
+    {
+    }
+    //end func getMultiple
+    // }}}
+    // {{{ addOption()
+    /**
+     * Adds a new OPTION to the SELECT
+     *
+     * @param     string    $text       Display text for the OPTION
+     * @param     string    $value      Value for the OPTION
+     * @param     mixed     $attributes Either a typical HTML attribute string 
+     *                                  or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function addOption($text, $value, $attributes = \null)
+    {
+    }
+    // end func addOption
+    // }}}
+    // {{{ loadArray()
+    /**
+     * Loads the options from an associative array
+     * 
+     * @param     array    $arr     Associative array of options
+     * @param     mixed    $values  (optional) Array or comma delimited string of selected values
+     * @since     1.0
+     * @access    public
+     * @return    PEAR_Error on error or true
+     * @throws    PEAR_Error
+     */
+    function loadArray($arr, $values = \null)
+    {
+    }
+    // end func loadArray
+    // }}}
+    // {{{ loadDbResult()
+    /**
+     * Loads the options from DB_result object
+     * 
+     * If no column names are specified the first two columns of the result are
+     * used as the text and value columns respectively
+     * @param     object    $result     DB_result object 
+     * @param     string    $textCol    (optional) Name of column to display as the OPTION text 
+     * @param     string    $valueCol   (optional) Name of column to use as the OPTION value 
+     * @param     mixed     $values     (optional) Array or comma delimited string of selected values
+     * @since     1.0
+     * @access    public
+     * @return    PEAR_Error on error or true
+     * @throws    PEAR_Error
+     */
+    function loadDbResult(&$result, $textCol = \null, $valueCol = \null, $values = \null)
+    {
+    }
+    // end func loadDbResult
+    // }}}
+    // {{{ loadQuery()
+    /**
+     * Queries a database and loads the options from the results
+     *
+     * @param     mixed     $conn       Either an existing DB connection or a valid dsn 
+     * @param     string    $sql        SQL query string
+     * @param     string    $textCol    (optional) Name of column to display as the OPTION text 
+     * @param     string    $valueCol   (optional) Name of column to use as the OPTION value 
+     * @param     mixed     $values     (optional) Array or comma delimited string of selected values
+     * @since     1.1
+     * @access    public
+     * @return    void
+     * @throws    PEAR_Error
+     */
+    function loadQuery(&$conn, $sql, $textCol = \null, $valueCol = \null, $values = \null)
+    {
+    }
+    // end func loadQuery
+    // }}}
+    // {{{ load()
+    /**
+     * Loads options from different types of data sources
+     *
+     * This method is a simulated overloaded method.  The arguments, other than the
+     * first are optional and only mean something depending on the type of the first argument.
+     * If the first argument is an array then all arguments are passed in order to loadArray.
+     * If the first argument is a db_result then all arguments are passed in order to loadDbResult.
+     * If the first argument is a string or a DB connection then all arguments are 
+     * passed in order to loadQuery.
+     * @param     mixed     $options     Options source currently supports assoc array or DB_result
+     * @param     mixed     $param1     (optional) See function detail
+     * @param     mixed     $param2     (optional) See function detail
+     * @param     mixed     $param3     (optional) See function detail
+     * @param     mixed     $param4     (optional) See function detail
+     * @since     1.1
+     * @access    public
+     * @return    PEAR_Error on error or true
+     * @throws    PEAR_Error
+     */
+    function load(&$options, $param1 = \null, $param2 = \null, $param3 = \null, $param4 = \null)
+    {
+    }
+    // end func load
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the SELECT in HTML
+     *
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+    // {{{ exportValue()
+    /**
+     * We check the options and return only the values that _could_ have been
+     * selected. We also return a scalar value if select is not "multiple"
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+    // {{{ onQuickFormEvent()
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // }}}
+}
+/**
+ * This class takes the same arguments as a select element, but instead
+ * of creating a select ring it creates hidden elements for all values
+ * already selected with setDefault or setConstant.  This is useful if
+ * you have a select ring that you don't want visible, but you need all
+ * selected values to be passed.
+ *
+ * @author       Isaac Shepard <ishepard@bsiweb.com>
+ *
+ * @version      1.0
+ * @since        2.1
+ * @access       public
+ */
+class HTML_QuickForm_hiddenselect extends \HTML_QuickForm_select
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @param     string    Select name attribute
+     * @param     mixed     Label(s) for the select (not used)
+     * @param     mixed     Data to be used to populate options
+     * @param     mixed     Either a typical HTML attribute string or an associative array (not used)
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $options = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_hiddenselect($elementName = \null, $elementLabel = \null, $options = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the SELECT in HTML
+     *
+     * @since     1.0
+     * @access    public
+     * @return    string
+     * @throws
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ accept()
+    /**
+     * This is essentially a hidden element and should be rendered as one
+     */
+    function accept(&$renderer, $required = \false, $error = \null)
+    {
+    }
+    // }}}
+}
+/**
+ * Class to dynamically create two or more HTML Select elements
+ * The first select changes the content of the second select and so on.
+ * This element is considered as a group. Selects will be named
+ * groupName[0], groupName[1], groupName[2]...
+ *
+ * @author       Herim Vasquez <vasquezh@iro.umontreal.ca>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_hierselect extends \HTML_QuickForm_group
+{
+    // {{{ properties
+    /**
+     * Options for all the select elements
+     *
+     * Format is a bit more complex as we need to know which options
+     * are related to the ones in the previous select:
+     *
+     * Ex:
+     * // first select
+     * $select1[0] = 'Pop';
+     * $select1[1] = 'Classical';
+     * $select1[2] = 'Funeral doom';
+     *
+     * // second select
+     * $select2[0][0] = 'Red Hot Chil Peppers';
+     * $select2[0][1] = 'The Pixies';
+     * $select2[1][0] = 'Wagner';
+     * $select2[1][1] = 'Strauss';
+     * $select2[2][0] = 'Pantheist';
+     * $select2[2][1] = 'Skepticism';
+     *
+     * // If only need two selects
+     * //     - and using the depracated functions
+     * $sel =& $form->addElement('hierselect', 'cds', 'Choose CD:');
+     * $sel->setMainOptions($select1);
+     * $sel->setSecOptions($select2);
+     *
+     * //     - and using the new setOptions function
+     * $sel =& $form->addElement('hierselect', 'cds', 'Choose CD:');
+     * $sel->setOptions(array($select1, $select2));
+     *
+     * // If you have a third select with prices for the cds
+     * $select3[0][0][0] = '15.00$';
+     * $select3[0][0][1] = '17.00$';
+     * etc
+     *
+     * // You can now use
+     * $sel =& $form->addElement('hierselect', 'cds', 'Choose CD:');
+     * $sel->setOptions(array($select1, $select2, $select3));
+     *
+     * @var       array
+     * @access    private
+     */
+    var $_options = array();
+    /**
+     * Number of select elements on this group
+     *
+     * @var       int
+     * @access    private
+     */
+    var $_nbElements = 0;
+    /**
+     * The javascript used to set and change the options
+     *
+     * @var       string
+     * @access    private
+     */
+    var $_js = '';
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $elementLabel   (optional)Input field label in form
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string
+     *                                      or an associative array. Date format is passed along the attributes.
+     * @param     mixed     $separator      (optional)Use a string for one separator,
+     *                                      use an array to alternate the separators.
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $attributes = \null, $separator = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_hierselect($elementName = \null, $elementLabel = \null, $attributes = \null, $separator = \null)
+    {
+    }
+    // }}}
+    // {{{ setOptions()
+    /**
+     * Initialize the array structure containing the options for each select element.
+     * Call the functions that actually do the magic.
+     *
+     * @param     array    $options    Array of options defining each element
+     *
+     * @access    public
+     * @return    void
+     */
+    function setOptions($options)
+    {
+    }
+    // end func setMainOptions
+    // }}}
+    // {{{ setMainOptions()
+    /**
+     * Sets the options for the first select element. Deprecated. setOptions() should be used.
+     *
+     * @param     array     $array    Options for the first select element
+     *
+     * @access    public
+     * @deprecated          Deprecated since release 3.2.2
+     * @return    void
+     */
+    function setMainOptions($array)
+    {
+    }
+    // end func setMainOptions
+    // }}}
+    // {{{ setSecOptions()
+    /**
+     * Sets the options for the second select element. Deprecated. setOptions() should be used.
+     * The main _options array is initialized and the _setOptions function is called.
+     *
+     * @param     array     $array    Options for the second select element
+     *
+     * @access    public
+     * @deprecated          Deprecated since release 3.2.2
+     * @return    void
+     */
+    function setSecOptions($array)
+    {
+    }
+    // end func setSecOptions
+    // }}}
+    // {{{ _setOptions()
+    /**
+     * Sets the options for each select element
+     *
+     * @access    private
+     * @return    void
+     */
+    function _setOptions()
+    {
+    }
+    // end func _setOptions
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets values for group's elements
+     *
+     * @param     array     $value    An array of 2 or more values, for the first,
+     *                                the second, the third etc. select
+     *
+     * @access    public
+     * @return    void
+     */
+    function setValue($value)
+    {
+    }
+    // end func setValue
+    // }}}
+    // {{{ _createElements()
+    /**
+     * Creates all the elements for the group
+     *
+     * @access    private
+     * @return    void
+     */
+    function _createElements()
+    {
+    }
+    // end func _createElements
+    // }}}
+    // {{{ toHtml()
+    function toHtml()
+    {
+    }
+    // end func toHtml
+    // }}}
+    // {{{ accept()
+    function accept(&$renderer, $required = \false, $error = \null)
+    {
+    }
+    // end func accept
+    // }}}
+    // {{{ onQuickFormEvent()
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormEvent
+    // }}}
+    // {{{ _convertArrayToJavascript()
+    /**
+     * Converts PHP array to its Javascript analog
+     *
+     * @access private
+     * @param  array     PHP array to convert
+     * @param  bool      Generate Javascript object literal (default, works like PHP's associative array) or array literal
+     * @return string    Javascript representation of the value
+     */
+    function _convertArrayToJavascript($array, $assoc = \true)
+    {
+    }
+    // }}}
+    // {{{ _convertScalarToJavascript()
+    /**
+     * Converts PHP's scalar value to its Javascript analog
+     *
+     * @access private
+     * @param  mixed     PHP value to convert
+     * @return string    Javascript representation of the value
+     */
+    function _convertScalarToJavascript($val)
+    {
+    }
+    // }}}
+    // {{{ _escapeString()
+    /**
+     * Quotes the string so that it can be used in Javascript string constants
+     *
+     * @access private
+     * @param  string
+     * @return string
+     */
+    function _escapeString($str)
+    {
+    }
+    // }}}
+}
+/**
+ * A pseudo-element used for adding raw HTML to form
+ *
+ * Intended for use with the default renderer only, template-based
+ * ones may (and probably will) completely ignore this
+ *
+ * @author Alexey Borzov <borz_off@cs.msu.su>
+ * @access public
+ */
+class HTML_QuickForm_html extends \HTML_QuickForm_static
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     *
+     * @param string $text   raw HTML to add
+     * @access public
+     * @return void
+     */
+    public function __construct($text = \null)
+    {
+    }
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_html($text = \null)
+    {
+    }
+    // }}}
+    // {{{ accept()
+    /**
+     * Accepts a renderer
+     *
+     * @param object     An HTML_QuickForm_Renderer object
+     * @access public
+     * @return void
+     */
+    function accept(&$renderer, $required = \false, $error = \null)
+    {
+    }
+    // end func accept
+    // }}}
+}
+/**
+ * HTML class for a image type element
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_image extends \HTML_QuickForm_input
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    $elementName    (optional)Element name attribute
+     * @param     string    $src            (optional)Image source
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string 
+     *                                      or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $src = '', $attributes = \null)
+    {
+    }
+    // end class constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_image($elementName = \null, $src = '', $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setSource()
+    /**
+     * Sets source for image element
+     * 
+     * @param     string    $src  source for image element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setSource($src)
+    {
+    }
+    // end func setSource
+    // }}}
+    // {{{ setBorder()
+    /**
+     * Sets border size for image element
+     * 
+     * @param     string    $border  border for image element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setBorder($border)
+    {
+    }
+    // end func setBorder
+    // }}}
+    // {{{ setAlign()
+    /**
+     * Sets alignment for image element
+     * 
+     * @param     string    $align  alignment for image element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setAlign($align)
+    {
+    }
+    // end func setAlign
+    // }}}
+    // {{{ freeze()
+    /**
+     * Freeze the element so that only its value is returned
+     * 
+     * @access    public
+     * @return    void
+     */
+    function freeze()
+    {
+    }
+    //end func freeze
+    // }}}
+}
+/**
+ * HTML class for a link type field
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_link extends \HTML_QuickForm_static
+{
+    // {{{ properties
+    /**
+     * Link display text
+     * @var       string
+     * @since     1.0
+     * @access    private
+     */
+    var $_text = "";
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    $elementLabel   (optional)Link label
+     * @param     string    $href           (optional)Link href
+     * @param     string    $text           (optional)Link display text
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string 
+     *                                      or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     * @throws    
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $href = \null, $text = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_link($elementName = \null, $elementLabel = \null, $href = \null, $text = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setName()
+    /**
+     * Sets the input field name
+     * 
+     * @param     string    $name   Input field name attribute
+     * @since     1.0
+     * @access    public
+     * @return    void
+     * @throws    
+     */
+    function setName($name)
+    {
+    }
+    //end func setName
+    // }}}
+    // {{{ getName()
+    /**
+     * Returns the element name
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     * @throws    
+     */
+    function getName()
+    {
+    }
+    //end func getName
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets value for textarea element
+     * 
+     * @param     string    $value  Value for password element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     * @throws    
+     */
+    function setValue($value)
+    {
+    }
+    //end func setValue
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns the value of the form element
+     *
+     * @since     1.0
+     * @access    public
+     * @return    void
+     * @throws    
+     */
+    function getValue()
+    {
+    }
+    // end func getValue
+    // }}}
+    // {{{ setHref()
+    /**
+     * Sets the links href
+     *
+     * @param     string    $href
+     * @since     1.0
+     * @access    public
+     * @return    void
+     * @throws    
+     */
+    function setHref($href)
+    {
+    }
+    // end func setHref
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the textarea element in HTML
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     * @throws    
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags (in this case, value is changed to a mask)
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     * @throws    
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+}
+/**
+ * HTML class for a password type field
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.1
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_password extends \HTML_QuickForm_input
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $elementLabel   (optional)Input field label
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string 
+     *                                      or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     * @throws    
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_password($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setSize()
+    /**
+     * Sets size of password element
+     * 
+     * @param     string    $size  Size of password field
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setSize($size)
+    {
+    }
+    //end func setSize
+    // }}}
+    // {{{ setMaxlength()
+    /**
+     * Sets maxlength of password element
+     * 
+     * @param     string    $maxlength  Maximum length of password field
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setMaxlength($maxlength)
+    {
+    }
+    //end func setMaxlength
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags (in this case, value is changed to a mask)
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     * @throws    
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+}
+/**
+ * HTML class for a radio type element
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.1
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_radio extends \HTML_QuickForm_input
+{
+    // {{{ properties
+    /**
+     * Radio display text
+     * @var       string
+     * @since     1.1
+     * @access    private
+     */
+    var $_text = '';
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    Input field name attribute
+     * @param     mixed     Label(s) for a field
+     * @param     string    Text to display near the radio
+     * @param     string    Input field value
+     * @param     mixed     Either a typical HTML attribute string or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $text = \null, $value = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_radio($elementName = \null, $elementLabel = \null, $text = \null, $value = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    function _generateId()
+    {
+    }
+    // {{{ setChecked()
+    /**
+     * Sets whether radio button is checked
+     * 
+     * @param     bool    $checked  Whether the field is checked or not
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setChecked($checked)
+    {
+    }
+    //end func setChecked
+    // }}}
+    // {{{ getChecked()
+    /**
+     * Returns whether radio button is checked
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getChecked()
+    {
+    }
+    //end func getChecked
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the radio element in HTML
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+    // {{{ setText()
+    /**
+     * Sets the radio text
+     * 
+     * @param     string    $text  Text to display near the radio button
+     * @since     1.1
+     * @access    public
+     * @return    void
+     */
+    function setText($text)
+    {
+    }
+    //end func setText
+    // }}}
+    // {{{ getText()
+    /**
+     * Returns the radio text 
+     * 
+     * @since     1.1
+     * @access    public
+     * @return    string
+     */
+    function getText()
+    {
+    }
+    //end func getText
+    // }}}
+    // {{{ onQuickFormEvent()
+    /**
+     * Called by HTML_QuickForm whenever form event is made on this element
+     *
+     * @param     string    $event  Name of event
+     * @param     mixed     $arg    event arguments
+     * @param     object    $caller calling object
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    // end func onQuickFormLoad
+    // }}}
+    // {{{ exportValue()
+    /**
+     * Returns the value attribute if the radio is checked, null if it is not
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+}
+/**
+ * HTML class for a reset type element
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.1
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_reset extends \HTML_QuickForm_input
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    $elementName    (optional)Input field name attribute
+     * @param     string    $value          (optional)Input field value
+     * @param     mixed     $attributes     (optional)Either a typical HTML attribute string 
+     *                                      or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $value = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_reset($elementName = \null, $value = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ freeze()
+    /**
+     * Freeze the element so that only its value is returned
+     * 
+     * @access    public
+     * @return    void
+     */
+    function freeze()
+    {
+    }
+    //end func freeze
+    // }}}
+}
+/**
+ * HTML class for a submit type element
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_submit extends \HTML_QuickForm_input
+{
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    Input field name attribute
+     * @param     string    Input field value
+     * @param     mixed     Either a typical HTML attribute string or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $value = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_submit($elementName = \null, $value = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ freeze()
+    /**
+     * Freeze the element so that only its value is returned
+     * 
+     * @access    public
+     * @return    void
+     */
+    function freeze()
+    {
+    }
+    //end func freeze
+    // }}}
+    // {{{ exportValue()
+    /**
+     * Only return the value if it is found within $submitValues (i.e. if
+     * this particular submit button was clicked)
+     */
+    function exportValue(&$submitValues, $assoc = \false)
+    {
+    }
+    // }}}
+}
+/**
+ * HTML class for a textarea type field
+ * 
+ * @author       Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author       Bertrand Mansion <bmansion@mamasam.com>
+ * @version      1.0
+ * @since        PHP4.04pl1
+ * @access       public
+ */
+class HTML_QuickForm_textarea extends \HTML_QuickForm_element
+{
+    // {{{ properties
+    /**
+     * Field value
+     * @var       string
+     * @since     1.0
+     * @access    private
+     */
+    var $_value = \null;
+    // }}}
+    // {{{ constructor
+    /**
+     * Class constructor
+     * 
+     * @param     string    Input field name attribute
+     * @param     mixed     Label(s) for a field
+     * @param     mixed     Either a typical HTML attribute string or an associative array
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    public function __construct($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    //end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_textarea($elementName = \null, $elementLabel = \null, $attributes = \null)
+    {
+    }
+    // }}}
+    // {{{ setName()
+    /**
+     * Sets the input field name
+     * 
+     * @param     string    $name   Input field name attribute
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setName($name)
+    {
+    }
+    //end func setName
+    // }}}
+    // {{{ getName()
+    /**
+     * Returns the element name
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getName()
+    {
+    }
+    //end func getName
+    // }}}
+    // {{{ setValue()
+    /**
+     * Sets value for textarea element
+     * 
+     * @param     string    $value  Value for textarea element
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setValue($value)
+    {
+    }
+    //end func setValue
+    // }}}
+    // {{{ getValue()
+    /**
+     * Returns the value of the form element
+     *
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getValue()
+    {
+    }
+    // end func getValue
+    // }}}
+    // {{{ setWrap()
+    /**
+     * Sets wrap type for textarea element
+     * 
+     * @param     string    $wrap  Wrap type
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setWrap($wrap)
+    {
+    }
+    //end func setWrap
+    // }}}
+    // {{{ setRows()
+    /**
+     * Sets height in rows for textarea element
+     * 
+     * @param     string    $rows  Height expressed in rows
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setRows($rows)
+    {
+    }
+    //end func setRows
+    // }}}
+    // {{{ setCols()
+    /**
+     * Sets width in cols for textarea element
+     * 
+     * @param     string    $cols  Width expressed in cols
+     * @since     1.0
+     * @access    public
+     * @return    void
+     */
+    function setCols($cols)
+    {
+    }
+    //end func setCols
+    // }}}
+    // {{{ toHtml()
+    /**
+     * Returns the textarea element in HTML
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function toHtml()
+    {
+    }
+    //end func toHtml
+    // }}}
+    // {{{ getFrozenHtml()
+    /**
+     * Returns the value of field without HTML tags (in this case, value is changed to a mask)
+     * 
+     * @since     1.0
+     * @access    public
+     * @return    string
+     */
+    function getFrozenHtml()
+    {
+    }
+    //end func getFrozenHtml
+    // }}}
+}
+/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * utility functions
+ *
+ * PHP versions 4 and 5
+ *
+ * LICENSE: This source file is subject to version 3.01 of the PHP license
+ * that is available through the world-wide-web at the following URI:
+ * http://www.php.net/license/3_01.txt If you did not receive a copy of
+ * the PHP License and are unable to obtain it through the web, please
+ * send a note to license@php.net so we can mail you a copy immediately.
+ *
+ * @category    HTML
+ * @package     HTML_QuickForm
+ * @author      Chuck Burgess <ashnazg@php.net>
+ * @copyright   2001-2018 The PHP Group
+ * @license     http://www.php.net/license/3_01.txt PHP License 3.01
+ * @version     CVS: $Id$
+ * @link        http://pear.php.net/package/HTML_QuickForm
+ */
+/**
+ * Provides a collection of static methods for array manipulation.
+ *
+ * (courtesy of CiviCRM project (https://civicrm.org/)
+ *
+ * @category    HTML
+ * @package     HTML_QuickForm
+ * @author      Chuck Burgess <ashnazg@php.net>
+ * @version     Release: @package_version@
+ * @since       3.2
+ */
+class HTML_QuickForm_utils
+{
+    /**
+     * Get a single value from an array-tree.
+     *
+     * @param   array     $values   Ex: ['foo' => ['bar' => 123]].
+     * @param   array     $path     Ex: ['foo', 'bar'].
+     * @param   mixed     $default
+     * @return  mixed               Ex 123.
+     *
+     * @access  public
+     * @static
+     */
+    static function pathGet($values, $path, $default = \NULL)
+    {
+    }
+    /**
+     * Check if a key isset which may be several layers deep.
+     *
+     * This is a helper for when the calling function does not know how many layers deep
+     * the path array is so cannot easily check.
+     *
+     * @param   array $values
+     * @param   array $path
+     * @return  bool
+     *
+     * @access  public
+     * @static
+     */
+    static function pathIsset($values, $path)
+    {
+    }
+    /**
+     * Set a single value in an array tree.
+     *
+     * @param   array   $values     Ex: ['foo' => ['bar' => 123]].
+     * @param   array   $pathParts  Ex: ['foo', 'bar'].
+     * @param   mixed   $value      Ex: 456.
+     * @return  void
+     *
+     * @access  public
+     * @static
+     */
+    static function pathSet(&$values, $pathParts, $value)
+    {
+    }
+    /**
+     * Check if a key isset which may be several layers deep.
+     *
+     * This is a helper for when the calling function does not know how many layers deep the
+     * path array is so cannot easily check.
+     *
+     * @param   array $array
+     * @param   array $path
+     * @return  bool
+     *
+     * @access  public
+     * @static
+     */
+    static function recursiveIsset($array, $path)
+    {
+    }
+    /**
+     * Check if a key isset which may be several layers deep.
+     *
+     * This is a helper for when the calling function does not know how many layers deep the
+     * path array is so cannot easily check.
+     *
+     * @param   array   $array
+     * @param   array   $path       An array of keys,
+     *                              e.g [0, 'bob', 8] where we want to check if $array[0]['bob'][8]
+     * @param   mixed   $default    Value to return if not found.
+     * @return  bool
+     *
+     * @access  public
+     * @static
+     */
+    static function recursiveValue($array, $path, $default = \NULL)
+    {
+    }
+    /**
+     * Append the value to the array using the key provided.
+     *
+     * e.g if value is 'llama' & path is [0, 'email', 'location'] result will be
+     * [0 => ['email' => ['location' => 'llama']]
+     *
+     * @param           $path
+     * @param           $value
+     * @param   array   $source
+     * @return  array
+     *
+     * @access  public
+     * @static
+     */
+    static function recursiveBuild($path, $value, $source = array())
+    {
+    }
+}
+/**
+ * Class for HTML 4.0 <button> element
+ * 
+ * @author  Alexey Borzov <avb@php.net>
+ * @since   3.2.3
+ * @access  public
+ */
+class HTML_QuickForm_xbutton extends \HTML_QuickForm_element
+{
+    /**
+     * Contents of the <button> tag
+     * @var      string
+     * @access   private
+     */
+    var $_content;
+    /**
+     * Class constructor
+     * 
+     * @param    string  Button name
+     * @param    string  Button content (HTML to add between <button></button> tags)
+     * @param    mixed   Either a typical HTML attribute string or an associative array
+     * @access   public
+     */
+    public function __construct($elementName = \null, $elementContent = \null, $attributes = \null)
+    {
+    }
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_xbutton($elementName = \null, $elementContent = \null, $attributes = \null)
+    {
+    }
+    function toHtml()
+    {
+    }
+    function getFrozenHtml()
+    {
+    }
+    function freeze()
+    {
+    }
+    function setName($name)
+    {
+    }
+    function getName()
+    {
+    }
+    function setValue($value)
+    {
+    }
+    function getValue()
+    {
+    }
+    /**
+     * Sets the contents of the button element
+     *
+     * @param    string  Button content (HTML to add between <button></button> tags)
+     */
+    function setContent($content)
+    {
+    }
+    function onQuickFormEvent($event, $arg, &$caller)
+    {
+    }
+    /**
+     * Returns a 'safe' element's value
+     * 
+     * The value is only returned if the button's type is "submit" and if this
+     * particlular button was clicked
+     */
+    function exportValue(&$submitValues, $assoc = \false)
     {
     }
 }

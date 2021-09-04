@@ -9,8 +9,9 @@
     "/lib/weblib.php",
     "/lib/dml/moodle_database.php",
     "/lib/dml/mysqli_native_moodle_database.php",
-    "lib/pear/HTML/QuickForm/Renderer.php",
-    "lib/pear/HTML/QuickForm/Renderer/*.php",
+    "/lib/pear/HTML/*.php",
+    "/lib/pear/HTML/QuickForm/*.php",
+    "/lib/pear/HTML/QuickForm/Renderer/*.php",
     "/lib/xmldb/*.php",
     "/course/moodleform_mod.php"
 ]
