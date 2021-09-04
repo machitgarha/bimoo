@@ -1146,6 +1146,660 @@ class MoodleQuickForm extends \HTML_QuickForm_DHTMLRulesTableless
     {
     }
 }
+/* vim: set expandtab tabstop=4 shiftwidth=4: */
+// +----------------------------------------------------------------------+
+// | PHP version 4.0                                                      |
+// +----------------------------------------------------------------------+
+// | Copyright (c) 1997-2003 The PHP Group                                |
+// +----------------------------------------------------------------------+
+// | This source file is subject to version 2.0 of the PHP license,       |
+// | that is bundled with this package in the file LICENSE, and is        |
+// | available at through the world-wide-web at                           |
+// | http://www.php.net/license/2_02.txt.                                 |
+// | If you did not receive a copy of the PHP license and are unable to   |
+// | obtain it through the world-wide-web, please send a note to          |
+// | license@php.net so we can mail you a copy immediately.               |
+// +----------------------------------------------------------------------+
+// | Author: Alexey Borzov <borz_off@cs.msu.su>                           |
+// +----------------------------------------------------------------------+
+//
+// $Id$
+/**
+ * An abstract base class for QuickForm renderers
+ * 
+ * The class implements a Visitor design pattern
+ *
+ * @abstract
+ * @author Alexey Borzov <borz_off@cs.msu.su>
+ */
+class HTML_QuickForm_Renderer
+{
+    /**
+     * Constructor
+     *
+     * @access public
+     */
+    public function __construct()
+    {
+    }
+    // end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_Renderer()
+    {
+    }
+    /**
+     * Called when visiting a form, before processing any form elements
+     *
+     * @param    object    An HTML_QuickForm object being visited
+     * @access   public
+     * @return   void 
+     * @abstract
+     */
+    function startForm(&$form)
+    {
+    }
+    // end func startForm
+    /**
+     * Called when visiting a form, after processing all form elements
+     * 
+     * @param    object     An HTML_QuickForm object being visited
+     * @access   public
+     * @return   void 
+     * @abstract
+     */
+    function finishForm(&$form)
+    {
+    }
+    // end func finishForm
+    /**
+     * Called when visiting a header element
+     *
+     * @param    object     An HTML_QuickForm_header element being visited
+     * @access   public
+     * @return   void 
+     * @abstract
+     */
+    function renderHeader(&$header)
+    {
+    }
+    // end func renderHeader
+    /**
+     * Called when visiting an element
+     *
+     * @param    object     An HTML_QuickForm_element object being visited
+     * @param    bool       Whether an element is required
+     * @param    string     An error message associated with an element
+     * @access   public
+     * @return   void 
+     * @abstract
+     */
+    function renderElement(&$element, $required, $error)
+    {
+    }
+    // end func renderElement
+    /**
+     * Called when visiting a hidden element
+     * 
+     * @param    object     An HTML_QuickForm_hidden object being visited
+     * @access   public
+     * @return   void
+     * @abstract 
+     */
+    function renderHidden(&$element)
+    {
+    }
+    // end func renderHidden
+    /**
+     * Called when visiting a raw HTML/text pseudo-element
+     * 
+     * Seems that this should not be used when using a template-based renderer
+     *
+     * @param    object     An HTML_QuickForm_html element being visited
+     * @access   public
+     * @return   void 
+     * @abstract
+     */
+    function renderHtml(&$data)
+    {
+    }
+    // end func renderHtml
+    /**
+     * Called when visiting a group, before processing any group elements
+     *
+     * @param    object     An HTML_QuickForm_group object being visited
+     * @param    bool       Whether a group is required
+     * @param    string     An error message associated with a group
+     * @access   public
+     * @return   void 
+     * @abstract
+     */
+    function startGroup(&$group, $required, $error)
+    {
+    }
+    // end func startGroup
+    /**
+     * Called when visiting a group, after processing all group elements
+     *
+     * @param    object     An HTML_QuickForm_group object being visited
+     * @access   public
+     * @return   void 
+     * @abstract
+     */
+    function finishGroup(&$group)
+    {
+    }
+    // end func finishGroup
+}
+/**
+ * A concrete renderer for HTML_QuickForm,
+ * based on QuickForm 2.x built-in one
+ * 
+ * @access public
+ */
+class HTML_QuickForm_Renderer_Default extends \HTML_QuickForm_Renderer
+{
+    /**
+     * The HTML of the form  
+     * @var      string
+     * @access   private
+     */
+    var $_html;
+    /**
+     * Header Template string
+     * @var      string
+     * @access   private
+     */
+    var $_headerTemplate = "\n\t<tr>\n\t\t<td style=\"white-space: nowrap; background-color: #CCCCCC;\" align=\"left\" valign=\"top\" colspan=\"2\"><b>{header}</b></td>\n\t</tr>";
+    /**
+     * Element template string
+     * @var      string
+     * @access   private
+     */
+    var $_elementTemplate = "\n\t<tr>\n\t\t<td align=\"right\" valign=\"top\"><!-- BEGIN required --><span style=\"color: #ff0000\">*</span><!-- END required --><b>{label}</b></td>\n\t\t<td valign=\"top\" align=\"left\"><!-- BEGIN error --><span style=\"color: #ff0000\">{error}</span><br /><!-- END error -->\t{element}</td>\n\t</tr>";
+    /**
+     * Form template string
+     * @var      string
+     * @access   private
+     */
+    var $_formTemplate = "\n<form{attributes}>\n<div>\n{hidden}<table border=\"0\">\n{content}\n</table>\n</div>\n</form>";
+    /**
+     * Required Note template string
+     * @var      string
+     * @access   private
+     */
+    var $_requiredNoteTemplate = "\n\t<tr>\n\t\t<td></td>\n\t<td align=\"left\" valign=\"top\">{requiredNote}</td>\n\t</tr>";
+    /**
+     * Array containing the templates for customised elements
+     * @var      array
+     * @access   private
+     */
+    var $_templates = array();
+    /**
+     * Array containing the templates for group wraps.
+     * 
+     * These templates are wrapped around group elements and groups' own
+     * templates wrap around them. This is set by setGroupTemplate().
+     * 
+     * @var      array
+     * @access   private
+     */
+    var $_groupWraps = array();
+    /**
+     * Array containing the templates for elements within groups
+     * @var      array
+     * @access   private
+     */
+    var $_groupTemplates = array();
+    /**
+     * True if we are inside a group 
+     * @var      bool
+     * @access   private
+     */
+    var $_inGroup = \false;
+    /**
+     * Array with HTML generated for group elements
+     * @var      array
+     * @access   private
+     */
+    var $_groupElements = array();
+    /**
+     * Template for an element inside a group
+     * @var      string
+     * @access   private
+     */
+    var $_groupElementTemplate = '';
+    /**
+     * HTML that wraps around the group elements
+     * @var      string
+     * @access   private
+     */
+    var $_groupWrap = '';
+    /**
+     * HTML for the current group
+     * @var      string
+     * @access   private
+     */
+    var $_groupTemplate = '';
+    /**
+     * Collected HTML of the hidden fields
+     * @var      string
+     * @access   private
+     */
+    var $_hiddenHtml = '';
+    /**
+     * Constructor
+     *
+     * @access public
+     */
+    public function __construct()
+    {
+    }
+    // end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_Renderer_Default()
+    {
+    }
+    // end constructor
+    /**
+     * returns the HTML generated for the form
+     *
+     * @access public
+     * @return string
+     */
+    function toHtml()
+    {
+    }
+    // end func toHtml
+    /**
+     * Called when visiting a form, before processing any form elements
+     *
+     * @param    object      An HTML_QuickForm object being visited
+     * @access   public
+     * @return   void
+     */
+    function startForm(&$form)
+    {
+    }
+    // end func startForm
+    /**
+     * Called when visiting a form, after processing all form elements
+     * Adds required note, form attributes, validation javascript and form content.
+     * 
+     * @param    object      An HTML_QuickForm object being visited
+     * @access   public
+     * @return   void
+     */
+    function finishForm(&$form)
+    {
+    }
+    // end func finishForm
+    /**
+     * Called when visiting a header element
+     *
+     * @param    object     An HTML_QuickForm_header element being visited
+     * @access   public
+     * @return   void
+     */
+    function renderHeader(&$header)
+    {
+    }
+    // end func renderHeader
+    /**
+     * Helper method for renderElement
+     *
+     * @param    string      Element name
+     * @param    mixed       Element label (if using an array of labels, you should set the appropriate template)
+     * @param    bool        Whether an element is required
+     * @param    string      Error message associated with the element
+     * @access   private
+     * @see      renderElement()
+     * @return   string      Html for element
+     */
+    function _prepareTemplate($name, $label, $required, $error)
+    {
+    }
+    // end func _prepareTemplate
+    /**
+     * Renders an element Html
+     * Called when visiting an element
+     *
+     * @param object     An HTML_QuickForm_element object being visited
+     * @param bool       Whether an element is required
+     * @param string     An error message associated with an element
+     * @access public
+     * @return void
+     */
+    function renderElement(&$element, $required, $error)
+    {
+    }
+    // end func renderElement
+    /**
+     * Renders an hidden element
+     * Called when visiting a hidden element
+     * 
+     * @param object     An HTML_QuickForm_hidden object being visited
+     * @access public
+     * @return void
+     */
+    function renderHidden(&$element)
+    {
+    }
+    // end func renderHidden
+    /**
+     * Called when visiting a raw HTML/text pseudo-element
+     * 
+     * @param  object     An HTML_QuickForm_html element being visited
+     * @access public
+     * @return void
+     */
+    function renderHtml(&$data)
+    {
+    }
+    // end func renderHtml
+    /**
+     * Called when visiting a group, before processing any group elements
+     *
+     * @param object     An HTML_QuickForm_group object being visited
+     * @param bool       Whether a group is required
+     * @param string     An error message associated with a group
+     * @access public
+     * @return void
+     */
+    function startGroup(&$group, $required, $error)
+    {
+    }
+    // end func startGroup
+    /**
+     * Called when visiting a group, after processing all group elements
+     *
+     * @param    object      An HTML_QuickForm_group object being visited
+     * @access   public
+     * @return   void
+     */
+    function finishGroup(&$group)
+    {
+    }
+    // end func finishGroup
+    /**
+     * Sets element template 
+     *
+     * @param       string      The HTML surrounding an element 
+     * @param       string      (optional) Name of the element to apply template for
+     * @access      public
+     * @return      void
+     */
+    function setElementTemplate($html, $element = \null)
+    {
+    }
+    // end func setElementTemplate
+    /**
+     * Sets template for a group wrapper 
+     * 
+     * This template is contained within a group-as-element template 
+     * set via setTemplate() and contains group's element templates, set
+     * via setGroupElementTemplate()
+     *
+     * @param       string      The HTML surrounding group elements
+     * @param       string      Name of the group to apply template for
+     * @access      public
+     * @return      void
+     */
+    function setGroupTemplate($html, $group)
+    {
+    }
+    // end func setGroupTemplate
+    /**
+     * Sets element template for elements within a group
+     *
+     * @param       string      The HTML surrounding an element 
+     * @param       string      Name of the group to apply template for
+     * @access      public
+     * @return      void
+     */
+    function setGroupElementTemplate($html, $group)
+    {
+    }
+    // end func setGroupElementTemplate
+    /**
+     * Sets header template
+     *
+     * @param       string      The HTML surrounding the header 
+     * @access      public
+     * @return      void
+     */
+    function setHeaderTemplate($html)
+    {
+    }
+    // end func setHeaderTemplate
+    /**
+     * Sets form template 
+     *
+     * @param     string    The HTML surrounding the form tags 
+     * @access    public
+     * @return    void
+     */
+    function setFormTemplate($html)
+    {
+    }
+    // end func setFormTemplate
+    /**
+     * Sets the note indicating required fields template
+     *
+     * @param       string      The HTML surrounding the required note 
+     * @access      public
+     * @return      void
+     */
+    function setRequiredNoteTemplate($html)
+    {
+    }
+    // end func setRequiredNoteTemplate
+    /**
+     * Clears all the HTML out of the templates that surround notes, elements, etc.
+     * Useful when you want to use addData() to create a completely custom form look
+     *
+     * @access  public
+     * @return  void
+     */
+    function clearAllTemplates()
+    {
+    }
+    // end func clearAllTemplates
+}
+/**
+ * A renderer for HTML_QuickForm that only uses XHTML and CSS but no
+ * table tags
+ * 
+ * You need to specify a stylesheet like the one that you find in
+ * data/stylesheet.css to make this work.
+ *
+ * @category   HTML
+ * @package    HTML_QuickForm_Renderer_Tableless
+ * @author     Alexey Borzov <borz_off@cs.msu.su>
+ * @author     Adam Daniel <adaniel1@eesus.jnj.com>
+ * @author     Bertrand Mansion <bmansion@mamasam.com>
+ * @author     Mark Wiesemann <wiesemann@php.net>
+ * @license    http://www.php.net/license/3_01.txt  PHP License 3.01
+ * @version    Release: 0.3.4
+ * @link       http://pear.php.net/package/HTML_QuickForm_Renderer_Tableless
+ */
+class HTML_QuickForm_Renderer_Tableless extends \HTML_QuickForm_Renderer_Default
+{
+    /**
+     * Header Template string
+     * @var      string
+     * @access   private
+     */
+    var $_headerTemplate = "\n\t\t<legend>{header}</legend>";
+    /**
+     * Element template string
+     * @var      string
+     * @access   private
+     */
+    var $_elementTemplate = "\n\t\t<div class=\"qfrow\"><label class=\"qflabel\"><!-- BEGIN required --><span class=\"required\">*</span><!-- END required -->{label}</label><div class=\"qfelement<!-- BEGIN error --> error<!-- END error -->\"><!-- BEGIN error --><span class=\"error\">{error}</span><br /><!-- END error -->{element}</div></div><br />";
+    /**
+     * Form template string
+     * @var      string
+     * @access   private
+     */
+    var $_formTemplate = "\n<form{attributes}>\n\t<div style=\"display: none;\">{hidden}</div>\n{content}\n</form>";
+    /**
+     * Template used when opening a fieldset
+     * @var      string
+     * @access   private
+     */
+    var $_openFieldsetTemplate = "\n\t<fieldset{id}>";
+    /**
+     * Template used when opening a hidden fieldset
+     * (i.e. a fieldset that is opened when there is no header element)
+     * @var      string
+     * @access   private
+     */
+    var $_openHiddenFieldsetTemplate = "\n\t<fieldset class=\"hidden\">";
+    /**
+     * Template used when closing a fieldset
+     * @var      string
+     * @access   private
+     */
+    var $_closeFieldsetTemplate = "\n\t</fieldset>";
+    /**
+     * Required Note template string
+     * @var      string
+     * @access   private
+     */
+    var $_requiredNoteTemplate = "\n\t\t<div class=\"qfreqnote\">{requiredNote}</div>";
+    /**
+     * How many fieldsets are open
+     * @var      integer
+     * @access   private
+     */
+    var $_fieldsetsOpen = 0;
+    /**
+     * Array of element names that indicate the end of a fieldset
+     * (a new one will be opened when a the next header element occurs)
+     * @var      array
+     * @access   private
+     */
+    var $_stopFieldsetElements = array();
+    /**
+     * Constructor
+     *
+     * @access public
+     */
+    public function __construct()
+    {
+    }
+    // end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_Renderer_Tableless()
+    {
+    }
+    /**
+     * Called when visiting a header element
+     *
+     * @param    object     An HTML_QuickForm_header element being visited
+     * @access   public
+     * @return   void
+     */
+    function renderHeader(&$header)
+    {
+    }
+    // end func renderHeader
+    /**
+     * Renders an element Html
+     * Called when visiting an element
+     *
+     * @param object     An HTML_QuickForm_element object being visited
+     * @param bool       Whether an element is required
+     * @param string     An error message associated with an element
+     * @access public
+     * @return void
+     */
+    function renderElement(&$element, $required, $error)
+    {
+    }
+    // end func renderElement
+    /**
+     * Called when visiting a form, before processing any form elements
+     *
+     * @param    object      An HTML_QuickForm object being visited
+     * @access   public
+     * @return   void
+     */
+    function startForm(&$form)
+    {
+    }
+    // end func startForm
+    /**
+     * Called when visiting a form, after processing all form elements
+     * Adds required note, form attributes, validation javascript and form content.
+     * 
+     * @param    object      An HTML_QuickForm object being visited
+     * @access   public
+     * @return   void
+     */
+    function finishForm(&$form)
+    {
+    }
+    // end func finishForm
+    /**
+     * Sets the template used when opening a fieldset
+     *
+     * @param       string      The HTML used when opening a fieldset
+     * @access      public
+     * @return      void
+     */
+    function setOpenFieldsetTemplate($html)
+    {
+    }
+    // end func setOpenFieldsetTemplate
+    /**
+     * Sets the template used when opening a hidden fieldset
+     * (i.e. a fieldset that is opened when there is no header element)
+     *
+     * @param       string      The HTML used when opening a hidden fieldset
+     * @access      public
+     * @return      void
+     */
+    function setOpenHiddenFieldsetTemplate($html)
+    {
+    }
+    // end func setOpenHiddenFieldsetTemplate
+    /**
+     * Sets the template used when closing a fieldset
+     *
+     * @param       string      The HTML used when closing a fieldset
+     * @access      public
+     * @return      void
+     */
+    function setCloseFieldsetTemplate($html)
+    {
+    }
+    // end func setCloseFieldsetTemplate
+    /**
+     * Adds one or more element names that indicate the end of a fieldset
+     * (a new one will be opened when a the next header element occurs)
+     *
+     * @param       mixed      Element name(s) (as array or string)
+     * @access      public
+     * @return      void
+     */
+    function addStopFieldsetElements($element)
+    {
+    }
+    // end func addStopFieldsetElements
+}
 /**
  * MoodleQuickForm renderer
  *
@@ -12505,6 +13159,484 @@ class mysqli_native_moodle_database extends \moodle_database
      * @return string The fixed table name
      */
     protected function fix_table_name($tablename)
+    {
+    }
+}
+/**
+ * A concrete renderer for HTML_QuickForm, makes an array of form contents
+ *
+ * Based on old toArray() code.
+ *
+ * The form array structure is the following:
+ * array(
+ *   'frozen'           => 'whether the form is frozen',
+ *   'javascript'       => 'javascript for client-side validation',
+ *   'attributes'       => 'attributes for <form> tag',
+ *   'requirednote      => 'note about the required elements',
+ *   // if we set the option to collect hidden elements
+ *   'hidden'           => 'collected html of all hidden elements',
+ *   // if there were some validation errors:
+ *   'errors' => array(
+ *     '1st element name' => 'Error for the 1st element',
+ *     ...
+ *     'nth element name' => 'Error for the nth element'
+ *   ),
+ *   // if there are no headers in the form:
+ *   'elements' => array(
+ *     element_1,
+ *     ...
+ *     element_N
+ *   )
+ *   // if there are headers in the form:
+ *   'sections' => array(
+ *     array(
+ *       'header'   => 'Header text for the first header',
+ *       'name'     => 'Header name for the first header',
+ *       'elements' => array(
+ *          element_1,
+ *          ...
+ *          element_K1
+ *       )
+ *     ),
+ *     ...
+ *     array(
+ *       'header'   => 'Header text for the Mth header',
+ *       'name'     => 'Header name for the Mth header',
+ *       'elements' => array(
+ *          element_1,
+ *          ...
+ *          element_KM
+ *       )
+ *     )
+ *   )
+ * );
+ *
+ * where element_i is an array of the form:
+ * array(
+ *   'name'      => 'element name',
+ *   'value'     => 'element value',
+ *   'type'      => 'type of the element',
+ *   'frozen'    => 'whether element is frozen',
+ *   'label'     => 'label for the element',
+ *   'required'  => 'whether element is required',
+ *   'error'     => 'error associated with the element',
+ *   'style'     => 'some information about element style (e.g. for Smarty)',
+ *   // if element is not a group
+ *   'html'      => 'HTML for the element'
+ *   // if element is a group
+ *   'separator' => 'separator for group elements',
+ *   'elements'  => array(
+ *     element_1,
+ *     ...
+ *     element_N
+ *   )
+ * );
+ *
+ * @access public
+ */
+class HTML_QuickForm_Renderer_Array extends \HTML_QuickForm_Renderer
+{
+    /**
+     * An array being generated
+     * @var array
+     */
+    var $_ary;
+    /**
+     * Number of sections in the form (i.e. number of headers in it)
+     * @var integer
+     */
+    var $_sectionCount;
+    /**
+     * Current section number
+     * @var integer
+     */
+    var $_currentSection;
+    /**
+     * Array representing current group
+     * @var array
+     */
+    var $_currentGroup = \null;
+    /**
+     * Additional style information for different elements
+     * @var array
+     */
+    var $_elementStyles = array();
+    /**
+     * true: collect all hidden elements into string; false: process them as usual form elements
+     * @var bool
+     */
+    var $_collectHidden = \false;
+    /**
+     * true:  render an array of labels to many labels, $key 0 named 'label', the rest "label_$key"
+     * false: leave labels as defined
+     * @var bool
+     */
+    var $staticLabels = \false;
+    /**
+     * Constructor
+     *
+     * @param  bool    true: collect all hidden elements into string; false: process them as usual form elements
+     * @param  bool    true: render an array of labels to many labels, $key 0 to 'label' and the oterh to "label_$key"
+     * @access public
+     */
+    public function __construct($collectHidden = \false, $staticLabels = \false)
+    {
+    }
+    // end constructor
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_Renderer_Array($collectHidden = \false, $staticLabels = \false)
+    {
+    }
+    /**
+     * Returns the resultant array
+     *
+     * @access public
+     * @return array
+     */
+    function toArray()
+    {
+    }
+    function startForm(&$form)
+    {
+    }
+    // end func startForm
+    function renderHeader(&$header)
+    {
+    }
+    // end func renderHeader
+    function renderElement(&$element, $required, $error)
+    {
+    }
+    // end func renderElement
+    function renderHidden(&$element)
+    {
+    }
+    // end func renderHidden
+    function startGroup(&$group, $required, $error)
+    {
+    }
+    // end func startGroup
+    function finishGroup(&$group)
+    {
+    }
+    // end func finishGroup
+    /**
+     * Creates an array representing an element
+     *
+     * @access private
+     * @param  object    An HTML_QuickForm_element object
+     * @param  bool      Whether an element is required
+     * @param  string    Error associated with the element
+     * @return array
+     */
+    function _elementToArray(&$element, $required, $error)
+    {
+    }
+    /**
+     * Stores an array representation of an element in the form array
+     *
+     * @access private
+     * @param array  Array representation of an element
+     * @return void
+     */
+    function _storeArray($elAry)
+    {
+    }
+    /**
+     * Sets a style to use for element rendering
+     *
+     * @param mixed      element name or array ('element name' => 'style name')
+     * @param string     style name if $elementName is not an array
+     * @access public
+     * @return void
+     */
+    function setElementStyle($elementName, $styleName = \null)
+    {
+    }
+}
+/**
+ * A concrete renderer for HTML_QuickForm, makes an object from form contents
+ *
+ * Based on HTML_Quickform_Renderer_Array code
+ *
+ * @access public
+ */
+class HTML_QuickForm_Renderer_Object extends \HTML_QuickForm_Renderer
+{
+    /**
+     * The object being generated
+     * @var object $_obj
+     */
+    var $_obj = \null;
+    /**
+     * Number of sections in the form (i.e. number of headers in it)
+     * @var integer $_sectionCount
+     */
+    var $_sectionCount;
+    /**
+     * Current section number
+     * @var integer $_currentSection
+     */
+    var $_currentSection;
+    /**
+     * Object representing current group
+     * @var object $_currentGroup
+     */
+    var $_currentGroup = \null;
+    /**
+     * Class of Element Objects
+     * @var object $_elementType
+     */
+    var $_elementType = 'QuickFormElement';
+    /**
+     * Additional style information for different elements  
+     * @var array $_elementStyles
+     */
+    var $_elementStyles = array();
+    /**
+     * true: collect all hidden elements into string; false: process them as usual form elements
+     * @var bool $_collectHidden
+     */
+    var $_collectHidden = \false;
+    /**
+     * Constructor
+     *
+     * @param collecthidden bool    true: collect all hidden elements
+     * @access public
+     */
+    public function __construct($collecthidden = \false)
+    {
+    }
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function HTML_QuickForm_Renderer_Object($collecthidden = \false)
+    {
+    }
+    /**
+     * Return the rendered Object
+     * @access public
+     */
+    function toObject()
+    {
+    }
+    /**
+     * Set the class of the form elements.  Defaults to QuickformElement.
+     * @param type string   Name of element class
+     * @access public
+     */
+    function setElementType($type)
+    {
+    }
+    function startForm(&$form)
+    {
+    }
+    // end func startForm
+    function renderHeader(&$header)
+    {
+    }
+    function renderElement(&$element, $required, $error)
+    {
+    }
+    // end func renderElement
+    function renderHidden(&$element)
+    {
+    }
+    //end func renderHidden
+    function startGroup(&$group, $required, $error)
+    {
+    }
+    // end func startGroup
+    function finishGroup(&$group)
+    {
+    }
+    // end func finishGroup
+    /**
+     * Creates an object representing an element
+     *
+     * @access private
+     * @param element object    An HTML_QuickForm_element object
+     * @param required bool         Whether an element is required
+     * @param error string    Error associated with the element
+     * @return object
+     */
+    function _elementToObject(&$element, $required, $error)
+    {
+    }
+    /** 
+     * Stores an object representation of an element in the form array
+     *
+     * @access private
+     * @param elObj object     Object representation of an element
+     * @return void
+     */
+    function _storeObject($elObj)
+    {
+    }
+    function setElementStyle($elementName, $styleName = \null)
+    {
+    }
+}
+// end class HTML_QuickForm_Renderer_Object
+/**
+ * Convenience class for the form object passed to outputObject()
+ * 
+ * Eg.  
+ * {form.outputJavaScript():h}
+ * {form.outputHeader():h}
+ *   <table>
+ *     <tr>
+ *       <td>{form.name.label:h}</td><td>{form.name.html:h}</td>
+ *     </tr>
+ *   </table>
+ * </form>
+ */
+class QuickformForm
+{
+    /**
+     * Whether the form has been frozen
+     * @var boolean $frozen
+     */
+    var $frozen;
+    /**
+     * Javascript for client-side validation
+     * @var string $javascript
+     */
+    var $javascript;
+    /**
+     * Attributes for form tag
+     * @var string $attributes
+     */
+    var $attributes;
+    /**
+     * Note about required elements
+     * @var string $requirednote
+     */
+    var $requirednote;
+    /**
+     * Collected html of all hidden variables
+     * @var string $hidden
+     */
+    var $hidden;
+    /**
+     * Set if there were validation errors.  
+     * StdClass object with element names for keys and their
+     * error messages as values
+     * @var object $errors
+     */
+    var $errors;
+    /**
+     * Array of QuickformElementObject elements.  If there are headers in the form
+     * this will be empty and the elements will be in the 
+     * separate sections
+     * @var array $elements
+     */
+    var $elements;
+    /**
+     * Array of sections contained in the document
+     * @var array $sections
+     */
+    var $sections;
+    /**
+     * Output &lt;form&gt; header
+     * {form.outputHeader():h} 
+     * @return string    &lt;form attributes&gt;
+     */
+    function outputHeader()
+    {
+    }
+    /**
+     * Output form javascript
+     * {form.outputJavaScript():h}
+     * @return string    Javascript
+     */
+    function outputJavaScript()
+    {
+    }
+}
+// end class QuickformForm
+/**
+ * Convenience class describing a form element.
+ * The properties defined here will be available from 
+ * your flexy templates by referencing
+ * {form.zip.label:h}, {form.zip.html:h}, etc.
+ */
+class QuickformElement
+{
+    /**
+     * Element name
+     * @var string $name
+     */
+    var $name;
+    /**
+     * Element value
+     * @var mixed $value
+     */
+    var $value;
+    /**
+     * Type of element
+     * @var string $type
+     */
+    var $type;
+    /**
+     * Whether the element is frozen
+     * @var boolean $frozen
+     */
+    var $frozen;
+    /**
+     * Label for the element
+     * @var string $label
+     */
+    var $label;
+    /**
+     * Whether element is required
+     * @var boolean $required
+     */
+    var $required;
+    /**
+     * Error associated with the element
+     * @var string $error
+     */
+    var $error;
+    /**
+     * Some information about element style
+     * @var string $style
+     */
+    var $style;
+    /**
+     * HTML for the element
+     * @var string $html
+     */
+    var $html;
+    /**
+     * If element is a group, the group separator
+     * @var mixed $separator
+     */
+    var $separator;
+    /**
+     * If element is a group, an array of subelements
+     * @var array $elements
+     */
+    var $elements;
+    function isType($type)
+    {
+    }
+    function notFrozen()
+    {
+    }
+    function isButton()
+    {
+    }
+    /**
+     * XXX: why does it use Flexy when all other stuff here does not depend on it?
+     */
+    function outputStyle()
     {
     }
 }
