@@ -1,4 +1,5 @@
 [
+    "/lib/formslib.php",
     "/lib/modinfolib.php",
     "/lib/moodlelib.php",
     "/lib/navigationlib.php",
