@@ -7,5 +7,7 @@
     "/lib/setuplib.php",
     "/lib/weblib.php",
     "/lib/dml/moodle_database.php",
-    "/lib/dml/mysqli_native_moodle_database.php"
+    "/lib/dml/mysqli_native_moodle_database.php",
+    "/lib/xmldb/*.php",
+    "/course/moodleform_mod.php"
 ]

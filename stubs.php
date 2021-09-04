@@ -11187,6 +11187,1576 @@ class mysqli_native_moodle_database extends \moodle_database
     {
     }
 }
+class xmldb_object
+{
+    /** @var string name of obejct */
+    protected $name;
+    /** @var string comment on object */
+    protected $comment;
+    /** @var xmldb_object */
+    protected $previous;
+    /** @var xmldb_object */
+    protected $next;
+    /** @var string hash of object */
+    protected $hash;
+    /** @var bool is it loaded yet */
+    protected $loaded;
+    /** @var bool was object changed */
+    protected $changed;
+    /** @var string error message */
+    protected $errormsg;
+    /**
+     * Creates one new xmldb_object
+     * @param string $name
+     */
+    public function __construct($name)
+    {
+    }
+    /**
+     * This function returns true/false, if the xmldb_object has been loaded
+     * @return bool
+     */
+    public function isLoaded()
+    {
+    }
+    /**
+     * This function returns true/false, if the xmldb_object has changed
+     * @return bool
+     */
+    public function hasChanged()
+    {
+    }
+    /**
+     * This function returns the comment of one xmldb_object
+     * @return string
+     */
+    public function getComment()
+    {
+    }
+    /**
+     * This function returns the hash of one xmldb_object
+     * @return string
+     */
+    public function getHash()
+    {
+    }
+    /**
+     * This function will return the name of the previous xmldb_object
+     * @return xmldb_object
+     */
+    public function getPrevious()
+    {
+    }
+    /**
+     * This function will return the name of the next xmldb_object
+     * @return xmldb_object
+     */
+    public function getNext()
+    {
+    }
+    /**
+     * This function will return the name of the xmldb_object
+     * @return string
+     */
+    public function getName()
+    {
+    }
+    /**
+     * This function will return the error detected in the object
+     * @return string
+     */
+    public function getError()
+    {
+    }
+    /**
+     * This function will set the comment of the xmldb_object
+     * @param string $comment
+     */
+    public function setComment($comment)
+    {
+    }
+    /**
+     * This function will set the previous of the xmldb_object
+     * @param xmldb_object $previous
+     */
+    public function setPrevious($previous)
+    {
+    }
+    /**
+     * This function will set the next of the xmldb_object
+     * @param xmldb_object $next
+     */
+    public function setNext($next)
+    {
+    }
+    /**
+     * This function will set the hash of the xmldb_object
+     * @param string $hash
+     */
+    public function setHash($hash)
+    {
+    }
+    /**
+     * This function will set the loaded field of the xmldb_object
+     * @param bool $loaded
+     */
+    public function setLoaded($loaded = \true)
+    {
+    }
+    /**
+     * This function will set the changed field of the xmldb_object
+     * @param bool $changed
+     */
+    public function setChanged($changed = \true)
+    {
+    }
+    /**
+     * This function will set the name field of the xmldb_object
+     * @param string $name
+     */
+    public function setName($name)
+    {
+    }
+    /**
+     * This function will check if one key name is ok or no (true/false)
+     * only lowercase a-z, 0-9 and _ are allowed
+     * @return bool
+     */
+    public function checkName()
+    {
+    }
+    /**
+     * This function will check that all the elements in one array
+     * have a correct name [a-z0-9_]
+     * @param array $arr
+     * @return bool
+     */
+    public function checkNameValues($arr)
+    {
+    }
+    /**
+     * Reconstruct previous/next attributes.
+     * @param array $arr
+     * @return bool true if $arr modified
+     */
+    public function fixPrevNext(&$arr)
+    {
+    }
+    /**
+     * This function will order all the elements in one array, following
+     * the previous/next rules
+     * @param array $arr
+     * @return array|bool
+     */
+    public function orderElements($arr)
+    {
+    }
+    /**
+     * Returns the position of one object in the array.
+     * @param string $objectname
+     * @param array $arr
+     * @return mixed
+     */
+    public function findObjectInArray($objectname, $arr)
+    {
+    }
+    /**
+     * This function will display a readable info about the xmldb_object
+     * (should be implemented inside each XMLDBxxx object)
+     * @return string
+     */
+    public function readableInfo()
+    {
+    }
+    /**
+     * This function will perform the central debug of all the XMLDB classes
+     * being called automatically every time one error is found. Apart from
+     * the main actions performed in it (XMLDB agnostic) it looks for one
+     * function called xmldb_debug() and invokes it, passing both the
+     * message code and the whole object.
+     * So, to perform custom debugging just add such function to your libs.
+     *
+     * Call to the external hook function can be disabled by request by
+     * defining XMLDB_SKIP_DEBUG_HOOK
+     * @param string $message
+     */
+    public function debug($message)
+    {
+    }
+    /**
+     * Returns one array of elements from one comma separated string,
+     * supporting quoted strings containing commas and concat function calls
+     * @param string $string
+     * @return array
+     */
+    public function comma2array($string)
+    {
+    }
+    /**
+     * Validates the definition of objects and returns error message.
+     *
+     * The error message should not be localised because it is intended for developers,
+     * end users and admins should never see these problems!
+     *
+     * @param xmldb_table $xmldb_table optional when object is table
+     * @return string null if ok, error message if problem found
+     */
+    public function validateDefinition(\xmldb_table $xmldb_table = \null)
+    {
+    }
+}
+class xmldb_field extends \xmldb_object
+{
+    /** @var int XMLDB_TYPE_ constants */
+    protected $type;
+    /** @var int size of field */
+    protected $length;
+    /** @var bool is null forbidden? XMLDB_NOTNULL */
+    protected $notnull;
+    /** @var mixed default value */
+    protected $default;
+    /** @var bool use automatic counter */
+    protected $sequence;
+    /** @var int number of decimals */
+    protected $decimals;
+    /**
+     * Note:
+     *  - Oracle: VARCHAR2 has a limit of 4000 bytes
+     *  - SQL Server: NVARCHAR has a limit of 40000 chars
+     *  - MySQL: VARCHAR 65,535 chars
+     *  - PostgreSQL: no limit
+     *
+     * @const maximum length of text field
+     */
+    const CHAR_MAX_LENGTH = 1333;
+    /**
+     * @const maximum number of digits of integers
+     */
+    const INTEGER_MAX_LENGTH = 20;
+    /**
+     * @const max length (precision, the total number of digits) of decimals
+     */
+    const NUMBER_MAX_LENGTH = 38;
+    /**
+     * @const max length of floats
+     */
+    const FLOAT_MAX_LENGTH = 20;
+    /**
+     * Note:
+     *  - Oracle has 30 chars limit for all names
+     *
+     * @const maximumn length of field names
+     */
+    const NAME_MAX_LENGTH = 30;
+    /**
+     * Creates one new xmldb_field
+     * @param string $name of field
+     * @param int $type XMLDB_TYPE_INTEGER, XMLDB_TYPE_NUMBER, XMLDB_TYPE_CHAR, XMLDB_TYPE_TEXT, XMLDB_TYPE_BINARY
+     * @param string $precision length for integers and chars, two-comma separated numbers for numbers
+     * @param bool $unsigned XMLDB_UNSIGNED or null (or false)
+     * @param bool $notnull XMLDB_NOTNULL or null (or false)
+     * @param bool $sequence XMLDB_SEQUENCE or null (or false)
+     * @param mixed $default meaningful default o null (or false)
+     * @param xmldb_object $previous
+     */
+    public function __construct($name, $type = \null, $precision = \null, $unsigned = \null, $notnull = \null, $sequence = \null, $default = \null, $previous = \null)
+    {
+    }
+    /**
+     * Set all the attributes of one xmldb_field
+     *
+     * @param int $type XMLDB_TYPE_INTEGER, XMLDB_TYPE_NUMBER, XMLDB_TYPE_CHAR, XMLDB_TYPE_TEXT, XMLDB_TYPE_BINARY
+     * @param string $precision length for integers and chars, two-comma separated numbers for numbers
+     * @param bool $unsigned XMLDB_UNSIGNED or null (or false)
+     * @param bool $notnull XMLDB_NOTNULL or null (or false)
+     * @param bool $sequence XMLDB_SEQUENCE or null (or false)
+     * @param mixed $default meaningful default o null (or false)
+     * @param xmldb_object $previous
+     */
+    public function set_attributes($type, $precision = \null, $unsigned = \null, $notnull = \null, $sequence = \null, $default = \null, $previous = \null)
+    {
+    }
+    /**
+     * Get the type
+     * @return int
+     */
+    public function getType()
+    {
+    }
+    /**
+     * Get the length
+     * @return int
+     */
+    public function getLength()
+    {
+    }
+    /**
+     * Get the decimals
+     * @return string
+     */
+    public function getDecimals()
+    {
+    }
+    /**
+     * Get the notnull
+     * @return bool
+     */
+    public function getNotNull()
+    {
+    }
+    /**
+     * Get the unsigned
+     * @deprecated since moodle 2.3
+     * @return bool
+     */
+    public function getUnsigned()
+    {
+    }
+    /**
+     * Get the sequence
+     * @return bool
+     */
+    public function getSequence()
+    {
+    }
+    /**
+     * Get the default
+     * @return mixed
+     */
+    public function getDefault()
+    {
+    }
+    /**
+     * Set the field type
+     * @param int $type
+     */
+    public function setType($type)
+    {
+    }
+    /**
+     * Set the field length
+     * @param int $length
+     */
+    public function setLength($length)
+    {
+    }
+    /**
+     * Set the field decimals
+     * @param string
+     */
+    public function setDecimals($decimals)
+    {
+    }
+    /**
+     * Set the field unsigned
+     * @deprecated since moodle 2.3
+     * @param bool $unsigned
+     */
+    public function setUnsigned($unsigned = \true)
+    {
+    }
+    /**
+     * Set the field notnull
+     * @param bool $notnull
+     */
+    public function setNotNull($notnull = \true)
+    {
+    }
+    /**
+     * Set the field sequence
+     * @param bool $sequence
+     */
+    public function setSequence($sequence = \true)
+    {
+    }
+    /**
+     * Set the field default
+     * @param mixed $default
+     */
+    public function setDefault($default)
+    {
+    }
+    /**
+     * Load data from XML to the table
+     * @param array $xmlarr
+     * @return mixed
+     */
+    public function arr2xmldb_field($xmlarr)
+    {
+    }
+    /**
+     * This function returns the correct XMLDB_TYPE_XXX value for the
+     * string passed as argument
+     * @param string $type
+     * @return int
+     */
+    public function getXMLDBFieldType($type)
+    {
+    }
+    /**
+     * This function returns the correct name value for the
+     * XMLDB_TYPE_XXX passed as argument
+     * @param int $type
+     * @return string
+     */
+    public function getXMLDBTypeName($type)
+    {
+    }
+    /**
+     * This function calculate and set the hash of one xmldb_field
+     * @param bool $recursive
+     * @return void, modifies $this->hash
+     */
+    public function calculateHash($recursive = \false)
+    {
+    }
+    /**
+     * This function will output the XML text for one field
+     * @return string
+     */
+    public function xmlOutput()
+    {
+    }
+    /**
+     * This function will set all the attributes of the xmldb_field object
+     * based on information passed in one ADOField
+     * @param string $adofield
+     * @return void, sets $this->type
+     */
+    public function setFromADOField($adofield)
+    {
+    }
+    /**
+     * Returns the PHP code needed to define one xmldb_field
+     * @param bool $includeprevious
+     * @return string
+     */
+    public function getPHP($includeprevious = \true)
+    {
+    }
+    /**
+     * Shows info in a readable format
+     * @return string
+     */
+    public function readableInfo()
+    {
+    }
+    /**
+     * Validates the field restrictions.
+     *
+     * The error message should not be localised because it is intended for developers,
+     * end users and admins should never see these problems!
+     *
+     * @param xmldb_table $xmldb_table optional when object is table
+     * @return string null if ok, error message if problem found
+     */
+    public function validateDefinition(\xmldb_table $xmldb_table = \null)
+    {
+    }
+}
+class xmldb_file extends \xmldb_object
+{
+    /** @var string path to file */
+    protected $path;
+    /** @var string path to schema */
+    protected $schema;
+    /** @var  string document dtd */
+    protected $dtd;
+    /** @var xmldb_structure the structure stored in file */
+    protected $xmldb_structure;
+    /**
+     * Constructor of the xmldb_file
+     * @param string $path
+     */
+    public function __construct($path)
+    {
+    }
+    /**
+     * Determine if the XML file exists
+     * @return bool
+     */
+    public function fileExists()
+    {
+    }
+    /**
+     * Determine if the XML is writeable
+     * @return bool
+     */
+    public function fileWriteable()
+    {
+    }
+    public function getStructure()
+    {
+    }
+    /**
+     * This function will check/validate the XML file for correctness
+     * Dynamically if will use the best available checker/validator
+     * (expat syntax checker or DOM schema validator
+     * @return true
+     */
+    public function validateXMLStructure()
+    {
+    }
+    /**
+     * Load and the XMLDB structure from file
+     * @return true
+     */
+    public function loadXMLStructure()
+    {
+    }
+    /**
+     * This function takes an xmlized array and put it into one xmldb_structure
+     * @param array $xmlarr
+     * @return xmldb_structure
+     */
+    public function arr2xmldb_structure($xmlarr)
+    {
+    }
+    /**
+     * This function sets the DTD of the XML file
+     * @param string
+     */
+    public function setDTD($path)
+    {
+    }
+    /**
+     * This function sets the schema of the XML file
+     * @param string
+     */
+    public function setSchema($path)
+    {
+    }
+    /**
+     * This function saves the whole xmldb_structure to its file
+     * @return int|bool false on failure, number of written bytes on success
+     */
+    public function saveXMLFile()
+    {
+    }
+}
+class xmldb_index extends \xmldb_object
+{
+    /** @var bool is unique? */
+    protected $unique;
+    /** @var array index fields */
+    protected $fields;
+    /** @var array index hints */
+    protected $hints;
+    /**
+     * Note:
+     *  - MySQL: MyISAM has a limit of 1000 bytes for any key including composed, InnoDB has limit 3500 bytes.
+     *
+     * @const max length of composed indexes, one utf-8 char is 3 bytes in the worst case
+     */
+    const INDEX_COMPOSED_MAX_BYTES = 999;
+    /**
+     * Note:
+     *  - MySQL: InnoDB limits size of index on single column to 767bytes (256 chars)
+     *
+     * @const single column index length limit, one utf-8 char is 3 bytes in the worst case
+     */
+    const INDEX_MAX_BYTES = 765;
+    /**
+     * Creates one new xmldb_index
+     *
+     * @param string $name
+     * @param string $type XMLDB_INDEX_UNIQUE, XMLDB_INDEX_NOTUNIQUE
+     * @param array $fields an array of fieldnames to build the index over
+     * @param array $hints an array of optional hints
+     */
+    public function __construct($name, $type = \null, $fields = array(), $hints = array())
+    {
+    }
+    /**
+     * Set all the attributes of one xmldb_index
+     *
+     * @param string type XMLDB_INDEX_UNIQUE, XMLDB_INDEX_NOTUNIQUE
+     * @param array fields an array of fieldnames to build the index over
+     * @param array $hints array of optional hints
+     */
+    public function set_attributes($type, $fields, $hints = array())
+    {
+    }
+    /**
+     * Get the index unique
+     * @return bool
+     */
+    public function getUnique()
+    {
+    }
+    /**
+     * Set the index unique
+     * @param bool $unique
+     */
+    public function setUnique($unique = \true)
+    {
+    }
+    /**
+     * Set the index fields
+     * @param array $fields
+     */
+    public function setFields($fields)
+    {
+    }
+    /**
+     * Get the index fields
+     * @return array
+     */
+    public function getFields()
+    {
+    }
+    /**
+     * Set optional index hints.
+     * @param array $hints
+     */
+    public function setHints($hints)
+    {
+    }
+    /**
+     * Returns optional index hints.
+     * @return array
+     */
+    public function getHints()
+    {
+    }
+    /**
+     * Load data from XML to the index
+     * @param $xmlarr array
+     * @return bool
+     */
+    public function arr2xmldb_index($xmlarr)
+    {
+    }
+    /**
+     * This function calculate and set the hash of one xmldb_index
+     * @retur nvoid, changes $this->hash
+     */
+    public function calculateHash($recursive = \false)
+    {
+    }
+    /**
+     *This function will output the XML text for one index
+     * @return string
+     */
+    public function xmlOutput()
+    {
+    }
+    /**
+     * This function will set all the attributes of the xmldb_index object
+     * based on information passed in one ADOindex
+     * @param array
+     * @return void
+     */
+    public function setFromADOIndex($adoindex)
+    {
+    }
+    /**
+     * Returns the PHP code needed to define one xmldb_index
+     * @return string
+     */
+    public function getPHP()
+    {
+    }
+    /**
+     * Shows info in a readable format
+     * @return string
+     */
+    public function readableInfo()
+    {
+    }
+    /**
+     * Validates the index restrictions.
+     *
+     * The error message should not be localised because it is intended for developers,
+     * end users and admins should never see these problems!
+     *
+     * @param xmldb_table $xmldb_table optional when object is table
+     * @return string null if ok, error message if problem found
+     */
+    public function validateDefinition(\xmldb_table $xmldb_table = \null)
+    {
+    }
+}
+class xmldb_key extends \xmldb_object
+{
+    /** @var int type of key */
+    protected $type;
+    /** @var array of fields */
+    protected $fields;
+    /** @var string referenced table */
+    protected $reftable;
+    /** @var array referenced fields */
+    protected $reffields;
+    /**
+     * Creates one new xmldb_key
+     * @param string $name
+     * @param string $type XMLDB_KEY_[PRIMARY|UNIQUE|FOREIGN|FOREIGN_UNIQUE]
+     * @param array $fields an array of fieldnames to build the key over
+     * @param string $reftable name of the table the FK points to or null
+     * @param array $reffields an array of fieldnames in the FK table or null
+     */
+    public function __construct($name, $type = \null, $fields = array(), $reftable = \null, $reffields = \null)
+    {
+    }
+    /**
+     * Set all the attributes of one xmldb_key
+     *
+     * @param string $type XMLDB_KEY_[PRIMARY|UNIQUE|FOREIGN|FOREIGN_UNIQUE]
+     * @param array $fields an array of fieldnames to build the key over
+     * @param string $reftable name of the table the FK points to or null
+     * @param array $reffields an array of fieldnames in the FK table or null
+     */
+    public function set_attributes($type, $fields, $reftable = \null, $reffields = \null)
+    {
+    }
+    /**
+     * Get the key type
+     * @return int
+     */
+    public function getType()
+    {
+    }
+    /**
+     * Set the key type
+     * @param int $type
+     */
+    public function setType($type)
+    {
+    }
+    /**
+     * Set the key fields
+     * @param array $fields
+     */
+    public function setFields($fields)
+    {
+    }
+    /**
+     * Set the key reftable
+     * @param string $reftable
+     */
+    public function setRefTable($reftable)
+    {
+    }
+    /**
+     * Set the key reffields
+     * @param array $reffields
+     */
+    public function setRefFields($reffields)
+    {
+    }
+    /**
+     * Get the key fields
+     * @return array
+     */
+    public function getFields()
+    {
+    }
+    /**
+     * Get the key reftable
+     * @return string
+     */
+    public function getRefTable()
+    {
+    }
+    /**
+     * Get the key reffields
+     * @return array reference to ref fields
+     */
+    public function getRefFields()
+    {
+    }
+    /**
+     * Load data from XML to the key
+     * @param array $xmlarr
+     * @return bool success
+     */
+    public function arr2xmldb_key($xmlarr)
+    {
+    }
+    /**
+     * This function returns the correct XMLDB_KEY_XXX value for the
+     * string passed as argument
+     * @param string $type
+     * @return int
+     */
+    public function getXMLDBKeyType($type)
+    {
+    }
+    /**
+     * This function returns the correct name value for the
+     * XMLDB_KEY_XXX passed as argument
+     * @param int $type
+     * @return string
+     */
+    public function getXMLDBKeyName($type)
+    {
+    }
+    /**
+     * This function calculate and set the hash of one xmldb_key
+     * @param bool $recursive
+     */
+    public function calculateHash($recursive = \false)
+    {
+    }
+    /**
+     *This function will output the XML text for one key
+     * @return string
+     */
+    public function xmlOutput()
+    {
+    }
+    /**
+     * This function will set all the attributes of the xmldb_key object
+     * based on information passed in one ADOkey
+     * @oaram array $adokey
+     */
+    public function setFromADOKey($adokey)
+    {
+    }
+    /**
+     * Returns the PHP code needed to define one xmldb_key
+     * @return string
+     */
+    public function getPHP()
+    {
+    }
+    /**
+     * Shows info in a readable format
+     * @return string
+     */
+    public function readableInfo()
+    {
+    }
+}
+class xmldb_structure extends \xmldb_object
+{
+    /** @var string */
+    protected $path;
+    /** @var string */
+    protected $version;
+    /** @var array tables */
+    protected $tables;
+    /**
+     * Creates one new xmldb_structure
+     * @param string $name
+     */
+    public function __construct($name)
+    {
+    }
+    /**
+     * Returns the path of the structure
+     * @return string
+     */
+    public function getPath()
+    {
+    }
+    /**
+     * Returns the version of the structure
+     * @return string
+     */
+    public function getVersion()
+    {
+    }
+    /**
+     * Returns one xmldb_table
+     * @param string $tablename
+     * @return xmldb_table
+     */
+    public function getTable($tablename)
+    {
+    }
+    /**
+     * Returns the position of one table in the array.
+     * @param string $tablename
+     * @return mixed
+     */
+    public function findTableInArray($tablename)
+    {
+    }
+    /**
+     * This function will reorder the array of tables
+     * @return bool success
+     */
+    public function orderTables()
+    {
+    }
+    /**
+     * Returns the tables of the structure
+     * @return array
+     */
+    public function getTables()
+    {
+    }
+    /**
+     * Set the structure version
+     * @param string version
+     */
+    public function setVersion($version)
+    {
+    }
+    /**
+     * Add one table to the structure, allowing to specify the desired order
+     * If it's not specified, then the table is added at the end.
+     * @param xmldb_table $table
+     * @param mixed $after
+     */
+    public function addTable($table, $after = \null)
+    {
+    }
+    /**
+     * Delete one table from the Structure
+     * @param string $tablename
+     */
+    public function deleteTable($tablename)
+    {
+    }
+    /**
+     * Set the tables
+     * @param array $tables
+     */
+    public function setTables($tables)
+    {
+    }
+    /**
+     * Load data from XML to the structure
+     * @param array $xmlarr
+     * @return bool
+     */
+    public function arr2xmldb_structure($xmlarr)
+    {
+    }
+    /**
+     * This function calculate and set the hash of one xmldb_structure
+     * @param bool $recursive
+     */
+    public function calculateHash($recursive = \false)
+    {
+    }
+    /**
+     * This function will output the XML text for one structure
+     * @return string
+     */
+    public function xmlOutput()
+    {
+    }
+    /**
+     * This function returns the number of uses of one table inside
+     * a whole XMLDStructure. Useful to detect if the table must be
+     * locked. Return false if no uses are found.
+     * @param string $tablename
+     * @return mixed
+     */
+    public function getTableUses($tablename)
+    {
+    }
+    /**
+     * This function returns the number of uses of one field inside
+     * a whole xmldb_structure. Useful to detect if the field must be
+     * locked. Return false if no uses are found.
+     * @param string $tablename
+     * @param string $fieldname
+     * @return mixed
+     */
+    public function getFieldUses($tablename, $fieldname)
+    {
+    }
+    /**
+     * This function returns the number of uses of one key inside
+     * a whole xmldb_structure. Useful to detect if the key must be
+     * locked. Return false if no uses are found.
+     * @param string $tablename
+     * @param string $keyname
+     * @return mixed
+     */
+    public function getKeyUses($tablename, $keyname)
+    {
+    }
+    /**
+     * This function returns the number of uses of one index inside
+     * a whole xmldb_structure. Useful to detect if the index must be
+     * locked. Return false if no uses are found.
+     * @param string $tablename
+     * @param string $indexname
+     * @return mixed
+     */
+    public function getIndexUses($tablename, $indexname)
+    {
+    }
+    /**
+     * This function will return all the errors found in one structure
+     * looking recursively inside each table. Returns
+     * an array of errors or false
+     * @return mixed
+     */
+    public function getAllErrors()
+    {
+    }
+}
+class xmldb_table extends \xmldb_object
+{
+    /** @var xmldb_field[] table columns */
+    protected $fields;
+    /** @var xmldb_key[] keys */
+    protected $keys;
+    /** @var xmldb_index[] indexes */
+    protected $indexes;
+    /**
+     * Note:
+     *  - Oracle has 30 chars limit for all names,
+     *    2 chars are reserved for prefix.
+     *
+     * @const maximum length of field names
+     */
+    const NAME_MAX_LENGTH = 28;
+    /**
+     * Creates one new xmldb_table
+     * @param string $name
+     */
+    public function __construct($name)
+    {
+    }
+    /**
+     * Add one field to the table, allowing to specify the desired  order
+     * If it's not specified, then the field is added at the end
+     * @param xmldb_field $field
+     * @param xmldb_object $after
+     * @return xmldb_field
+     */
+    public function addField($field, $after = \null)
+    {
+    }
+    /**
+     * Add one key to the table, allowing to specify the desired  order
+     * If it's not specified, then the key is added at the end
+     * @param xmldb_key $key
+     * @param xmldb_object $after
+     */
+    public function addKey($key, $after = \null)
+    {
+    }
+    /**
+     * Add one index to the table, allowing to specify the desired  order
+     * If it's not specified, then the index is added at the end
+     * @param xmldb_index $index
+     * @param xmldb_object $after
+     */
+    public function addIndex($index, $after = \null)
+    {
+    }
+    /**
+     * This function will return the array of fields in the table
+     * @return xmldb_field[]
+     */
+    public function getFields()
+    {
+    }
+    /**
+     * This function will return the array of keys in the table
+     * @return xmldb_key[]
+     */
+    public function getKeys()
+    {
+    }
+    /**
+     * This function will return the array of indexes in the table
+     * @return xmldb_index[]
+     */
+    public function getIndexes()
+    {
+    }
+    /**
+     * Returns one xmldb_field
+     * @param string $fieldname
+     * @return xmldb_field|null
+     */
+    public function getField($fieldname)
+    {
+    }
+    /**
+     * Returns the position of one field in the array.
+     * @param string $fieldname
+     * @return int|null index of the field, or null if not found.
+     */
+    public function findFieldInArray($fieldname)
+    {
+    }
+    /**
+     * This function will reorder the array of fields
+     * @return bool whether the reordering succeeded.
+     */
+    public function orderFields()
+    {
+    }
+    /**
+     * Returns one xmldb_key
+     * @param string $keyname
+     * @return xmldb_key|null
+     */
+    public function getKey($keyname)
+    {
+    }
+    /**
+     * Returns the position of one key in the array.
+     * @param string $keyname
+     * @return int|null index of the key, or null if not found.
+     */
+    public function findKeyInArray($keyname)
+    {
+    }
+    /**
+     * This function will reorder the array of keys
+     * @return bool whether the reordering succeeded.
+     */
+    public function orderKeys()
+    {
+    }
+    /**
+     * Returns one xmldb_index
+     * @param string $indexname
+     * @return xmldb_index|null
+     */
+    public function getIndex($indexname)
+    {
+    }
+    /**
+     * Returns the position of one index in the array.
+     * @param string $indexname
+     * @return int|null index of the index, or null if not found.
+     */
+    public function findIndexInArray($indexname)
+    {
+    }
+    /**
+     * This function will reorder the array of indexes
+     * @return bool whether the reordering succeeded.
+     */
+    public function orderIndexes()
+    {
+    }
+    /**
+     * This function will set the array of fields in the table
+     * @param xmldb_field[] $fields
+     */
+    public function setFields($fields)
+    {
+    }
+    /**
+     * This function will set the array of keys in the table
+     * @param xmldb_key[] $keys
+     */
+    public function setKeys($keys)
+    {
+    }
+    /**
+     * This function will set the array of indexes in the table
+     * @param xmldb_index[] $indexes
+     */
+    public function setIndexes($indexes)
+    {
+    }
+    /**
+     * Delete one field from the table
+     * @param string $fieldname
+     */
+    public function deleteField($fieldname)
+    {
+    }
+    /**
+     * Delete one key from the table
+     * @param string $keyname
+     */
+    public function deleteKey($keyname)
+    {
+    }
+    /**
+     * Delete one index from the table
+     * @param string $indexname
+     */
+    public function deleteIndex($indexname)
+    {
+    }
+    /**
+     * Load data from XML to the table
+     * @param array $xmlarr
+     * @return bool success
+     */
+    public function arr2xmldb_table($xmlarr)
+    {
+    }
+    /**
+     * This function calculate and set the hash of one xmldb_table
+     * @param bool $recursive
+     */
+    public function calculateHash($recursive = \false)
+    {
+    }
+    /**
+     * Validates the table restrictions (does not validate child elements).
+     *
+     * The error message should not be localised because it is intended for developers,
+     * end users and admins should never see these problems!
+     *
+     * @param xmldb_table $xmldb_table optional when object is table
+     * @return string null if ok, error message if problem found
+     */
+    public function validateDefinition(\xmldb_table $xmldb_table = \null)
+    {
+    }
+    /**
+     * This function will output the XML text for one table
+     * @return string
+     */
+    public function xmlOutput()
+    {
+    }
+    /**
+     * This function will add one new field to the table with all
+     * its attributes defined
+     *
+     * @param string $name name of the field
+     * @param int $type XMLDB_TYPE_INTEGER, XMLDB_TYPE_NUMBER, XMLDB_TYPE_CHAR, XMLDB_TYPE_TEXT, XMLDB_TYPE_BINARY
+     * @param string $precision length for integers and chars, two-comma separated numbers for numbers
+     * @param bool $unsigned XMLDB_UNSIGNED or null (or false)
+     * @param bool $notnull XMLDB_NOTNULL or null (or false)
+     * @param bool $sequence XMLDB_SEQUENCE or null (or false)
+     * @param mixed $default meaningful default o null (or false)
+     * @param xmldb_object $previous name of the previous field in the table or null (or false)
+     * @return xmlddb_field
+     */
+    public function add_field($name, $type, $precision = \null, $unsigned = \null, $notnull = \null, $sequence = \null, $default = \null, $previous = \null)
+    {
+    }
+    /**
+     * This function will add one new key to the table with all
+     * its attributes defined
+     *
+     * @param string $name name of the key
+     * @param int $type XMLDB_KEY_PRIMARY, XMLDB_KEY_UNIQUE, XMLDB_KEY_FOREIGN
+     * @param array $fields an array of fieldnames to build the key over
+     * @param string $reftable name of the table the FK points to or null
+     * @param array $reffields an array of fieldnames in the FK table or null
+     */
+    public function add_key($name, $type, $fields, $reftable = \null, $reffields = \null)
+    {
+    }
+    /**
+     * This function will add one new index to the table with all
+     * its attributes defined
+     *
+     * @param string $name name of the index
+     * @param int $type XMLDB_INDEX_UNIQUE, XMLDB_INDEX_NOTUNIQUE
+     * @param array $fields an array of fieldnames to build the index over
+     * @param array $hints optional index type hints
+     */
+    public function add_index($name, $type, $fields, $hints = array())
+    {
+    }
+    /**
+     * This function will return all the errors found in one table
+     * looking recursively inside each field/key/index. Returns
+     * an array of errors or false
+     */
+    public function getAllErrors()
+    {
+    }
+}
+/**
+ * This class adds extra methods to form wrapper specific to be used for module add / update forms
+ * mod/{modname}/mod_form.php replaced deprecated mod/{modname}/mod.html Moodleform.
+ *
+ * @package   core_course
+ * @copyright Andrew Nicols <andrew@nicols.co.uk>
+ */
+abstract class moodleform_mod extends \moodleform
+{
+    /** Current data */
+    protected $current;
+    /**
+     * Instance of the module that is being updated. This is the id of the {prefix}{modulename}
+     * record. Can be used in form definition. Will be "" if this is an 'add' form and not an
+     * update one.
+     *
+     * @var mixed
+     */
+    protected $_instance;
+    /**
+     * Section of course that module instance will be put in or is in.
+     * This is always the section number itself (column 'section' from 'course_sections' table).
+     *
+     * @var int
+     */
+    protected $_section;
+    /**
+     * Course module record of the module that is being updated. Will be null if this is an 'add' form and not an
+     * update one.
+     *
+     * @var mixed
+     */
+    protected $_cm;
+    /**
+     * Current course.
+     *
+     * @var mixed
+     */
+    protected $_course;
+    /**
+     * List of modform features
+     */
+    protected $_features;
+    /**
+     * @var array Custom completion-rule elements, if enabled
+     */
+    protected $_customcompletionelements;
+    /**
+     * @var string name of module.
+     */
+    protected $_modname;
+    /** current context, course or module depends if already exists*/
+    protected $context;
+    /** a flag indicating whether outcomes are being used*/
+    protected $_outcomesused;
+    /**
+     * @var bool A flag used to indicate that this module should lock settings
+     *           based on admin settings flags in definition_after_data.
+     */
+    protected $applyadminlockedflags = \false;
+    /** @var object The course format of the current course. */
+    protected $courseformat;
+    /** @var string Whether this is graded or rated. */
+    private $gradedorrated = \null;
+    public function __construct($current, $section, $cm, $course)
+    {
+    }
+    /**
+     * Old syntax of class constructor. Deprecated in PHP7.
+     *
+     * @deprecated since Moodle 3.1
+     */
+    public function moodleform_mod($current, $section, $cm, $course)
+    {
+    }
+    /**
+     * Get the current data for the form.
+     * @return stdClass|null
+     */
+    public function get_current()
+    {
+    }
+    /**
+     * Get the DB record for the current instance.
+     * @return stdClass|null
+     */
+    public function get_instance()
+    {
+    }
+    /**
+     * Get the course section number (relative).
+     * @return int
+     */
+    public function get_section()
+    {
+    }
+    /**
+     * Get the course id.
+     * @return int
+     */
+    public function get_course()
+    {
+    }
+    /**
+     * Get the course module object.
+     * @return stdClass|null
+     */
+    public function get_coursemodule()
+    {
+    }
+    /**
+     * Return the course context for new modules, or the module context for existing modules.
+     * @return context
+     */
+    public function get_context()
+    {
+    }
+    /**
+     * Return the features this module supports.
+     * @return stdClass
+     */
+    public function get_features()
+    {
+    }
+    protected function init_features()
+    {
+    }
+    /**
+     * Allows module to modify data returned by get_moduleinfo_data() or prepare_new_moduleinfo_data() before calling set_data()
+     * This method is also called in the bulk activity completion form.
+     *
+     * Only available on moodleform_mod.
+     *
+     * @param array $default_values passed by reference
+     */
+    function data_preprocessing(&$default_values)
+    {
+    }
+    /**
+     * Each module which defines definition_after_data() must call this method using parent::definition_after_data();
+     */
+    function definition_after_data()
+    {
+    }
+    // form verification
+    function validation($data, $files)
+    {
+    }
+    /**
+     * Extend the validation function from any other plugin.
+     *
+     * @param stdClass $data The form data.
+     * @return array $errors The list of errors keyed by element name.
+     */
+    protected function plugin_extend_coursemodule_validation($data)
+    {
+    }
+    /**
+     * Load in existing data as form defaults. Usually new entry defaults are stored directly in
+     * form definition (new entry form); this function is used to load in data where values
+     * already exist and data is being edited (edit entry form).
+     *
+     * @param mixed $default_values object or array of default values
+     */
+    function set_data($default_values)
+    {
+    }
+    /**
+     * Adds all the standard elements to a form to edit the settings for an activity module.
+     */
+    protected function standard_coursemodule_elements()
+    {
+    }
+    /**
+     * Add rating settings.
+     *
+     * @param moodleform_mod $mform
+     * @param int $itemnumber
+     */
+    protected function add_rating_settings($mform, int $itemnumber)
+    {
+    }
+    /**
+     * Plugins can extend the coursemodule settings form.
+     */
+    protected function plugin_extend_coursemodule_standard_elements()
+    {
+    }
+    /**
+     * Plugins can extend the coursemodule settings form after the data is set.
+     */
+    protected function plugin_extend_coursemodule_definition_after_data()
+    {
+    }
+    /**
+     * Can be overridden to add custom completion rules if the module wishes
+     * them. If overriding this, you should also override completion_rule_enabled.
+     * <p>
+     * Just add elements to the form as needed and return the list of IDs. The
+     * system will call disabledIf and handle other behaviour for each returned
+     * ID.
+     * @return array Array of string IDs of added items, empty array if none
+     */
+    function add_completion_rules()
+    {
+    }
+    /**
+     * Called during validation. Override to indicate, based on the data, whether
+     * a custom completion rule is enabled (selected).
+     *
+     * @param array $data Input data (not yet validated)
+     * @return bool True if one or more rules is enabled, false if none are;
+     *   default returns false
+     */
+    function completion_rule_enabled($data)
+    {
+    }
+    function standard_hidden_coursemodule_elements()
+    {
+    }
+    public function standard_grading_coursemodule_elements()
+    {
+    }
+    /**
+     * Add an editor for an activity's introduction field.
+     * @deprecated since MDL-49101 - use moodleform_mod::standard_intro_elements() instead.
+     * @param null $required Override system default for requiremodintro
+     * @param null $customlabel Override default label for editor
+     * @throws coding_exception
+     */
+    protected function add_intro_editor($required = \null, $customlabel = \null)
+    {
+    }
+    /**
+     * Add an editor for an activity's introduction field.
+     *
+     * @param null $customlabel Override default label for editor
+     * @throws coding_exception
+     */
+    protected function standard_intro_elements($customlabel = \null)
+    {
+    }
+    /**
+     * Overriding formslib's add_action_buttons() method, to add an extra submit "save changes and return" button.
+     *
+     * @param bool $cancel show cancel button
+     * @param string $submitlabel null means default, false means none, string is label text
+     * @param string $submit2label  null means default, false means none, string is label text
+     * @return void
+     */
+    function add_action_buttons($cancel = \true, $submitlabel = \null, $submit2label = \null)
+    {
+    }
+    /**
+     * Get the list of admin settings for this module and apply any locked settings.
+     * This cannot happen in apply_admin_defaults because we do not the current values of the settings
+     * in that function because set_data has not been called yet.
+     *
+     * @return void
+     */
+    protected function apply_admin_locked_flags()
+    {
+    }
+    /**
+     * Get the list of admin settings for this module and apply any defaults/advanced/locked/required settings.
+     *
+     * @param $datetimeoffsets array - If passed, this is an array of fieldnames => times that the
+     *                         default date/time value should be relative to. If not passed, all
+     *                         date/time fields are set relative to the users current midnight.
+     * @return void
+     */
+    public function apply_admin_defaults($datetimeoffsets = array())
+    {
+    }
+    /**
+     * Allows modules to modify the data returned by form get_data().
+     * This method is also called in the bulk activity completion form.
+     *
+     * Only available on moodleform_mod.
+     *
+     * @param stdClass $data passed by reference
+     */
+    public function data_postprocessing($data)
+    {
+    }
+    /**
+     * Return submitted data if properly submitted or returns NULL if validation fails or
+     * if there is no submitted data.
+     *
+     * Do not override this method, override data_postprocessing() instead.
+     *
+     * @return object submitted data; NULL if not valid or not submitted or cancelled
+     */
+    public function get_data()
+    {
+    }
+}
 /**
  * Returns reference to full info about modules in course (including visibility).
  * Cached and as fast as possible (0 or 1 db query).
