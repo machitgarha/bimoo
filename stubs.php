@@ -11486,6 +11486,134 @@ class bootstrap_renderer
     }
 }
 /**
+ * Exception indicating unknown error during upgrade.
+ *
+ * @package    core
+ * @subpackage upgrade
+ * @copyright  2009 Petr Skoda {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class upgrade_exception extends \moodle_exception
+{
+    function __construct($plugin, $version, $debuginfo = \NULL)
+    {
+    }
+}
+/**
+ * Exception indicating downgrade error during upgrade.
+ *
+ * @package    core
+ * @subpackage upgrade
+ * @copyright  2009 Petr Skoda {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class downgrade_exception extends \moodle_exception
+{
+    function __construct($plugin, $oldversion, $newversion)
+    {
+    }
+}
+/**
+ * @package    core
+ * @subpackage upgrade
+ * @copyright  2009 Petr Skoda {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class upgrade_requires_exception extends \moodle_exception
+{
+    function __construct($plugin, $pluginversion, $currentmoodle, $requiremoodle)
+    {
+    }
+}
+/**
+ * Exception thrown when attempting to install a plugin that declares incompatibility with moodle version
+ *
+ * @package    core
+ * @subpackage upgrade
+ * @copyright  2019 Peter Burnett <peterburnett@catalyst-au.net>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class plugin_incompatible_exception extends \moodle_exception
+{
+    /**
+     * Constructor function for exception
+     *
+     * @param \core\plugininfo\base $plugin The plugin causing the exception
+     * @param int $pluginversion The version of the plugin causing the exception
+     */
+    public function __construct($plugin, $pluginversion)
+    {
+    }
+}
+/**
+ * @package    core
+ * @subpackage upgrade
+ * @copyright  2009 Petr Skoda {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class plugin_defective_exception extends \moodle_exception
+{
+    function __construct($plugin, $details)
+    {
+    }
+}
+/**
+ * Misplaced plugin exception.
+ *
+ * Note: this should be used only from the upgrade/admin code.
+ *
+ * @package    core
+ * @subpackage upgrade
+ * @copyright  2009 Petr Skoda {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class plugin_misplaced_exception extends \moodle_exception
+{
+    /**
+     * Constructor.
+     * @param string $component the component from version.php
+     * @param string $expected expected directory, null means calculate
+     * @param string $current plugin directory path
+     */
+    public function __construct($component, $expected, $current)
+    {
+    }
+}
+/**
+ * Static class monitors performance of upgrade steps.
+ */
+class core_upgrade_time
+{
+    /** @var float Time at start of current upgrade (plugin/system) */
+    protected static $before;
+    /** @var float Time at end of last savepoint */
+    protected static $lastsavepoint;
+    /** @var bool Flag to indicate whether we are recording timestamps or not. */
+    protected static $isrecording = \false;
+    /**
+     * Records current time at the start of the current upgrade item, e.g. plugin.
+     */
+    public static function record_start()
+    {
+    }
+    /**
+     * Records current time at the end of a given numbered step.
+     *
+     * @param float $version Version number (may have decimals, or not)
+     */
+    public static function record_savepoint($version)
+    {
+    }
+    /**
+     * Gets the time since the record_start function was called, rounded to 2 digits.
+     *
+     * @return float Elapsed time
+     */
+    public static function get_elapsed()
+    {
+    }
+}
+/**
  * Class for creating and manipulating urls.
  *
  * It can be used in moodle pages where config.php has been included without any further includes.
@@ -12097,6 +12225,436 @@ class combined_progress_trace extends \progress_trace
      * Called when the processing is finished.
      */
     public function finished()
+    {
+    }
+}
+/**
+ * Database manager instance is responsible for all database structure modifications.
+ *
+ * It is using db specific generators to find out the correct SQL syntax to do that.
+ *
+ * @package    core_ddl
+ * @copyright  1999 onwards Martin Dougiamas     http://dougiamas.com
+ *             2001-3001 Eloy Lafuente (stronk7) http://contiento.com
+ *             2008 Petr Skoda                   http://skodak.org
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class database_manager
+{
+    /** @var moodle_database A moodle_database driver specific instance.*/
+    protected $mdb;
+    /** @var sql_generator A driver specific SQL generator instance. Public because XMLDB editor needs to access it.*/
+    public $generator;
+    /**
+     * Creates a new database manager instance.
+     * @param moodle_database $mdb A moodle_database driver specific instance.
+     * @param sql_generator $generator A driver specific SQL generator instance.
+     */
+    public function __construct($mdb, $generator)
+    {
+    }
+    /**
+     * Releases all resources
+     */
+    public function dispose()
+    {
+    }
+    /**
+     * This function will execute an array of SQL commands.
+     *
+     * @param string[] $sqlarr Array of sql statements to execute.
+     * @param array|null $tablenames an array of xmldb table names affected by this request.
+     * @throws ddl_change_structure_exception This exception is thrown if any error is found.
+     */
+    protected function execute_sql_arr(array $sqlarr, $tablenames = \null)
+    {
+    }
+    /**
+     * Execute a given sql command string.
+     *
+     * @param string $sql The sql string you wish to be executed.
+     * @throws ddl_change_structure_exception This exception is thrown if any error is found.
+     */
+    protected function execute_sql($sql)
+    {
+    }
+    /**
+     * Given one xmldb_table, check if it exists in DB (true/false).
+     *
+     * @param string|xmldb_table $table The table to be searched (string name or xmldb_table instance).
+     * @return bool True is a table exists, false otherwise.
+     */
+    public function table_exists($table)
+    {
+    }
+    /**
+     * Reset a sequence to the id field of a table.
+     * @param string|xmldb_table $table Name of table.
+     * @throws ddl_exception thrown upon reset errors.
+     */
+    public function reset_sequence($table)
+    {
+    }
+    /**
+     * Given one xmldb_field, check if it exists in DB (true/false).
+     *
+     * @param string|xmldb_table $table The table to be searched (string name or xmldb_table instance).
+     * @param string|xmldb_field $field The field to be searched for (string name or xmldb_field instance).
+     * @return boolean true is exists false otherwise.
+     * @throws ddl_table_missing_exception
+     */
+    public function field_exists($table, $field)
+    {
+    }
+    /**
+     * Given one xmldb_index, the function returns the name of the index in DB
+     * of false if it doesn't exist
+     *
+     * @param xmldb_table $xmldb_table table to be searched
+     * @param xmldb_index $xmldb_index the index to be searched
+     * @param bool $returnall true means return array of all indexes, false means first index only as string
+     * @return array|string|bool Index name, array of index names or false if no indexes are found.
+     * @throws ddl_table_missing_exception Thrown when table is not found.
+     */
+    public function find_index_name(\xmldb_table $xmldb_table, \xmldb_index $xmldb_index, $returnall = \false)
+    {
+    }
+    /**
+     * Given one xmldb_index, check if it exists in DB (true/false).
+     *
+     * @param xmldb_table $xmldb_table The table to be searched.
+     * @param xmldb_index $xmldb_index The index to be searched for.
+     * @return boolean true id index exists, false otherwise.
+     */
+    public function index_exists(\xmldb_table $xmldb_table, \xmldb_index $xmldb_index)
+    {
+    }
+    /**
+     * This function IS NOT IMPLEMENTED. ONCE WE'LL BE USING RELATIONAL
+     * INTEGRITY IT WILL BECOME MORE USEFUL. FOR NOW, JUST CALCULATE "OFFICIAL"
+     * KEY NAMES WITHOUT ACCESSING TO DB AT ALL.
+     * Given one xmldb_key, the function returns the name of the key in DB (if exists)
+     * of false if it doesn't exist
+     *
+     * @param xmldb_table $xmldb_table The table to be searched.
+     * @param xmldb_key $xmldb_key The key to be searched.
+     * @return string key name if found
+     */
+    public function find_key_name(\xmldb_table $xmldb_table, \xmldb_key $xmldb_key)
+    {
+    }
+    /**
+     * This function will delete all tables found in XMLDB file from db
+     *
+     * @param string $file Full path to the XML file to be used.
+     * @return void
+     */
+    public function delete_tables_from_xmldb_file($file)
+    {
+    }
+    /**
+     * This function will drop the table passed as argument
+     * and all the associated objects (keys, indexes, constraints, sequences, triggers)
+     * will be dropped too.
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @return void
+     */
+    public function drop_table(\xmldb_table $xmldb_table)
+    {
+    }
+    /**
+     * Load an install.xml file, checking that it exists, and that the structure is OK.
+     * @param string $file the full path to the XMLDB file.
+     * @return xmldb_file the loaded file.
+     */
+    private function load_xmldb_file($file)
+    {
+    }
+    /**
+     * This function will load one entire XMLDB file and call install_from_xmldb_structure.
+     *
+     * @param string $file full path to the XML file to be used
+     * @return void
+     */
+    public function install_from_xmldb_file($file)
+    {
+    }
+    /**
+     * This function will load one entire XMLDB file and call install_from_xmldb_structure.
+     *
+     * @param string $file full path to the XML file to be used
+     * @param string $tablename the name of the table.
+     * @param bool $cachestructures boolean to decide if loaded xmldb structures can be safely cached
+     *             useful for testunits loading the enormous main xml file hundred of times (100x)
+     */
+    public function install_one_table_from_xmldb_file($file, $tablename, $cachestructures = \false)
+    {
+    }
+    /**
+     * This function will generate all the needed SQL statements, specific for each
+     * RDBMS type and, finally, it will execute all those statements against the DB.
+     *
+     * @param stdClass $xmldb_structure xmldb_structure object.
+     * @return void
+     */
+    public function install_from_xmldb_structure($xmldb_structure)
+    {
+    }
+    /**
+     * This function will create the table passed as argument with all its
+     * fields/keys/indexes/sequences, everything based in the XMLDB object
+     *
+     * @param xmldb_table $xmldb_table Table object (full specs are required).
+     * @return void
+     */
+    public function create_table(\xmldb_table $xmldb_table)
+    {
+    }
+    /**
+     * This function will create the temporary table passed as argument with all its
+     * fields/keys/indexes/sequences, everything based in the XMLDB object
+     *
+     * If table already exists ddl_exception will be thrown, please make sure
+     * the table name does not collide with existing normal table!
+     *
+     * @param xmldb_table $xmldb_table Table object (full specs are required).
+     * @return void
+     */
+    public function create_temp_table(\xmldb_table $xmldb_table)
+    {
+    }
+    /**
+     * This function will drop the temporary table passed as argument with all its
+     * fields/keys/indexes/sequences, everything based in the XMLDB object
+     *
+     * It is recommended to drop temp table when not used anymore.
+     *
+     * @deprecated since 2.3, use drop_table() for all table types
+     * @param xmldb_table $xmldb_table Table object.
+     * @return void
+     */
+    public function drop_temp_table(\xmldb_table $xmldb_table)
+    {
+    }
+    /**
+     * This function will rename the table passed as argument
+     * Before renaming the index, the function will check it exists
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param string $newname New name of the index.
+     * @return void
+     */
+    public function rename_table(\xmldb_table $xmldb_table, $newname)
+    {
+    }
+    /**
+     * This function will add the field to the table passed as arguments
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Index object (full specs are required).
+     * @return void
+     */
+    public function add_field(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field)
+    {
+    }
+    /**
+     * This function will drop the field from the table passed as arguments
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Index object (full specs are required).
+     * @return void
+     */
+    public function drop_field(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field)
+    {
+    }
+    /**
+     * This function will change the type of the field in the table passed as arguments
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Index object (full specs are required).
+     * @return void
+     */
+    public function change_field_type(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field)
+    {
+    }
+    /**
+     * This function will change the precision of the field in the table passed as arguments
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Index object (full specs are required).
+     * @return void
+     */
+    public function change_field_precision(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field)
+    {
+    }
+    /**
+     * This function will change the unsigned/signed of the field in the table passed as arguments
+     *
+     * @deprecated since 2.3, only singed numbers are allowed now, migration is automatic
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Field object (full specs are required).
+     * @return void
+     */
+    public function change_field_unsigned(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field)
+    {
+    }
+    /**
+     * This function will change the nullability of the field in the table passed as arguments
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Index object (full specs are required).
+     * @return void
+     */
+    public function change_field_notnull(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field)
+    {
+    }
+    /**
+     * This function will change the default of the field in the table passed as arguments
+     * One null value in the default field means delete the default
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Index object (full specs are required).
+     * @return void
+     */
+    public function change_field_default(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field)
+    {
+    }
+    /**
+     * This function will rename the field in the table passed as arguments
+     * Before renaming the field, the function will check it exists
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Index object (full specs are required).
+     * @param string $newname New name of the field.
+     * @return void
+     */
+    public function rename_field(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field, $newname)
+    {
+    }
+    /**
+     * This function will check, for the given table and field, if there there is any dependency
+     * preventing the field to be modified. It's used by all the public methods that perform any
+     * DDL change on fields, throwing one ddl_dependency_exception if dependencies are found.
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_field $xmldb_field Index object (full specs are required).
+     * @return void
+     * @throws ddl_dependency_exception|ddl_field_missing_exception|ddl_table_missing_exception if dependency not met.
+     */
+    private function check_field_dependencies(\xmldb_table $xmldb_table, \xmldb_field $xmldb_field)
+    {
+    }
+    /**
+     * This function will create the key in the table passed as arguments
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_key $xmldb_key Index object (full specs are required).
+     * @return void
+     */
+    public function add_key(\xmldb_table $xmldb_table, \xmldb_key $xmldb_key)
+    {
+    }
+    /**
+     * This function will drop the key in the table passed as arguments
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_key $xmldb_key Key object (full specs are required).
+     * @return void
+     */
+    public function drop_key(\xmldb_table $xmldb_table, \xmldb_key $xmldb_key)
+    {
+    }
+    /**
+     * This function will rename the key in the table passed as arguments
+     * Experimental. Shouldn't be used at all in normal installation/upgrade!
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_key $xmldb_key key object (full specs are required).
+     * @param string $newname New name of the key.
+     * @return void
+     */
+    public function rename_key(\xmldb_table $xmldb_table, \xmldb_key $xmldb_key, $newname)
+    {
+    }
+    /**
+     * This function will create the index in the table passed as arguments
+     * Before creating the index, the function will check it doesn't exists
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_index $xmldb_intex Index object (full specs are required).
+     * @return void
+     */
+    public function add_index($xmldb_table, $xmldb_intex)
+    {
+    }
+    /**
+     * This function will drop the index in the table passed as arguments
+     * Before dropping the index, the function will check it exists
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_index $xmldb_intex Index object (full specs are required).
+     * @return void
+     */
+    public function drop_index($xmldb_table, $xmldb_intex)
+    {
+    }
+    /**
+     * This function will rename the index in the table passed as arguments
+     * Before renaming the index, the function will check it exists
+     * Experimental. Shouldn't be used at all!
+     *
+     * @param xmldb_table $xmldb_table Table object (just the name is mandatory).
+     * @param xmldb_index $xmldb_intex Index object (full specs are required).
+     * @param string $newname New name of the index.
+     * @return void
+     */
+    public function rename_index($xmldb_table, $xmldb_intex, $newname)
+    {
+    }
+    /**
+     * Get the list of install.xml files.
+     *
+     * @return array
+     */
+    public function get_install_xml_files() : array
+    {
+    }
+    /**
+     * Reads the install.xml files for Moodle core and modules and returns an array of
+     * xmldb_structure object with xmldb_table from these files.
+     * @return xmldb_structure schema from install.xml files
+     */
+    public function get_install_xml_schema()
+    {
+    }
+    /**
+     * Checks the database schema against a schema specified by an xmldb_structure object
+     * @param xmldb_structure $schema export schema describing all known tables
+     * @param array $options
+     * @return array keyed by table name with array of difference messages as values
+     */
+    public function check_database_schema(\xmldb_structure $schema, array $options = \null)
+    {
+    }
+    /**
+     * Returns a string describing the missing index error.
+     *
+     * @param xmldb_table $table
+     * @param xmldb_index $index
+     * @param string $indexname
+     * @return string
+     */
+    private function get_missing_index_error(\xmldb_table $table, \xmldb_index $index, string $indexname) : string
+    {
+    }
+    /**
+     * Removes an index from the array $dbindexes if it is found.
+     *
+     * @param array $dbindexes
+     * @param xmldb_index $index
+     */
+    private function remove_index_from_dbindex(array &$dbindexes, \xmldb_index $index)
     {
     }
 }
@@ -23525,6 +24083,464 @@ function make_localcache_directory($directory, $exceptiononerror = \true)
  * Webserver access user logging
  */
 function set_access_log_user()
+{
+}
+/**
+ * Sets maximum expected time needed for upgrade task.
+ * Please always make sure that upgrade will not run longer!
+ *
+ * The script may be automatically aborted if upgrade times out.
+ *
+ * @category upgrade
+ * @param int $max_execution_time in seconds (can not be less than 60 s)
+ */
+function upgrade_set_timeout($max_execution_time = 300)
+{
+}
+/**
+ * Upgrade savepoint, marks end of each upgrade block.
+ * It stores new main version, resets upgrade timeout
+ * and abort upgrade if user cancels page loading.
+ *
+ * Please do not make large upgrade blocks with lots of operations,
+ * for example when adding tables keep only one table operation per block.
+ *
+ * @category upgrade
+ * @param bool $result false if upgrade step failed, true if completed
+ * @param string or float $version main version
+ * @param bool $allowabort allow user to abort script execution here
+ * @return void
+ */
+function upgrade_main_savepoint($result, $version, $allowabort = \true)
+{
+}
+/**
+ * Module upgrade savepoint, marks end of module upgrade blocks
+ * It stores module version, resets upgrade timeout
+ * and abort upgrade if user cancels page loading.
+ *
+ * @category upgrade
+ * @param bool $result false if upgrade step failed, true if completed
+ * @param string or float $version main version
+ * @param string $modname name of module
+ * @param bool $allowabort allow user to abort script execution here
+ * @return void
+ */
+function upgrade_mod_savepoint($result, $version, $modname, $allowabort = \true)
+{
+}
+/**
+ * Blocks upgrade savepoint, marks end of blocks upgrade blocks
+ * It stores block version, resets upgrade timeout
+ * and abort upgrade if user cancels page loading.
+ *
+ * @category upgrade
+ * @param bool $result false if upgrade step failed, true if completed
+ * @param string or float $version main version
+ * @param string $blockname name of block
+ * @param bool $allowabort allow user to abort script execution here
+ * @return void
+ */
+function upgrade_block_savepoint($result, $version, $blockname, $allowabort = \true)
+{
+}
+/**
+ * Plugins upgrade savepoint, marks end of blocks upgrade blocks
+ * It stores plugin version, resets upgrade timeout
+ * and abort upgrade if user cancels page loading.
+ *
+ * @category upgrade
+ * @param bool $result false if upgrade step failed, true if completed
+ * @param string or float $version main version
+ * @param string $type The type of the plugin.
+ * @param string $plugin The name of the plugin.
+ * @param bool $allowabort allow user to abort script execution here
+ * @return void
+ */
+function upgrade_plugin_savepoint($result, $version, $type, $plugin, $allowabort = \true)
+{
+}
+/**
+ * Detect if there are leftovers in PHP source files.
+ *
+ * During main version upgrades administrators MUST move away
+ * old PHP source files and start from scratch (or better
+ * use git).
+ *
+ * @return bool true means borked upgrade, false means previous PHP files were properly removed
+ */
+function upgrade_stale_php_files_present()
+{
+}
+/**
+ * Upgrade plugins
+ * @param string $type The type of plugins that should be updated (e.g. 'enrol', 'qtype')
+ * return void
+ */
+function upgrade_plugins($type, $startcallback, $endcallback, $verbose)
+{
+}
+/**
+ * Find and check all modules and load them up or upgrade them if necessary
+ *
+ * @global object
+ * @global object
+ */
+function upgrade_plugins_modules($startcallback, $endcallback, $verbose)
+{
+}
+/**
+ * This function finds all available blocks and install them
+ * into blocks table or do all the upgrade process if newer.
+ *
+ * @global object
+ * @global object
+ */
+function upgrade_plugins_blocks($startcallback, $endcallback, $verbose)
+{
+}
+/**
+ * Log_display description function used during install and upgrade.
+ *
+ * @param string $component name of component (moodle, mod_assignment, etc.)
+ * @return void
+ */
+function log_update_descriptions($component)
+{
+}
+/**
+ * Web service discovery function used during install and upgrade.
+ * @param string $component name of component (moodle, mod_assignment, etc.)
+ * @return void
+ */
+function external_update_descriptions($component)
+{
+}
+/**
+ * Allow plugins and subsystems to add external functions to other plugins or built-in services.
+ * This function is executed just after all the plugins have been updated.
+ */
+function external_update_services()
+{
+}
+/**
+ * upgrade logging functions
+ */
+function upgrade_handle_exception($ex, $plugin = \null)
+{
+}
+/**
+ * Adds log entry into upgrade_log table
+ *
+ * @param int $type UPGRADE_LOG_NORMAL, UPGRADE_LOG_NOTICE or UPGRADE_LOG_ERROR
+ * @param string $plugin frankenstyle component name
+ * @param string $info short description text of log entry
+ * @param string $details long problem description
+ * @param string $backtrace string used for errors only
+ * @return void
+ */
+function upgrade_log($type, $plugin, $info, $details = \null, $backtrace = \null)
+{
+}
+/**
+ * Marks start of upgrade, blocks any other access to site.
+ * The upgrade is finished at the end of script or after timeout.
+ *
+ * @global object
+ * @global object
+ * @global object
+ */
+function upgrade_started($preinstall = \false)
+{
+}
+/**
+ * Internal function - executed if upgrade interrupted.
+ */
+function upgrade_finished_handler()
+{
+}
+/**
+ * Indicates upgrade is finished.
+ *
+ * This function may be called repeatedly.
+ *
+ * @global object
+ * @global object
+ */
+function upgrade_finished($continueurl = \null)
+{
+}
+/**
+ * @global object
+ * @global object
+ */
+function upgrade_setup_debug($starting)
+{
+}
+function print_upgrade_separator()
+{
+}
+/**
+ * Default start upgrade callback
+ * @param string $plugin
+ * @param bool $installation true if installation, false means upgrade
+ */
+function print_upgrade_part_start($plugin, $installation, $verbose)
+{
+}
+/**
+ * Default end upgrade callback
+ * @param string $plugin
+ * @param bool $installation true if installation, false means upgrade
+ */
+function print_upgrade_part_end($plugin, $installation, $verbose)
+{
+}
+/**
+ * Sets up JS code required for all upgrade scripts.
+ * @global object
+ */
+function upgrade_init_javascript()
+{
+}
+/**
+ * Try to upgrade the given language pack (or current language)
+ *
+ * @param string $lang the code of the language to update, defaults to the current language
+ */
+function upgrade_language_pack($lang = \null)
+{
+}
+/**
+ * Build the current theme so that the user doesn't have to wait for it
+ * to build on the first page load after the install / upgrade.
+ */
+function upgrade_themes()
+{
+}
+/**
+ * Install core moodle tables and initialize
+ * @param float $version target version
+ * @param bool $verbose
+ * @return void, may throw exception
+ */
+function install_core($version, $verbose)
+{
+}
+/**
+ * Upgrade moodle core
+ * @param float $version target version
+ * @param bool $verbose
+ * @return void, may throw exception
+ */
+function upgrade_core($version, $verbose)
+{
+}
+/**
+ * Upgrade/install other parts of moodle
+ * @param bool $verbose
+ * @return void, may throw exception
+ */
+function upgrade_noncore($verbose)
+{
+}
+/**
+ * Checks if the main tables have been installed yet or not.
+ *
+ * Note: we can not use caches here because they might be stale,
+ *       use with care!
+ *
+ * @return bool
+ */
+function core_tables_exist()
+{
+}
+/**
+ * upgrades the mnet rpc definitions for the given component.
+ * this method doesn't return status, an exception will be thrown in the case of an error
+ *
+ * @param string $component the plugin to upgrade, eg auth_mnet
+ */
+function upgrade_plugin_mnet_functions($component)
+{
+}
+/**
+ * Given some sort of reflection function/method object, return a profile array, ready to be serialized and stored
+ *
+ * @param ReflectionFunctionAbstract $function reflection function/method object from which to extract information
+ *
+ * @return array associative array with function/method information
+ */
+function admin_mnet_method_profile(\ReflectionFunctionAbstract $function)
+{
+}
+/**
+ * Given some sort of reflection function/method object, return an array of docblock lines, where each line is an array of
+ * keywords/descriptions
+ *
+ * @param ReflectionFunctionAbstract $function reflection function/method object from which to extract information
+ *
+ * @return array docblock converted in to an array
+ */
+function admin_mnet_method_get_docblock(\ReflectionFunctionAbstract $function)
+{
+}
+/**
+ * Given some sort of reflection function/method object, return just the help text
+ *
+ * @param ReflectionFunctionAbstract $function reflection function/method object from which to extract information
+ *
+ * @return string docblock help text
+ */
+function admin_mnet_method_get_help(\ReflectionFunctionAbstract $function)
+{
+}
+/**
+ * This function verifies that the database is not using an unsupported storage engine.
+ *
+ * @param environment_results $result object to update, if relevant
+ * @return environment_results|null updated results object, or null if the storage engine is supported
+ */
+function check_database_storage_engine(\environment_results $result)
+{
+}
+/**
+ * Method used to check the usage of slasharguments config and display a warning message.
+ *
+ * @param environment_results $result object to update, if relevant.
+ * @return environment_results|null updated results or null if slasharguments is disabled.
+ */
+function check_slasharguments(\environment_results $result)
+{
+}
+/**
+ * This function verifies if the database has tables using innoDB Antelope row format.
+ *
+ * @param environment_results $result
+ * @return environment_results|null updated results object, or null if no Antelope table has been found.
+ */
+function check_database_tables_row_format(\environment_results $result)
+{
+}
+/**
+ * This function verfies that the database has tables using InnoDB Antelope row format.
+ *
+ * @param environment_results $result
+ * @return environment_results|null updated results object, or null if no Antelope table has been found.
+ */
+function check_mysql_file_format(\environment_results $result)
+{
+}
+/**
+ * This function verfies that the database has a setting of one file per table. This is required for 'utf8mb4'.
+ *
+ * @param environment_results $result
+ * @return environment_results|null updated results object, or null if innodb_file_per_table = 1.
+ */
+function check_mysql_file_per_table(\environment_results $result)
+{
+}
+/**
+ * This function verfies that the database has the setting of large prefix enabled. This is required for 'utf8mb4'.
+ *
+ * @param environment_results $result
+ * @return environment_results|null updated results object, or null if innodb_large_prefix = 1.
+ */
+function check_mysql_large_prefix(\environment_results $result)
+{
+}
+/**
+ * This function checks the database to see if it is using incomplete unicode support.
+ *
+ * @param  environment_results $result $result
+ * @return environment_results|null updated results object, or null if unicode is fully supported.
+ */
+function check_mysql_incomplete_unicode_support(\environment_results $result)
+{
+}
+/**
+ * Check if the site is being served using an ssl url.
+ *
+ * Note this does not really perform any request neither looks for proxies or
+ * other situations. Just looks to wwwroot and warn if it's not using https.
+ *
+ * @param  environment_results $result $result
+ * @return environment_results|null updated results object, or null if the site is https.
+ */
+function check_is_https(\environment_results $result)
+{
+}
+/**
+ * Check if the site is using 64 bits PHP.
+ *
+ * @param  environment_results $result
+ * @return environment_results|null updated results object, or null if the site is using 64 bits PHP.
+ */
+function check_sixtyfour_bits(\environment_results $result)
+{
+}
+/**
+ * Assert the upgrade key is provided, if it is defined.
+ *
+ * The upgrade key can be defined in the main config.php as $CFG->upgradekey. If
+ * it is defined there, then its value must be provided every time the site is
+ * being upgraded, regardless the administrator is logged in or not.
+ *
+ * This is supposed to be used at certain places in /admin/index.php only.
+ *
+ * @param string|null $upgradekeyhash the SHA-1 of the value provided by the user
+ */
+function check_upgrade_key($upgradekeyhash)
+{
+}
+/**
+ * Helper procedure/macro for installing remote plugins at admin/index.php
+ *
+ * Does not return, always redirects or exits.
+ *
+ * @param array $installable list of \core\update\remote_info
+ * @param bool $confirmed false: display the validation screen, true: proceed installation
+ * @param string $heading validation screen heading
+ * @param moodle_url|string|null $continue URL to proceed with installation at the validation screen
+ * @param moodle_url|string|null $return URL to go back on cancelling at the validation screen
+ */
+function upgrade_install_plugins(array $installable, $confirmed, $heading = '', $continue = \null, $return = \null)
+{
+}
+/**
+ * Method used to check the installed unoconv version.
+ *
+ * @param environment_results $result object to update, if relevant.
+ * @return environment_results|null updated results or null if unoconv path is not executable.
+ */
+function check_unoconv_version(\environment_results $result)
+{
+}
+/**
+ * Checks for up-to-date TLS libraries. NOTE: this is not currently used, see MDL-57262.
+ *
+ * @param environment_results $result object to update, if relevant.
+ * @return environment_results|null updated results or null if unoconv path is not executable.
+ */
+function check_tls_libraries(\environment_results $result)
+{
+}
+/**
+ * Check if recommended version of libcurl is installed or not.
+ *
+ * @param environment_results $result object to update, if relevant.
+ * @return environment_results|null updated results or null.
+ */
+function check_libcurl_version(\environment_results $result)
+{
+}
+/**
+ * Environment check for the php setting max_input_vars
+ *
+ * @param environment_results $result
+ * @return environment_results|null
+ */
+function check_max_input_vars(\environment_results $result)
 {
 }
 // Functions.
