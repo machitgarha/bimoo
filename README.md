@@ -46,6 +46,18 @@ Every Moodle version older than latest supported is followed in a separate branc
 
 Feel free to do so.
 
+### Re-generating stubs file
+
+First, add your files and patterns to `data/path-list.json` file. Then, issue the following command for the `stubs.php` to be re-generated automatically:
+
+```
+./bin/generate-stubs <moodle-root-dir>
+```
+
+`<moodle-root-dir>` is the path to either a Moodle installation, or (a clone of) the official repository (see `--help` for more information).
+
+That's it! Commit the changes, make a PR, and we would all be happy!
+
 ## License
 
 Licensed under [Apache License 2.0](./LICENSE.md).
