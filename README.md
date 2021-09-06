@@ -11,7 +11,7 @@ First, thanks for using this.
 Simply, require it in your `composer.json`:
 
 ```
-composer require machitgarha/bimoo
+composer require --dev machitgarha/bimoo
 ```
 
 Now, your IDE (or text editor) should show you the suggestions for Moodle functions and classes. Not limited to this, you can guide your static analyzer as well.
