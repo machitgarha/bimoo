@@ -6,6 +6,7 @@
     "/lib/moodlelib.php",
     "/lib/navigationlib.php",
     "/lib/outputcomponents.php",
+    "/lib/outputrenderers.php",
     "/lib/pagelib.php",
     "/lib/setuplib.php",
     "/lib/upgradelib.php",
