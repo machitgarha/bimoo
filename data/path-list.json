@@ -7,6 +7,7 @@
     "/lib/navigationlib.php",
     "/lib/outputcomponents.php",
     "/lib/outputrenderers.php",
+    "/lib/outputrequirementslib.php",
     "/lib/pagelib.php",
     "/lib/setuplib.php",
     "/lib/upgradelib.php",
