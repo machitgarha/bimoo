@@ -15,10 +15,16 @@
         "php": "^7.4|^8.0"
     },
     "require-dev": {
-        "php-stubs/generator": "^0.6.0",
+        "php-stubs/generator": "dev-constant-support",
         "symfony/console": "^5.3",
         "webmozart/path-util": "^2.3"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/machitgarha/php-stubs-generator.git"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "MAChitgarha\\Bimoo\\": "src"
