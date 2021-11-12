@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "27c4d536d898e16bf11410fdef0af3c3",
+    "content-hash": "605f2de528f5b470dee17fc199465ba9",
     "packages": [],
     "packages-dev": [
         {
@@ -65,16 +65,16 @@
         },
         {
             "name": "php-stubs/generator",
-            "version": "dev-constant-support",
+            "version": "v0.7.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/machitgarha/php-stubs-generator.git",
-                "reference": "f870749daf5153d5321aa9a6c4feea7551c0ad2b"
+                "url": "https://github.com/php-stubs/generator.git",
+                "reference": "acf0f06fde285ded436b2e3af08876adae412c37"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/machitgarha/php-stubs-generator/zipball/f870749daf5153d5321aa9a6c4feea7551c0ad2b",
-                "reference": "f870749daf5153d5321aa9a6c4feea7551c0ad2b",
+                "url": "https://api.github.com/repos/php-stubs/generator/zipball/acf0f06fde285ded436b2e3af08876adae412c37",
+                "reference": "acf0f06fde285ded436b2e3af08876adae412c37",
                 "shasum": ""
             },
             "require": {
@@ -98,6 +98,7 @@
                     "StubsGenerator\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -110,13 +111,13 @@
             "description": "Generate stubs from any PHP code for IDE completion and static analysis.",
             "homepage": "https://github.com/php-stubs/generator",
             "keywords": [
-                "IDE",
+                "ide",
                 "static analysis"
             ],
             "support": {
-                "source": "https://github.com/machitgarha/php-stubs-generator/tree/constant-support"
+                "source": "https://github.com/php-stubs/generator/tree/v0.7.0"
             },
-            "time": "2021-11-12T05:15:08+00:00"
+            "time": "2021-11-12T17:21:16+00:00"
         },
         {
             "name": "psr/container",
@@ -1217,9 +1218,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "php-stubs/generator": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
