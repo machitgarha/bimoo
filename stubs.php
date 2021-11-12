@@ -30046,6 +30046,56 @@ abstract class moodleform_mod extends \moodleform
     {
     }
 }
+/** No capability change */
+\define('CAP_INHERIT', 0);
+/** Allow permission, overrides CAP_PREVENT defined in parent contexts */
+\define('CAP_ALLOW', 1);
+/** Prevent permission, overrides CAP_ALLOW defined in parent contexts */
+\define('CAP_PREVENT', -1);
+/** Prohibit permission, overrides everything in current and child contexts */
+\define('CAP_PROHIBIT', -1000);
+/** System context level - only one instance in every system */
+\define('CONTEXT_SYSTEM', 10);
+/** User context level -  one instance for each user describing what others can do to user */
+\define('CONTEXT_USER', 30);
+/** Course category context level - one instance for each category */
+\define('CONTEXT_COURSECAT', 40);
+/** Course context level - one instances for each course */
+\define('CONTEXT_COURSE', 50);
+/** Course module context level - one instance for each course module */
+\define('CONTEXT_MODULE', 70);
+/**
+ * Block context level - one instance for each block, sticky blocks are tricky
+ * because ppl think they should be able to override them at lower contexts.
+ * Any other context level instance can be parent of block context.
+ */
+\define('CONTEXT_BLOCK', 80);
+/** Capability allow management of trusts - NOT IMPLEMENTED YET - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_MANAGETRUST', 0x1);
+/** Capability allows changes in system configuration - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_CONFIG', 0x2);
+/** Capability allows user to add scripted content - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_XSS', 0x4);
+/** Capability allows access to personal user information - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_PERSONAL', 0x8);
+/** Capability allows users to add content others may see - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_SPAM', 0x10);
+/** capability allows mass delete of data belonging to other users - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_DATALOSS', 0x20);
+/** rolename displays - the name as defined in the role definition, localised if name empty */
+\define('ROLENAME_ORIGINAL', 0);
+/** rolename displays - the name as defined by a role alias at the course level, falls back to ROLENAME_ORIGINAL if alias not present */
+\define('ROLENAME_ALIAS', 1);
+/** rolename displays - Both, like this:  Role alias (Original) */
+\define('ROLENAME_BOTH', 2);
+/** rolename displays - the name as defined in the role definition and the shortname in brackets */
+\define('ROLENAME_ORIGINALANDSHORT', 3);
+/** rolename displays - the name as defined by a role alias, in raw form suitable for editing */
+\define('ROLENAME_ALIAS_RAW', 4);
+/** rolename displays - the name is simply short role name */
+\define('ROLENAME_SHORT', 5);
+/** maximum size of context cache - it is possible to tweak this config.php or in any script before inclusion of context.php */
+\define('CONTEXT_CACHE_MAX_SIZE', 2500);
 // Holds the cache of $accessdata structure for users (including $USER)
 /**
  * Clears accesslib's private caches. ONLY BE USED BY UNIT TESTS
@@ -31502,6 +31552,8 @@ function get_suspended_userids(\context $context, $usecache = \false)
 function get_with_capability_sql(\context $context, $capability)
 {
 }
+\define('INSECURE_DATAROOT_WARNING', 1);
+\define('INSECURE_DATAROOT_ERROR', 2);
 /**
  * Automatically clean-up all plugin data and remove the plugin DB tables
  *
@@ -31727,6 +31779,10 @@ function db_replace($search, $replace)
 {
 }
 /**
+ * EDITOR_UNLIMITED_FILES - hard-coded value for the 'maxfiles' option
+ */
+\define('EDITOR_UNLIMITED_FILES', -1);
+/**
  * Callback called when PEAR throws an error
  *
  * @param PEAR_Error $error
@@ -31748,6 +31804,7 @@ function form_init_date_js()
  * @name $_HTML_QuickForm_default_renderer
  */
 $_HTML_QuickForm_default_renderer = new \MoodleQuickForm_Renderer();
+\define('MAX_MODINFO_CACHE_SIZE', 10);
 /**
  * Returns reference to full info about modules in course (including visibility).
  * Cached and as fast as possible (0 or 1 db query).
@@ -31854,6 +31911,417 @@ function get_course_and_cm_from_instance($instanceorid, $modulename, $courseorid
 function rebuild_course_cache($courseid = 0, $clearonly = \false)
 {
 }
+// CONSTANTS (Encased in phpdoc proper comments).
+// Date and time constants.
+/**
+ * Time constant - the number of seconds in a year
+ */
+\define('YEARSECS', 31536000);
+/**
+ * Time constant - the number of seconds in a week
+ */
+\define('WEEKSECS', 604800);
+/**
+ * Time constant - the number of seconds in a day
+ */
+\define('DAYSECS', 86400);
+/**
+ * Time constant - the number of seconds in an hour
+ */
+\define('HOURSECS', 3600);
+/**
+ * Time constant - the number of seconds in a minute
+ */
+\define('MINSECS', 60);
+/**
+ * Time constant - the number of minutes in a day
+ */
+\define('DAYMINS', 1440);
+/**
+ * Time constant - the number of minutes in an hour
+ */
+\define('HOURMINS', 60);
+// Parameter constants - every call to optional_param(), required_param()
+// or clean_param() should have a specified type of parameter.
+/**
+ * PARAM_ALPHA - contains only English ascii letters [a-zA-Z].
+ */
+\define('PARAM_ALPHA', 'alpha');
+/**
+ * PARAM_ALPHAEXT the same contents as PARAM_ALPHA (English ascii letters [a-zA-Z]) plus the chars in quotes: "_-" allowed
+ * NOTE: originally this allowed "/" too, please use PARAM_SAFEPATH if "/" needed
+ */
+\define('PARAM_ALPHAEXT', 'alphaext');
+/**
+ * PARAM_ALPHANUM - expected numbers 0-9 and English ascii letters [a-zA-Z] only.
+ */
+\define('PARAM_ALPHANUM', 'alphanum');
+/**
+ * PARAM_ALPHANUMEXT - expected numbers 0-9, letters (English ascii letters [a-zA-Z]) and _- only.
+ */
+\define('PARAM_ALPHANUMEXT', 'alphanumext');
+/**
+ * PARAM_AUTH - actually checks to make sure the string is a valid auth plugin
+ */
+\define('PARAM_AUTH', 'auth');
+/**
+ * PARAM_BASE64 - Base 64 encoded format
+ */
+\define('PARAM_BASE64', 'base64');
+/**
+ * PARAM_BOOL - converts input into 0 or 1, use for switches in forms and urls.
+ */
+\define('PARAM_BOOL', 'bool');
+/**
+ * PARAM_CAPABILITY - A capability name, like 'moodle/role:manage'. Actually
+ * checked against the list of capabilities in the database.
+ */
+\define('PARAM_CAPABILITY', 'capability');
+/**
+ * PARAM_CLEANHTML - cleans submitted HTML code. Note that you almost never want
+ * to use this. The normal mode of operation is to use PARAM_RAW when receiving
+ * the input (required/optional_param or formslib) and then sanitise the HTML
+ * using format_text on output. This is for the rare cases when you want to
+ * sanitise the HTML on input. This cleaning may also fix xhtml strictness.
+ */
+\define('PARAM_CLEANHTML', 'cleanhtml');
+/**
+ * PARAM_EMAIL - an email address following the RFC
+ */
+\define('PARAM_EMAIL', 'email');
+/**
+ * PARAM_FILE - safe file name, all dangerous chars are stripped, protects against XSS, SQL injections and directory traversals
+ */
+\define('PARAM_FILE', 'file');
+/**
+ * PARAM_FLOAT - a real/floating point number.
+ *
+ * Note that you should not use PARAM_FLOAT for numbers typed in by the user.
+ * It does not work for languages that use , as a decimal separator.
+ * Use PARAM_LOCALISEDFLOAT instead.
+ */
+\define('PARAM_FLOAT', 'float');
+/**
+ * PARAM_LOCALISEDFLOAT - a localised real/floating point number.
+ * This is preferred over PARAM_FLOAT for numbers typed in by the user.
+ * Cleans localised numbers to computer readable numbers; false for invalid numbers.
+ */
+\define('PARAM_LOCALISEDFLOAT', 'localisedfloat');
+/**
+ * PARAM_HOST - expected fully qualified domain name (FQDN) or an IPv4 dotted quad (IP address)
+ */
+\define('PARAM_HOST', 'host');
+/**
+ * PARAM_INT - integers only, use when expecting only numbers.
+ */
+\define('PARAM_INT', 'int');
+/**
+ * PARAM_LANG - checks to see if the string is a valid installed language in the current site.
+ */
+\define('PARAM_LANG', 'lang');
+/**
+ * PARAM_LOCALURL - expected properly formatted URL as well as one that refers to the local server itself. (NOT orthogonal to the
+ * others! Implies PARAM_URL!)
+ */
+\define('PARAM_LOCALURL', 'localurl');
+/**
+ * PARAM_NOTAGS - all html tags are stripped from the text. Do not abuse this type.
+ */
+\define('PARAM_NOTAGS', 'notags');
+/**
+ * PARAM_PATH - safe relative path name, all dangerous chars are stripped, protects against XSS, SQL injections and directory
+ * traversals note: the leading slash is not removed, window drive letter is not allowed
+ */
+\define('PARAM_PATH', 'path');
+/**
+ * PARAM_PEM - Privacy Enhanced Mail format
+ */
+\define('PARAM_PEM', 'pem');
+/**
+ * PARAM_PERMISSION - A permission, one of CAP_INHERIT, CAP_ALLOW, CAP_PREVENT or CAP_PROHIBIT.
+ */
+\define('PARAM_PERMISSION', 'permission');
+/**
+ * PARAM_RAW specifies a parameter that is not cleaned/processed in any way except the discarding of the invalid utf-8 characters
+ */
+\define('PARAM_RAW', 'raw');
+/**
+ * PARAM_RAW_TRIMMED like PARAM_RAW but leading and trailing whitespace is stripped.
+ */
+\define('PARAM_RAW_TRIMMED', 'raw_trimmed');
+/**
+ * PARAM_SAFEDIR - safe directory name, suitable for include() and require()
+ */
+\define('PARAM_SAFEDIR', 'safedir');
+/**
+ * PARAM_SAFEPATH - several PARAM_SAFEDIR joined by "/", suitable for include() and require(), plugin paths, etc.
+ */
+\define('PARAM_SAFEPATH', 'safepath');
+/**
+ * PARAM_SEQUENCE - expects a sequence of numbers like 8 to 1,5,6,4,6,8,9.  Numbers and comma only.
+ */
+\define('PARAM_SEQUENCE', 'sequence');
+/**
+ * PARAM_TAG - one tag (interests, blogs, etc.) - mostly international characters and space, <> not supported
+ */
+\define('PARAM_TAG', 'tag');
+/**
+ * PARAM_TAGLIST - list of tags separated by commas (interests, blogs, etc.)
+ */
+\define('PARAM_TAGLIST', 'taglist');
+/**
+ * PARAM_TEXT - general plain text compatible with multilang filter, no other html tags. Please note '<', or '>' are allowed here.
+ */
+\define('PARAM_TEXT', 'text');
+/**
+ * PARAM_THEME - Checks to see if the string is a valid theme name in the current site
+ */
+\define('PARAM_THEME', 'theme');
+/**
+ * PARAM_URL - expected properly formatted URL. Please note that domain part is required, http://localhost/ is not accepted but
+ * http://localhost.localdomain/ is ok.
+ */
+\define('PARAM_URL', 'url');
+/**
+ * PARAM_USERNAME - Clean username to only contains allowed characters. This is to be used ONLY when manually creating user
+ * accounts, do NOT use when syncing with external systems!!
+ */
+\define('PARAM_USERNAME', 'username');
+/**
+ * PARAM_STRINGID - used to check if the given string is valid string identifier for get_string()
+ */
+\define('PARAM_STRINGID', 'stringid');
+// DEPRECATED PARAM TYPES OR ALIASES - DO NOT USE FOR NEW CODE.
+/**
+ * PARAM_CLEAN - obsoleted, please use a more specific type of parameter.
+ * It was one of the first types, that is why it is abused so much ;-)
+ * @deprecated since 2.0
+ */
+\define('PARAM_CLEAN', 'clean');
+/**
+ * PARAM_INTEGER - deprecated alias for PARAM_INT
+ * @deprecated since 2.0
+ */
+\define('PARAM_INTEGER', 'int');
+/**
+ * PARAM_NUMBER - deprecated alias of PARAM_FLOAT
+ * @deprecated since 2.0
+ */
+\define('PARAM_NUMBER', 'float');
+/**
+ * PARAM_ACTION - deprecated alias for PARAM_ALPHANUMEXT, use for various actions in forms and urls
+ * NOTE: originally alias for PARAM_APLHA
+ * @deprecated since 2.0
+ */
+\define('PARAM_ACTION', 'alphanumext');
+/**
+ * PARAM_FORMAT - deprecated alias for PARAM_ALPHANUMEXT, use for names of plugins, formats, etc.
+ * NOTE: originally alias for PARAM_APLHA
+ * @deprecated since 2.0
+ */
+\define('PARAM_FORMAT', 'alphanumext');
+/**
+ * PARAM_MULTILANG - deprecated alias of PARAM_TEXT.
+ * @deprecated since 2.0
+ */
+\define('PARAM_MULTILANG', 'text');
+/**
+ * PARAM_TIMEZONE - expected timezone. Timezone can be int +-(0-13) or float +-(0.5-12.5) or
+ * string separated by '/' and can have '-' &/ '_' (eg. America/North_Dakota/New_Salem
+ * America/Port-au-Prince)
+ */
+\define('PARAM_TIMEZONE', 'timezone');
+/**
+ * PARAM_CLEANFILE - deprecated alias of PARAM_FILE; originally was removing regional chars too
+ */
+\define('PARAM_CLEANFILE', 'file');
+/**
+ * PARAM_COMPONENT is used for full component names (aka frankenstyle) such as 'mod_forum', 'core_rating', 'auth_ldap'.
+ * Short legacy subsystem names and module names are accepted too ex: 'forum', 'rating', 'user'.
+ * Only lowercase ascii letters, numbers and underscores are allowed, it has to start with a letter.
+ * NOTE: numbers and underscores are strongly discouraged in plugin names!
+ */
+\define('PARAM_COMPONENT', 'component');
+/**
+ * PARAM_AREA is a name of area used when addressing files, comments, ratings, etc.
+ * It is usually used together with context id and component.
+ * Only lowercase ascii letters, numbers and underscores are allowed, it has to start with a letter.
+ */
+\define('PARAM_AREA', 'area');
+/**
+ * PARAM_PLUGIN is used for plugin names such as 'forum', 'glossary', 'ldap', 'paypal', 'completionstatus'.
+ * Only lowercase ascii letters, numbers and underscores are allowed, it has to start with a letter.
+ * NOTE: numbers and underscores are strongly discouraged in plugin names! Underscores are forbidden in module names.
+ */
+\define('PARAM_PLUGIN', 'plugin');
+// Web Services.
+/**
+ * VALUE_REQUIRED - if the parameter is not supplied, there is an error
+ */
+\define('VALUE_REQUIRED', 1);
+/**
+ * VALUE_OPTIONAL - if the parameter is not supplied, then the param has no value
+ */
+\define('VALUE_OPTIONAL', 2);
+/**
+ * VALUE_DEFAULT - if the parameter is not supplied, then the default value is used
+ */
+\define('VALUE_DEFAULT', 0);
+/**
+ * NULL_NOT_ALLOWED - the parameter can not be set to null in the database
+ */
+\define('NULL_NOT_ALLOWED', \false);
+/**
+ * NULL_ALLOWED - the parameter can be set to null in the database
+ */
+\define('NULL_ALLOWED', \true);
+// Page types.
+/**
+ * PAGE_COURSE_VIEW is a definition of a page type. For more information on the page class see moodle/lib/pagelib.php.
+ */
+\define('PAGE_COURSE_VIEW', 'course-view');
+/** Get remote addr constant */
+\define('GETREMOTEADDR_SKIP_HTTP_CLIENT_IP', '1');
+/** Get remote addr constant */
+\define('GETREMOTEADDR_SKIP_HTTP_X_FORWARDED_FOR', '2');
+/**
+ * GETREMOTEADDR_SKIP_DEFAULT defines the default behavior remote IP address validation.
+ */
+\define('GETREMOTEADDR_SKIP_DEFAULT', \GETREMOTEADDR_SKIP_HTTP_X_FORWARDED_FOR | \GETREMOTEADDR_SKIP_HTTP_CLIENT_IP);
+// Blog access level constant declaration.
+\define('BLOG_USER_LEVEL', 1);
+\define('BLOG_GROUP_LEVEL', 2);
+\define('BLOG_COURSE_LEVEL', 3);
+\define('BLOG_SITE_LEVEL', 4);
+\define('BLOG_GLOBAL_LEVEL', 5);
+// Tag constants.
+/**
+ * To prevent problems with multibytes strings,Flag updating in nav not working on the review page. this should not exceed the
+ * length of "varchar(255) / 3 (bytes / utf-8 character) = 85".
+ * TODO: this is not correct, varchar(255) are 255 unicode chars ;-)
+ *
+ * @todo define(TAG_MAX_LENGTH) this is not correct, varchar(255) are 255 unicode chars ;-)
+ */
+\define('TAG_MAX_LENGTH', 50);
+// Password policy constants.
+\define('PASSWORD_LOWER', 'abcdefghijklmnopqrstuvwxyz');
+\define('PASSWORD_UPPER', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+\define('PASSWORD_DIGITS', '0123456789');
+\define('PASSWORD_NONALPHANUM', '.,;:!?_-+/*@#&$');
+// Feature constants.
+// Used for plugin_supports() to report features that are, or are not, supported by a module.
+/** True if module can provide a grade */
+\define('FEATURE_GRADE_HAS_GRADE', 'grade_has_grade');
+/** True if module supports outcomes */
+\define('FEATURE_GRADE_OUTCOMES', 'outcomes');
+/** True if module supports advanced grading methods */
+\define('FEATURE_ADVANCED_GRADING', 'grade_advanced_grading');
+/** True if module controls the grade visibility over the gradebook */
+\define('FEATURE_CONTROLS_GRADE_VISIBILITY', 'controlsgradevisbility');
+/** True if module supports plagiarism plugins */
+\define('FEATURE_PLAGIARISM', 'plagiarism');
+/** True if module has code to track whether somebody viewed it */
+\define('FEATURE_COMPLETION_TRACKS_VIEWS', 'completion_tracks_views');
+/** True if module has custom completion rules */
+\define('FEATURE_COMPLETION_HAS_RULES', 'completion_has_rules');
+/** True if module has no 'view' page (like label) */
+\define('FEATURE_NO_VIEW_LINK', 'viewlink');
+/** True (which is default) if the module wants support for setting the ID number for grade calculation purposes. */
+\define('FEATURE_IDNUMBER', 'idnumber');
+/** True if module supports groups */
+\define('FEATURE_GROUPS', 'groups');
+/** True if module supports groupings */
+\define('FEATURE_GROUPINGS', 'groupings');
+/**
+ * True if module supports groupmembersonly (which no longer exists)
+ * @deprecated Since Moodle 2.8
+ */
+\define('FEATURE_GROUPMEMBERSONLY', 'groupmembersonly');
+/** Type of module */
+\define('FEATURE_MOD_ARCHETYPE', 'mod_archetype');
+/** True if module supports intro editor */
+\define('FEATURE_MOD_INTRO', 'mod_intro');
+/** True if module has default completion */
+\define('FEATURE_MODEDIT_DEFAULT_COMPLETION', 'modedit_default_completion');
+\define('FEATURE_COMMENT', 'comment');
+\define('FEATURE_RATE', 'rate');
+/** True if module supports backup/restore of moodle2 format */
+\define('FEATURE_BACKUP_MOODLE2', 'backup_moodle2');
+/** True if module can show description on course main page */
+\define('FEATURE_SHOW_DESCRIPTION', 'showdescription');
+/** True if module uses the question bank */
+\define('FEATURE_USES_QUESTIONS', 'usesquestions');
+/**
+ * Maximum filename char size
+ */
+\define('MAX_FILENAME_SIZE', 100);
+/** Unspecified module archetype */
+\define('MOD_ARCHETYPE_OTHER', 0);
+/** Resource-like type module */
+\define('MOD_ARCHETYPE_RESOURCE', 1);
+/** Assignment module archetype */
+\define('MOD_ARCHETYPE_ASSIGNMENT', 2);
+/** System (not user-addable) module archetype */
+\define('MOD_ARCHETYPE_SYSTEM', 3);
+/**
+ * Security token used for allowing access
+ * from external application such as web services.
+ * Scripts do not use any session, performance is relatively
+ * low because we need to load access info in each request.
+ * Scripts are executed in parallel.
+ */
+\define('EXTERNAL_TOKEN_PERMANENT', 0);
+/**
+ * Security token used for allowing access
+ * of embedded applications, the code is executed in the
+ * active user session. Token is invalidated after user logs out.
+ * Scripts are executed serially - normal session locking is used.
+ */
+\define('EXTERNAL_TOKEN_EMBEDDED', 1);
+/**
+ * The home page should be the site home
+ */
+\define('HOMEPAGE_SITE', 0);
+/**
+ * The home page should be the users my page
+ */
+\define('HOMEPAGE_MY', 1);
+/**
+ * The home page can be chosen by the user
+ */
+\define('HOMEPAGE_USER', 2);
+/**
+ * Moodle mobile app service name
+ */
+\define('MOODLE_OFFICIAL_MOBILE_SERVICE', 'moodle_mobile_app');
+/**
+ * Indicates the user has the capabilities required to ignore activity and course file size restrictions
+ */
+\define('USER_CAN_IGNORE_FILE_SIZE_LIMITS', -1);
+/**
+ * Course display settings: display all sections on one page.
+ */
+\define('COURSE_DISPLAY_SINGLEPAGE', 0);
+/**
+ * Course display settings: split pages into a page per section.
+ */
+\define('COURSE_DISPLAY_MULTIPAGE', 1);
+/**
+ * Authentication constant: String used in password field when password is not stored.
+ */
+\define('AUTH_PASSWORD_NOT_CACHED', 'not cached');
+/**
+ * Email from header to never include via information.
+ */
+\define('EMAIL_VIA_NEVER', 0);
+/**
+ * Email from header to always include via information.
+ */
+\define('EMAIL_VIA_ALWAYS', 1);
+/**
+ * Email from header to only include via information if the address is no-reply.
+ */
+\define('EMAIL_VIA_NO_REPLY_ONLY', 2);
 // PARAMETER HANDLING.
 /**
  * Returns a particular value for the named variable, taken from
@@ -34463,6 +34931,11 @@ function site_is_public()
 {
 }
 /**
+ * The name that will be used to separate the navigation cache within SESSION
+ */
+\define('NAVIGATION_CACHE_NAME', 'navigation');
+\define('NAVIGATION_SITE_ADMIN_CACHE_NAME', 'navigationsiteadmin');
+/**
  * Invalidate all server and client side template caches.
  */
 function template_reset_all_caches()
@@ -34474,6 +34947,28 @@ function template_reset_all_caches()
 function js_reset_all_caches()
 {
 }
+// Debug levels - always keep the values in ascending order!
+/** No warnings and errors at all */
+\define('DEBUG_NONE', 0);
+/** Fatal errors only */
+\define('DEBUG_MINIMAL', \E_ERROR | \E_PARSE);
+/** Errors, warnings and notices */
+\define('DEBUG_NORMAL', \E_ERROR | \E_PARSE | \E_WARNING | \E_NOTICE);
+/** All problems except strict PHP warnings */
+\define('DEBUG_ALL', \E_ALL & ~\E_STRICT);
+/** DEBUG_ALL with all debug messages and strict warnings */
+\define('DEBUG_DEVELOPER', \E_ALL | \E_STRICT);
+/** Remove any memory limits */
+\define('MEMORY_UNLIMITED', -1);
+/** Standard memory limit for given platform */
+\define('MEMORY_STANDARD', -2);
+/**
+ * Large memory limit for given platform - used in cron, upgrade, and other places that need a lot of memory.
+ * Can be overridden with $CFG->extramemorylimit setting.
+ */
+\define('MEMORY_EXTRA', -3);
+/** Extremely large memory limit - not recommended for standard scripts */
+\define('MEMORY_HUGE', -4);
 /**
  * Default exception handler.
  *
@@ -34945,6 +35440,12 @@ function make_localcache_directory($directory, $exceptiononerror = \true)
 function set_access_log_user()
 {
 }
+/** UPGRADE_LOG_NORMAL = 0 */
+\define('UPGRADE_LOG_NORMAL', 0);
+/** UPGRADE_LOG_NOTICE = 1 */
+\define('UPGRADE_LOG_NOTICE', 1);
+/** UPGRADE_LOG_ERROR = 2 */
+\define('UPGRADE_LOG_ERROR', 2);
 /**
  * Sets maximum expected time needed for upgrade task.
  * Please always make sure that upgrade will not run longer!
@@ -35425,6 +35926,43 @@ function check_libcurl_version(\environment_results $result)
 function check_max_input_vars(\environment_results $result)
 {
 }
+// Constants.
+// Define text formatting types ... eventually we can add Wiki, BBcode etc.
+/**
+ * Does all sorts of transformations and filtering.
+ */
+\define('FORMAT_MOODLE', '0');
+/**
+ * Plain HTML (with some tags stripped).
+ */
+\define('FORMAT_HTML', '1');
+/**
+ * Plain text (even tags are printed in full).
+ */
+\define('FORMAT_PLAIN', '2');
+/**
+ * Wiki-formatted text.
+ * Deprecated: left here just to note that '3' is not used (at the moment)
+ * and to catch any latent wiki-like text (which generates an error)
+ * @deprecated since 2005!
+ */
+\define('FORMAT_WIKI', '3');
+/**
+ * Markdown-formatted text http://daringfireball.net/projects/markdown/
+ */
+\define('FORMAT_MARKDOWN', '4');
+/**
+ * A moodle_url comparison using this flag will return true if the base URLs match, params are ignored.
+ */
+\define('URL_MATCH_BASE', 0);
+/**
+ * A moodle_url comparison using this flag will return true if the base URLs match and the params of url1 are part of url2.
+ */
+\define('URL_MATCH_PARAMS', 1);
+/**
+ * A moodle_url comparison using this flag will return true if the two URLs are identical, except for the order of the params.
+ */
+\define('URL_MATCH_EXACT', 2);
 // Functions.
 /**
  * Add quotes to HTML characters.
@@ -36359,3 +36897,94 @@ function print_password_policy()
 function get_formatted_help_string($identifier, $component, $ajax = \false, $a = \null)
 {
 }
+/** SQL_PARAMS_NAMED - Bitmask, indicates :name type parameters are supported by db backend. */
+\define('SQL_PARAMS_NAMED', 1);
+/** SQL_PARAMS_QM - Bitmask, indicates ? type parameters are supported by db backend. */
+\define('SQL_PARAMS_QM', 2);
+/** SQL_PARAMS_DOLLAR - Bitmask, indicates $1, $2, ... type parameters are supported by db backend. */
+\define('SQL_PARAMS_DOLLAR', 4);
+/** SQL_QUERY_SELECT - Normal select query, reading only. */
+\define('SQL_QUERY_SELECT', 1);
+/** SQL_QUERY_INSERT - Insert select query, writing. */
+\define('SQL_QUERY_INSERT', 2);
+/** SQL_QUERY_UPDATE - Update select query, writing. */
+\define('SQL_QUERY_UPDATE', 3);
+/** SQL_QUERY_STRUCTURE - Query changing db structure, writing. */
+\define('SQL_QUERY_STRUCTURE', 4);
+/** SQL_QUERY_AUX - Auxiliary query done by driver, setting connection config, getting table info, etc. */
+\define('SQL_QUERY_AUX', 5);
+// {{{ error codes
+/*
+ * Error codes for the QuickForm interface, which will be mapped to textual messages
+ * in the QuickForm::errorMessage() function.  If you are to add a new error code, be
+ * sure to add the textual messages to the QuickForm::errorMessage() function as well
+ */
+\define('QUICKFORM_OK', 1);
+\define('QUICKFORM_ERROR', -1);
+\define('QUICKFORM_INVALID_RULE', -2);
+\define('QUICKFORM_NONEXIST_ELEMENT', -3);
+\define('QUICKFORM_INVALID_FILTER', -4);
+\define('QUICKFORM_UNREGISTERED_ELEMENT', -5);
+\define('QUICKFORM_INVALID_ELEMENT_NAME', -6);
+\define('QUICKFORM_INVALID_PROCESS', -7);
+\define('QUICKFORM_DEPRECATED', -8);
+\define('QUICKFORM_INVALID_DATASOURCE', -9);
+// ==== First, some constants to be used by actions ====
+/** Default flags for class */
+\define('ACTION_NONE', 0);
+/** The invoke function will return HTML */
+\define('ACTION_GENERATE_HTML', 1);
+/** The invoke function will return HTML */
+\define('ACTION_GENERATE_XML', 2);
+/** The class can have subaction */
+\define('ACTION_HAVE_SUBACTIONS', 1);
+// ==== Now the allowed DB Field Types ====
+/** Wrong DB Type */
+\define('XMLDB_TYPE_INCORRECT', 0);
+/** Integer */
+\define('XMLDB_TYPE_INTEGER', 1);
+/** Decimal number */
+\define('XMLDB_TYPE_NUMBER', 2);
+/** Floating Point number */
+\define('XMLDB_TYPE_FLOAT', 3);
+/** String */
+\define('XMLDB_TYPE_CHAR', 4);
+/** Text */
+\define('XMLDB_TYPE_TEXT', 5);
+/** Binary */
+\define('XMLDB_TYPE_BINARY', 6);
+/** Datetime */
+\define('XMLDB_TYPE_DATETIME', 7);
+/** Timestamp */
+\define('XMLDB_TYPE_TIMESTAMP', 8);
+// ==== Now the allowed DB Keys ====
+/** Wrong DB Key */
+\define('XMLDB_KEY_INCORRECT', 0);
+/** Primary Keys */
+\define('XMLDB_KEY_PRIMARY', 1);
+/** Unique Keys */
+\define('XMLDB_KEY_UNIQUE', 2);
+/** Foreign Keys */
+\define('XMLDB_KEY_FOREIGN', 3);
+/** Check Constraints - NOT USED! */
+\define('XMLDB_KEY_CHECK', 4);
+/** Foreign Key + Unique Key */
+\define('XMLDB_KEY_FOREIGN_UNIQUE', 5);
+// ==== Some other useful Constants ====
+/** If the field is going to be unsigned @deprecated since 2.3 */
+\define('XMLDB_UNSIGNED', \true);
+/** If the field is going to be not null */
+\define('XMLDB_NOTNULL', \true);
+/** If the field is going to be a sequence */
+\define('XMLDB_SEQUENCE', \true);
+/** If the index is going to be unique */
+\define('XMLDB_INDEX_UNIQUE', \true);
+/**  If the index is NOT going to be unique */
+\define('XMLDB_INDEX_NOTUNIQUE', \false);
+// ==== Some strings used widely ====
+/** New line in xmldb generated files */
+\define('XMLDB_LINEFEED', "\n");
+/** Upgrade start in upgrade.php */
+\define('XMLDB_PHP_HEADER', '    if ($oldversion < XXXXXXXXXX) {' . \XMLDB_LINEFEED);
+/** Upgrade end in upgrade.php */
+\define('XMLDB_PHP_FOOTER', '    }' . \XMLDB_LINEFEED);
