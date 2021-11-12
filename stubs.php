@@ -24,8 +24,6 @@
  */
 abstract class context extends \stdClass implements \IteratorAggregate
 {
-    /** @var string Default sorting of capabilities in {@see get_capabilities} */
-    protected const DEFAULT_CAPABILITY_SORT = 'contextlevel, component, name';
     /**
      * The context id
      * Can be accessed publicly through $context->id
@@ -315,10 +313,9 @@ abstract class context extends \stdClass implements \IteratorAggregate
     /**
      * Returns array of relevant context capability records.
      *
-     * @param string $sort SQL order by snippet for sorting returned capabilities sensibly for display
      * @return array
      */
-    public abstract function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT);
+    public abstract function get_capabilities();
     /**
      * Recursive function which, given a context, find all its children context ids.
      *
@@ -625,10 +622,8 @@ class context_helper extends \context
     }
     /**
      * not used
-     *
-     * @param string $sort
      */
-    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
+    public function get_capabilities()
     {
     }
 }
@@ -682,10 +677,9 @@ class context_system extends \context
     /**
      * Returns array of relevant context capability records.
      *
-     * @param string $sort
      * @return array
      */
-    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
+    public function get_capabilities()
     {
     }
     /**
@@ -796,10 +790,9 @@ class context_user extends \context
     /**
      * Returns array of relevant context capability records.
      *
-     * @param string $sort
      * @return array
      */
-    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
+    public function get_capabilities()
     {
     }
     /**
@@ -890,10 +883,9 @@ class context_coursecat extends \context
     /**
      * Returns array of relevant context capability records.
      *
-     * @param string $sort
      * @return array
      */
-    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
+    public function get_capabilities()
     {
     }
     /**
@@ -993,10 +985,9 @@ class context_course extends \context
     /**
      * Returns array of relevant context capability records.
      *
-     * @param string $sort
      * @return array
      */
-    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
+    public function get_capabilities()
     {
     }
     /**
@@ -1097,10 +1088,9 @@ class context_module extends \context
     /**
      * Returns array of relevant context capability records.
      *
-     * @param string $sort
      * @return array
      */
-    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
+    public function get_capabilities()
     {
     }
     /**
@@ -1200,10 +1190,9 @@ class context_block extends \context
     /**
      * Returns array of relevant context capability records.
      *
-     * @param string $sort
      * @return array
      */
-    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
+    public function get_capabilities()
     {
     }
     /**
@@ -2529,34 +2518,6 @@ class admin_setting_configpasswordunmask_with_advanced extends \admin_setting_co
     }
 }
 /**
- * Admin setting class for encrypted values using secure encryption.
- *
- * @copyright 2019 The Open University
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class admin_setting_encryptedpassword extends \admin_setting
-{
-    /**
-     * Constructor. Same as parent except that the default value is always an empty string.
-     *
-     * @param string $name Internal name used in config table
-     * @param string $visiblename Name shown on form
-     * @param string $description Description that appears below field
-     */
-    public function __construct(string $name, string $visiblename, string $description)
-    {
-    }
-    public function get_setting()
-    {
-    }
-    public function write_setting($data)
-    {
-    }
-    public function output_html($data, $query = '')
-    {
-    }
-}
-/**
  * Empty setting used to allow flags (advanced) on settings that can have no sensible default.
  * Note: Only advanced makes sense right now - locked does not.
  *
@@ -2719,30 +2680,22 @@ class admin_setting_configmulticheckbox extends \admin_setting
 {
     /** @var array Array of choices value=>label */
     public $choices;
-    /** @var callable|null Loader function for choices */
-    protected $choiceloader = \null;
     /**
      * Constructor: uses parent::__construct
-     *
-     * The $choices parameter may be either an array of $value => $label format,
-     * e.g. [1 => get_string('yes')], or a callback function which takes no parameters and
-     * returns an array in that format.
      *
      * @param string $name unique ascii name, either 'mysetting' for settings that in config, or 'myplugin/mysetting' for ones in config_plugins.
      * @param string $visiblename localised
      * @param string $description long localised info
      * @param array $defaultsetting array of selected
-     * @param array|callable $choices array of $value => $label for each checkbox, or a callback
+     * @param array $choices array of $value=>$label for each checkbox
      */
     public function __construct($name, $visiblename, $description, $defaultsetting, $choices)
     {
     }
     /**
-     * This function may be used in ancestors for lazy loading of choices
+     * This public function may be used in ancestors for lazy loading of choices
      *
-     * Override this method if loading of choices is expensive, such
-     * as when it requires multiple db requests.
-     *
+     * @todo Check if this function is still required content commented out only returns true
      * @return bool true if loaded, false if error
      */
     public function load_choices()
@@ -2827,35 +2780,15 @@ class admin_setting_configselect extends \admin_setting
     public $choices;
     /** @var array Array of choices grouped using optgroups */
     public $optgroups;
-    /** @var callable|null Loader function for choices */
-    protected $choiceloader = \null;
-    /** @var callable|null Validation function */
-    protected $validatefunction = \null;
     /**
-     * Constructor.
-     *
-     * If you want to lazy-load the choices, pass a callback function that returns a choice
-     * array for the $choices parameter.
-     *
+     * Constructor
      * @param string $name unique ascii name, either 'mysetting' for settings that in config, or 'myplugin/mysetting' for ones in config_plugins.
      * @param string $visiblename localised
      * @param string $description long localised info
      * @param string|int $defaultsetting
-     * @param array|callable|null $choices array of $value=>$label for each selection, or callback
+     * @param array $choices array of $value=>$label for each selection
      */
     public function __construct($name, $visiblename, $description, $defaultsetting, $choices)
-    {
-    }
-    /**
-     * Sets a validate function.
-     *
-     * The callback will be passed one parameter, the new setting value, and should return either
-     * an empty string '' if the value is OK, or an error message if not.
-     *
-     * @param callable|null $validatefunction Validate function or null to clear
-     * @since Moodle 3.10
-     */
-    public function set_validate_function(?callable $validatefunction = \null)
     {
     }
     /**
@@ -2893,17 +2826,6 @@ class admin_setting_configselect extends \admin_setting
      * @return string empty of error string
      */
     public function write_setting($data)
-    {
-    }
-    /**
-     * Validate the setting. This uses the callback function if provided; subclasses could override
-     * to carry out validation directly in the class.
-     *
-     * @param string $data New value being set
-     * @return string Empty string if valid, or error message text
-     * @since Moodle 3.10
-     */
-    protected function validate_setting(string $data) : string
     {
     }
     /**
@@ -3054,8 +2976,6 @@ class admin_setting_configduration extends \admin_setting
 {
     /** @var int default duration unit */
     protected $defaultunit;
-    /** @var callable|null Validation function */
-    protected $validatefunction = \null;
     /**
      * Constructor
      * @param string $name unique ascii name, either 'mysetting' for settings that in config,
@@ -3066,29 +2986,6 @@ class admin_setting_configduration extends \admin_setting
      * @param int $defaultunit - day, week, etc. (in seconds)
      */
     public function __construct($name, $visiblename, $description, $defaultsetting, $defaultunit = 86400)
-    {
-    }
-    /**
-     * Sets a validate function.
-     *
-     * The callback will be passed one parameter, the new setting value, and should return either
-     * an empty string '' if the value is OK, or an error message if not.
-     *
-     * @param callable|null $validatefunction Validate function or null to clear
-     * @since Moodle 3.10
-     */
-    public function set_validate_function(?callable $validatefunction = \null)
-    {
-    }
-    /**
-     * Validate the setting. This uses the callback function if provided; subclasses could override
-     * to carry out validation directly in the class.
-     *
-     * @param int $data New value being set
-     * @return string Empty string if valid, or error message text
-     * @since Moodle 3.10
-     */
-    protected function validate_setting(int $data) : string
     {
     }
     /**
@@ -3745,48 +3642,16 @@ class admin_settings_num_course_sections extends \admin_setting_configselect
     }
 }
 /**
- * Autocomplete as you type form element.
- *
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class admin_setting_configselect_autocomplete extends \admin_setting_configselect
-{
-    /** @var boolean $tags Should we allow typing new entries to the field? */
-    protected $tags = \false;
-    /** @var string $ajax Name of an AMD module to send/process ajax requests. */
-    protected $ajax = '';
-    /** @var string $placeholder Placeholder text for an empty list. */
-    protected $placeholder = '';
-    /** @var bool $casesensitive Whether the search has to be case-sensitive. */
-    protected $casesensitive = \false;
-    /** @var bool $showsuggestions Show suggestions by default - but this can be turned off. */
-    protected $showsuggestions = \true;
-    /** @var string $noselectionstring String that is shown when there are no selections. */
-    protected $noselectionstring = '';
-    /**
-     * Returns XHTML select field and wrapping div(s)
-     *
-     * @see output_select_html()
-     *
-     * @param string $data the option to show as selected
-     * @param string $query
-     * @return string XHTML field and wrapping div
-     */
-    public function output_html($data, $query = '')
-    {
-    }
-}
-/**
  * Course category selection
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class admin_settings_coursecat_select extends \admin_setting_configselect_autocomplete
+class admin_settings_coursecat_select extends \admin_setting_configselect
 {
     /**
      * Calls parent::__construct with specific arguments
      */
-    public function __construct($name, $visiblename, $description, $defaultsetting = 1)
+    public function __construct($name, $visiblename, $description, $defaultsetting)
     {
     }
     /**
@@ -4563,6 +4428,26 @@ class admin_page_managemessageoutputs extends \admin_externalpage
     }
 }
 /**
+ * Default message outputs configuration
+ *
+ * @deprecated since Moodle 3.7 MDL-64495. Please use admin_page_managemessageoutputs instead.
+ * @todo       MDL-64866 This will be deleted in Moodle 4.1.
+ *
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class admin_page_defaultmessageoutputs extends \admin_page_managemessageoutputs
+{
+    /**
+     * Calls parent::__construct with specific arguments
+     *
+     * @deprecated since Moodle 3.7 MDL-64495. Please use admin_page_managemessageoutputs instead.
+     * @todo       MDL-64866 This will be deleted in Moodle 4.1.
+     */
+    public function __construct()
+    {
+    }
+}
+/**
  * Manage question behaviours page
  *
  * @copyright  2011 The Open University
@@ -4821,13 +4706,13 @@ class admin_setting_manageantiviruses extends \admin_setting
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @deprecated since Moodle 3.9 MDL-45184. Please use \tool_licensemanager\manager instead.
- * @todo MDL-45184 This class will be deleted in Moodle 4.1.
+ * @todo MDL-45184 This class will be deleted in Moodle 4.3.
  */
 class admin_setting_managelicenses extends \admin_setting
 {
     /**
      * @deprecated since Moodle 3.9 MDL-45184. Please use \tool_licensemanager\manager instead.
-     * @todo MDL-45184 This class will be deleted in Moodle 4.1
+     * @todo MDL-45184 This class will be deleted in Moodle 4.3
      */
     public function __construct()
     {
@@ -4836,7 +4721,7 @@ class admin_setting_managelicenses extends \admin_setting
      * Always returns true, does nothing
      *
      * @deprecated since Moodle 3.9 MDL-45184.
-     * @todo MDL-45184 This method will be deleted in Moodle 4.1
+     * @todo MDL-45184 This method will be deleted in Moodle 4.3
      *
      * @return true
      */
@@ -4847,7 +4732,7 @@ class admin_setting_managelicenses extends \admin_setting
      * Always returns true, does nothing
      *
      * @deprecated since Moodle 3.9 MDL-45184.
-     * @todo MDL-45184 This method will be deleted in Moodle 4.1
+     * @todo MDL-45184 This method will be deleted in Moodle 4.3
      *
      * @return true
      */
@@ -4858,7 +4743,7 @@ class admin_setting_managelicenses extends \admin_setting
      * Always returns '', does not write anything
      *
      * @deprecated since Moodle 3.9 MDL-45184.
-     * @todo MDL-45184 This method will be deleted in Moodle 4.1
+     * @todo MDL-45184 This method will be deleted in Moodle 4.3
      *
      * @return string Always returns ''
      */
@@ -4869,7 +4754,7 @@ class admin_setting_managelicenses extends \admin_setting
      * Builds the XHTML to display the control
      *
      * @deprecated since Moodle 3.9 MDL-45184. Please use \tool_licensemanager\manager instead.
-     * @todo MDL-45184 This method will be deleted in Moodle 4.1
+     * @todo MDL-45184 This method will be deleted in Moodle 4.3
      *
      * @param string $data Unused
      * @param string $query
@@ -5601,6 +5486,54 @@ class admin_setting_managewebserviceprotocols extends \admin_setting
      * @return bool Returns true if found, false if not
      */
     public function is_related($query)
+    {
+    }
+    /**
+     * Builds the XHTML to display the control
+     *
+     * @param string $data Unused
+     * @param string $query
+     * @return string
+     */
+    public function output_html($data, $query = '')
+    {
+    }
+}
+/**
+ * Special class for web service token administration.
+ *
+ * @author Jerome Mouneyrac
+ */
+class admin_setting_managewebservicetokens extends \admin_setting
+{
+    /**
+     * Calls parent::__construct with specific arguments
+     */
+    public function __construct()
+    {
+    }
+    /**
+     * Always returns true, does nothing
+     *
+     * @return true
+     */
+    public function get_setting()
+    {
+    }
+    /**
+     * Always returns true, does nothing
+     *
+     * @return true
+     */
+    public function get_defaultsetting()
+    {
+    }
+    /**
+     * Always returns '', does not write anything
+     *
+     * @return string Always returns ''
+     */
+    public function write_setting($data)
     {
     }
     /**
@@ -6350,25 +6283,9 @@ abstract class moodleform
     {
     }
     /**
-     * Returns an element of multi-dimensional array given the list of keys
-     *
-     * Example:
-     * $array['a']['b']['c'] = 13;
-     * $v = $this->get_array_value_by_keys($array, ['a', 'b', 'c']);
-     *
-     * Will result it $v==13
-     *
-     * @param array $array
-     * @param array $keys
-     * @return mixed returns null if keys not present
-     */
-    protected function get_array_value_by_keys(array $array, array $keys)
-    {
-    }
-    /**
      * Checks if a parameter was passed in the previous form submission
      *
-     * @param string $name the name of the page parameter we want, for example 'id' or 'element[sub][13]'
+     * @param string $name the name of the page parameter we want
      * @param mixed  $default the default value to return if nothing is found
      * @param string $type expected type of parameter
      * @return mixed
@@ -6603,11 +6520,9 @@ abstract class moodleform
      * @param int $addfieldsno how many fields to add at a time
      * @param string $addstring name of button, {no} is replaced by no of blanks that will be added.
      * @param bool $addbuttoninside if true, don't call closeHeaderBefore($addfieldsname). Default false.
-     * @param string $deletebuttonname if specified, treats the no-submit button with this name as a "delete element" button
-     *         in each of the elements
      * @return int no of repeats of element in this page
      */
-    public function repeat_elements($elementobjs, $repeats, $options, $repeathiddenname, $addfieldsname, $addfieldsno = 5, $addstring = \null, $addbuttoninside = \false, $deletebuttonname = '')
+    function repeat_elements($elementobjs, $repeats, $options, $repeathiddenname, $addfieldsname, $addfieldsno = 5, $addstring = \null, $addbuttoninside = \false)
     {
     }
     /**
@@ -6693,26 +6608,6 @@ abstract class moodleform
      *                                              same page.
      */
     public static function mock_submit($simulatedsubmitteddata, $simulatedsubmittedfiles = array(), $method = 'post', $formidentifier = \null)
-    {
-    }
-    /**
-     * Used by tests to simulate submitted form data submission via AJAX.
-     *
-     * For form fields where no data is submitted the default for that field as set by set_data or setDefault will be passed to
-     * get_data.
-     *
-     * This method sets $_POST or $_GET and $_FILES with the data supplied. Our unit test code empties all these
-     * global arrays after each test.
-     *
-     * @param array  $simulatedsubmitteddata       An associative array of form values (same format as $_POST).
-     * @param array  $simulatedsubmittedfiles      An associative array of files uploaded (same format as $_FILES). Can be omitted.
-     * @param string $method                       'post' or 'get', defaults to 'post'.
-     * @param null   $formidentifier               the default is to use the class name for this class but you may need to provide
-     *                                              a different value here for some forms that are used more than once on the
-     *                                              same page.
-     * @return array array to pass to form constructor as $ajaxdata
-     */
-    public static function mock_ajax_submit($simulatedsubmitteddata, $simulatedsubmittedfiles = array(), $method = 'post', $formidentifier = \null)
     {
     }
     /**
@@ -9931,7 +9826,7 @@ class course_modinfo
  * {@link cached_cm_info}
  *
  * <b>Stage 2 - dynamic data.</b>
- * Dynamic data is user-dependent, it is stored in request-level cache. To reset this cache
+ * Dynamic data is user-dependend, it is stored in request-level cache. To reset this cache
  * {@link get_fast_modinfo()} with $reset argument may be called.
  *
  * Dynamic data is obtained when any of the following properties/methods is requested:
@@ -9952,7 +9847,6 @@ class course_modinfo
  * - {@link cm_info::set_user_visible()}
  * - {@link cm_info::set_on_click()}
  * - {@link cm_info::set_icon_url()}
- * - {@link cm_info::override_customdata()}
  * Any methods affecting view elements can also be set in this callback.
  *
  * <b>Stage 3 (view data).</b>
@@ -10470,14 +10364,9 @@ class cm_info implements \IteratorAggregate
     {
     }
     /**
-     * Getter method for property $customdata, ensures that dynamic data is retrieved.
-     *
-     * This method is normally called by the property ->customdata, but can be called directly if there
-     * is a case when it might be called recursively (you can't call property values recursively).
-     *
      * @return mixed Optional custom data stored in modinfo cache for this activity, or null if none
      */
-    public function get_custom_data()
+    private function get_custom_data()
     {
     }
     /**
@@ -10648,15 +10537,6 @@ class cm_info implements \IteratorAggregate
     {
     }
     /**
-     * Overrides the value of an element in the customdata array.
-     *
-     * @param string $name The key in the customdata array
-     * @param mixed $value The value
-     */
-    public function override_customdata($name, $value)
-    {
-    }
-    /**
      * Sets HTML that displays after link on course view page.
      * @param string $afterlink HTML string (empty string if none)
      * @return void
@@ -10765,8 +10645,7 @@ class cm_info implements \IteratorAggregate
      * the module or not.
      *
      * As part of this function, the module's _cm_info_dynamic function from its lib.php will
-     * be called (if it exists). Make sure that the functions that are called here do not use
-     * any getter magic method from cm_info.
+     * be called (if it exists).
      * @return void
      */
     private function obtain_dynamic_data()
@@ -11142,12 +11021,11 @@ class section_info implements \IteratorAggregate
     /**
      * Finds whether this section is available at the moment for the current user.
      *
-     * The value can be accessed publicly as $sectioninfo->available, but can be called directly if there
-     * is a case when it might be called recursively (you can't call property values recursively).
+     * The value can be accessed publicly as $sectioninfo->available
      *
      * @return bool
      */
-    public function get_available()
+    private function get_available()
     {
     }
     /**
@@ -11415,10 +11293,9 @@ class lang_string
     /**
      * Magic __set_state method used for var_export
      *
-     * @param array $array
-     * @return self
+     * @return string
      */
-    public static function __set_state(array $array) : self
+    public function __set_state()
     {
     }
     /**
@@ -13411,6 +13288,11 @@ class file_picker implements \renderable
 class user_picture implements \renderable
 {
     /**
+     * @var array List of mandatory fields in user record here. (do not include
+     * TEXT columns because it would break SELECT DISTINCT in MSSQL and ORACLE)
+     */
+    protected static $fields = array('id', 'picture', 'firstname', 'lastname', 'firstnamephonetic', 'lastnamephonetic', 'middlename', 'alternatename', 'imagealt', 'email');
+    /**
      * @var stdClass A user object with at least fields all columns specified
      * in $fields array constant set.
      */
@@ -13477,8 +13359,6 @@ class user_picture implements \renderable
      * @param string $idalias alias of id field
      * @param string $fieldprefix prefix to add to all columns in their aliases, does not apply to 'id'
      * @return string
-     * @deprecated since Moodle 3.11 MDL-45242
-     * @see \core_user\fields
      */
     public static function fields($tableprefix = '', array $extrafields = \NULL, $idalias = 'id', $fieldprefix = '')
     {
@@ -15093,14 +14973,6 @@ class block_contents
     public function add_class($class)
     {
     }
-    /**
-     * Check if the block is a fake block.
-     *
-     * @return boolean
-     */
-    public function is_fake()
-    {
-    }
 }
 /**
  * This class represents a target for where a block can go when it is being moved.
@@ -16014,13 +15886,6 @@ class progress_bar implements \renderable, \templatable
     {
     }
     /**
-     * Getter for ID
-     * @return string id
-     */
-    public function get_id() : string
-    {
-    }
-    /**
      * Create a new progress bar, this function will output html.
      *
      * @return void Echo's output
@@ -16444,18 +16309,6 @@ class core_renderer extends \renderer_base
     {
     }
     /**
-     * Returns information about an activity.
-     *
-     * @param cm_info $cminfo The course module information.
-     * @param cm_completion_details $completiondetails The completion details for this activity module.
-     * @param array $activitydates The dates for this activity module.
-     * @return string the activity information HTML.
-     * @throws coding_exception
-     */
-    public function activity_information(\cm_info $cminfo, \core_completion\cm_completion_details $completiondetails, array $activitydates) : string
-    {
-    }
-    /**
      * Returns standard navigation between activities in a course.
      *
      * @return string the navigation HTML.
@@ -16754,10 +16607,9 @@ class core_renderer extends \renderer_base
      * Output all the blocks in a particular region.
      *
      * @param string $region the name of a region on this page.
-     * @param boolean $fakeblocksonly Output fake block only.
      * @return string the HTML to be output.
      */
-    public function blocks_for_region($region, $fakeblocksonly = \false)
+    public function blocks_for_region($region)
     {
     }
     /**
@@ -17215,11 +17067,10 @@ class core_renderer extends \renderer_base
      * Note: \core\notification::add() may be more suitable for your usage.
      *
      * @param string $message The message to print out.
-     * @param ?string $type   The type of notification. See constants on \core\output\notification.
-     * @param bool $closebutton Whether to show a close icon to remove the notification (default true).
+     * @param string $type    The type of notification. See constants on \core\output\notification.
      * @return string the HTML to output.
      */
-    public function notification($message, $type = \null, $closebutton = \true)
+    public function notification($message, $type = \null)
     {
     }
     /**
@@ -17642,12 +17493,9 @@ class core_renderer extends \renderer_base
      *
      * @since Moodle 2.5.1 2.6
      * @param string $region The region to get HTML for.
-     * @param array $classes Wrapping tag classes.
-     * @param string $tag Wrapping tag.
-     * @param boolean $fakeblocksonly Include fake blocks only.
      * @return string HTML.
      */
-    public function blocks($region, $classes = array(), $tag = 'aside', $fakeblocksonly = \false)
+    public function blocks($region, $classes = array(), $tag = 'aside')
     {
     }
     /**
@@ -17953,21 +17801,6 @@ class core_renderer extends \renderer_base
     {
     }
     /**
-     * Renders an update to a progress bar.
-     *
-     * Note: This does not cleanly map to a renderable class and should
-     * never be used directly.
-     *
-     * @param  string $id
-     * @param  float $percent
-     * @param  string $msg Message
-     * @param  string $estimate time remaining message
-     * @return string ascii fragment
-     */
-    public function render_progress_bar_update(string $id, float $percent, string $msg, string $estimate) : string
-    {
-    }
-    /**
      * Renders element for a toggle-all checkbox.
      *
      * @param \core\output\checkbox_toggleall $element
@@ -17990,11 +17823,6 @@ class core_renderer extends \renderer_base
  */
 class core_renderer_cli extends \core_renderer
 {
-    /**
-     * @var array $progressmaximums stores the largest percentage for a progress bar.
-     * @return string ascii fragment
-     */
-    private $progressmaximums = [];
     /**
      * Returns the page header.
      *
@@ -18022,32 +17850,6 @@ class core_renderer_cli extends \core_renderer
      * @return string fragment
      */
     public function check_result(\core\check\result $result)
-    {
-    }
-    /**
-     * Renders a progress bar.
-     *
-     * Do not use $OUTPUT->render($bar), instead use progress_bar::create().
-     *
-     * @param  progress_bar $bar The bar.
-     * @return string ascii fragment
-     */
-    public function render_progress_bar(\progress_bar $bar)
-    {
-    }
-    /**
-     * Renders an update to a progress bar.
-     *
-     * Note: This does not cleanly map to a renderable class and should
-     * never be used directly.
-     *
-     * @param  string $id
-     * @param  float $percent
-     * @param  string $msg Message
-     * @param  string $estimate time remaining message
-     * @return string ascii fragment
-     */
-    public function render_progress_bar_update(string $id, float $percent, string $msg, string $estimate) : string
     {
     }
     /**
@@ -18080,10 +17882,9 @@ class core_renderer_cli extends \core_renderer
      *
      * @param string $message The message to print out.
      * @param string $type    The type of notification. See constants on \core\output\notification.
-     * @param bool $closebutton Whether to show a close icon to remove the notification (default true).
      * @return string A template fragment for a notification
      */
-    public function notification($message, $type = \null, $closebutton = \true)
+    public function notification($message, $type = \null)
     {
     }
     /**
@@ -18137,9 +17938,8 @@ class core_renderer_ajax extends \core_renderer
      *
      * @param string $message The message to print out.
      * @param string $type    The type of notification. See constants on \core\output\notification.
-     * @param bool $closebutton Whether to show a close icon to remove the notification (default true).
      */
-    public function notification($message, $type = \null, $closebutton = \true)
+    public function notification($message, $type = \null)
     {
     }
     /**
@@ -18222,20 +18022,18 @@ class core_renderer_maintenance extends \core_renderer
      * @param string $region
      * @param array $classes
      * @param string $tag
-     * @param boolean $fakeblocksonly
      * @return string
      */
-    public function blocks($region, $classes = array(), $tag = 'aside', $fakeblocksonly = \false)
+    public function blocks($region, $classes = array(), $tag = 'aside')
     {
     }
     /**
      * Does nothing. The maintenance renderer cannot produce blocks.
      *
      * @param string $region
-     * @param boolean $fakeblocksonly Output fake block only.
      * @return string
      */
-    public function blocks_for_region($region, $fakeblocksonly = \false)
+    public function blocks_for_region($region)
     {
     }
     /**
@@ -20093,9 +19891,8 @@ class moodle_page
      * This is normally used as the main heading at the top of the content.
      *
      * @param string $heading the main heading that should be displayed at the top of the <body>.
-     * @param bool $applyformatting apply format_string() - by default true.
      */
-    public function set_heading($heading, bool $applyformatting = \true)
+    public function set_heading($heading)
     {
     }
     /**
@@ -22108,7 +21905,7 @@ abstract class moodle_database
     /**
      * @var int internal temporary variable used to guarantee unique parameters in each request. Its used by {@link get_in_or_equal()}.
      */
-    protected $inorequaluniqueindex = 1;
+    private $inorequaluniqueindex = 1;
     /**
      * @var boolean variable use to temporarily disable logging.
      */
@@ -22455,14 +22252,6 @@ abstract class moodle_database
      * @return array (sql, params, type of params)
      */
     public function fix_sql_params($sql, array $params = \null)
-    {
-    }
-    /**
-     * Add an SQL comment to trace all sql calls back to the calling php code
-     * @param string $sql Original sql
-     * @return string Instrumented sql
-     */
-    protected function add_sql_debugging(string $sql) : string
     {
     }
     /**
@@ -23168,7 +22957,7 @@ abstract class moodle_database
      * @param string $subquery Subquery that will return values of the field to delete
      * @param array $params Parameters for subquery
      * @throws dml_exception If there is any error
-     * @since Moodle 3.10
+     * @since Moodle 3.9.3
      */
     public function delete_records_subquery(string $table, string $field, string $alias, string $subquery, array $params = []) : void
     {
@@ -23377,15 +23166,6 @@ abstract class moodle_database
      * @return string The SQL to concatenate the strings.
      */
     public abstract function sql_concat_join($separator = "' '", $elements = array());
-    /**
-     * Return SQL for performing group concatenation on given field/expression
-     *
-     * @param string $field Table field or SQL expression to be concatenated
-     * @param string $separator The separator desired between each concatetated field
-     * @param string $sort Ordering of the concatenated field
-     * @return string
-     */
-    public abstract function sql_group_concat(string $field, string $separator = ', ', string $sort = '') : string;
     /**
      * Returns the proper SQL (for the dbms in use) to concatenate $firstname and $lastname
      *
@@ -24361,17 +24141,6 @@ class mysqli_native_moodle_database extends \moodle_database
      * @return string The concat SQL
      */
     public function sql_concat_join($separator = "' '", $elements = array())
-    {
-    }
-    /**
-     * Return SQL for performing group concatenation on given field/expression
-     *
-     * @param string $field
-     * @param string $separator
-     * @param string $sort
-     * @return string
-     */
-    public function sql_group_concat(string $field, string $separator = ', ', string $sort = '') : string
     {
     }
     /**
@@ -30175,12 +29944,6 @@ abstract class moodleform_mod extends \moodleform
     {
     }
     /**
-     * Plugins can extend the coursemodule settings form after the data is set.
-     */
-    protected function plugin_extend_coursemodule_definition_after_data()
-    {
-    }
-    /**
      * Can be overridden to add custom completion rules if the module wishes
      * them. If overriding this, you should also override completion_rule_enabled.
      * <p>
@@ -30283,6 +30046,56 @@ abstract class moodleform_mod extends \moodleform
     {
     }
 }
+/** No capability change */
+\define('CAP_INHERIT', 0);
+/** Allow permission, overrides CAP_PREVENT defined in parent contexts */
+\define('CAP_ALLOW', 1);
+/** Prevent permission, overrides CAP_ALLOW defined in parent contexts */
+\define('CAP_PREVENT', -1);
+/** Prohibit permission, overrides everything in current and child contexts */
+\define('CAP_PROHIBIT', -1000);
+/** System context level - only one instance in every system */
+\define('CONTEXT_SYSTEM', 10);
+/** User context level -  one instance for each user describing what others can do to user */
+\define('CONTEXT_USER', 30);
+/** Course category context level - one instance for each category */
+\define('CONTEXT_COURSECAT', 40);
+/** Course context level - one instances for each course */
+\define('CONTEXT_COURSE', 50);
+/** Course module context level - one instance for each course module */
+\define('CONTEXT_MODULE', 70);
+/**
+ * Block context level - one instance for each block, sticky blocks are tricky
+ * because ppl think they should be able to override them at lower contexts.
+ * Any other context level instance can be parent of block context.
+ */
+\define('CONTEXT_BLOCK', 80);
+/** Capability allow management of trusts - NOT IMPLEMENTED YET - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_MANAGETRUST', 0x1);
+/** Capability allows changes in system configuration - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_CONFIG', 0x2);
+/** Capability allows user to add scripted content - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_XSS', 0x4);
+/** Capability allows access to personal user information - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_PERSONAL', 0x8);
+/** Capability allows users to add content others may see - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_SPAM', 0x10);
+/** capability allows mass delete of data belonging to other users - see {@link http://docs.moodle.org/dev/Hardening_new_Roles_system} */
+\define('RISK_DATALOSS', 0x20);
+/** rolename displays - the name as defined in the role definition, localised if name empty */
+\define('ROLENAME_ORIGINAL', 0);
+/** rolename displays - the name as defined by a role alias at the course level, falls back to ROLENAME_ORIGINAL if alias not present */
+\define('ROLENAME_ALIAS', 1);
+/** rolename displays - Both, like this:  Role alias (Original) */
+\define('ROLENAME_BOTH', 2);
+/** rolename displays - the name as defined in the role definition and the shortname in brackets */
+\define('ROLENAME_ORIGINALANDSHORT', 3);
+/** rolename displays - the name as defined by a role alias, in raw form suitable for editing */
+\define('ROLENAME_ALIAS_RAW', 4);
+/** rolename displays - the name is simply short role name */
+\define('ROLENAME_SHORT', 5);
+/** maximum size of context cache - it is possible to tweak this config.php or in any script before inclusion of context.php */
+\define('CONTEXT_CACHE_MAX_SIZE', 2500);
 // Holds the cache of $accessdata structure for users (including $USER)
 /**
  * Clears accesslib's private caches. ONLY BE USED BY UNIT TESTS
@@ -31228,11 +31041,9 @@ function get_assignable_roles(\context $context, $rolenamedisplay = \ROLENAME_AL
  * test the moodle/role:switchroles to see if the user is allowed to switch in the first place.
  *
  * @param context $context a context.
- * @param int $rolenamedisplay the type of role name to display. One of the
- *      ROLENAME_X constants. Default ROLENAME_ALIAS.
  * @return array an array $roleid => $rolename.
  */
-function get_switchable_roles(\context $context, $rolenamedisplay = \ROLENAME_ALIAS)
+function get_switchable_roles(\context $context)
 {
 }
 /**
@@ -31240,11 +31051,9 @@ function get_switchable_roles(\context $context, $rolenamedisplay = \ROLENAME_AL
  *
  * @param context $context a context.
  * @param int $userid id of user.
- * @param int $rolenamedisplay the type of role name to display. One of the
- *      ROLENAME_X constants. Default ROLENAME_ALIAS.
  * @return array an array $roleid => $rolename.
  */
-function get_viewable_roles(\context $context, $userid = \null, $rolenamedisplay = \ROLENAME_ALIAS)
+function get_viewable_roles(\context $context, $userid = \null)
 {
 }
 /**
@@ -31743,6 +31552,8 @@ function get_suspended_userids(\context $context, $usecache = \false)
 function get_with_capability_sql(\context $context, $capability)
 {
 }
+\define('INSECURE_DATAROOT_WARNING', 1);
+\define('INSECURE_DATAROOT_ERROR', 2);
 /**
  * Automatically clean-up all plugin data and remove the plugin DB tables
  *
@@ -31954,7 +31765,7 @@ function any_new_admin_settings($node)
  * @param string $column name
  * @return bool success or fail
  */
-function db_should_replace($table, $column = '', $additionalskiptables = '') : bool
+function db_should_replace($table, $column = '') : bool
 {
 }
 /**
@@ -31964,9 +31775,13 @@ function db_should_replace($table, $column = '', $additionalskiptables = '') : b
  * @param string $replace string to replace
  * @return bool success or fail
  */
-function db_replace($search, $replace, $additionalskiptables = '')
+function db_replace($search, $replace)
 {
 }
+/**
+ * EDITOR_UNLIMITED_FILES - hard-coded value for the 'maxfiles' option
+ */
+\define('EDITOR_UNLIMITED_FILES', -1);
 /**
  * Callback called when PEAR throws an error
  *
@@ -31989,6 +31804,7 @@ function form_init_date_js()
  * @name $_HTML_QuickForm_default_renderer
  */
 $_HTML_QuickForm_default_renderer = new \MoodleQuickForm_Renderer();
+\define('MAX_MODINFO_CACHE_SIZE', 10);
 /**
  * Returns reference to full info about modules in course (including visibility).
  * Cached and as fast as possible (0 or 1 db query).
@@ -32095,6 +31911,417 @@ function get_course_and_cm_from_instance($instanceorid, $modulename, $courseorid
 function rebuild_course_cache($courseid = 0, $clearonly = \false)
 {
 }
+// CONSTANTS (Encased in phpdoc proper comments).
+// Date and time constants.
+/**
+ * Time constant - the number of seconds in a year
+ */
+\define('YEARSECS', 31536000);
+/**
+ * Time constant - the number of seconds in a week
+ */
+\define('WEEKSECS', 604800);
+/**
+ * Time constant - the number of seconds in a day
+ */
+\define('DAYSECS', 86400);
+/**
+ * Time constant - the number of seconds in an hour
+ */
+\define('HOURSECS', 3600);
+/**
+ * Time constant - the number of seconds in a minute
+ */
+\define('MINSECS', 60);
+/**
+ * Time constant - the number of minutes in a day
+ */
+\define('DAYMINS', 1440);
+/**
+ * Time constant - the number of minutes in an hour
+ */
+\define('HOURMINS', 60);
+// Parameter constants - every call to optional_param(), required_param()
+// or clean_param() should have a specified type of parameter.
+/**
+ * PARAM_ALPHA - contains only English ascii letters [a-zA-Z].
+ */
+\define('PARAM_ALPHA', 'alpha');
+/**
+ * PARAM_ALPHAEXT the same contents as PARAM_ALPHA (English ascii letters [a-zA-Z]) plus the chars in quotes: "_-" allowed
+ * NOTE: originally this allowed "/" too, please use PARAM_SAFEPATH if "/" needed
+ */
+\define('PARAM_ALPHAEXT', 'alphaext');
+/**
+ * PARAM_ALPHANUM - expected numbers 0-9 and English ascii letters [a-zA-Z] only.
+ */
+\define('PARAM_ALPHANUM', 'alphanum');
+/**
+ * PARAM_ALPHANUMEXT - expected numbers 0-9, letters (English ascii letters [a-zA-Z]) and _- only.
+ */
+\define('PARAM_ALPHANUMEXT', 'alphanumext');
+/**
+ * PARAM_AUTH - actually checks to make sure the string is a valid auth plugin
+ */
+\define('PARAM_AUTH', 'auth');
+/**
+ * PARAM_BASE64 - Base 64 encoded format
+ */
+\define('PARAM_BASE64', 'base64');
+/**
+ * PARAM_BOOL - converts input into 0 or 1, use for switches in forms and urls.
+ */
+\define('PARAM_BOOL', 'bool');
+/**
+ * PARAM_CAPABILITY - A capability name, like 'moodle/role:manage'. Actually
+ * checked against the list of capabilities in the database.
+ */
+\define('PARAM_CAPABILITY', 'capability');
+/**
+ * PARAM_CLEANHTML - cleans submitted HTML code. Note that you almost never want
+ * to use this. The normal mode of operation is to use PARAM_RAW when receiving
+ * the input (required/optional_param or formslib) and then sanitise the HTML
+ * using format_text on output. This is for the rare cases when you want to
+ * sanitise the HTML on input. This cleaning may also fix xhtml strictness.
+ */
+\define('PARAM_CLEANHTML', 'cleanhtml');
+/**
+ * PARAM_EMAIL - an email address following the RFC
+ */
+\define('PARAM_EMAIL', 'email');
+/**
+ * PARAM_FILE - safe file name, all dangerous chars are stripped, protects against XSS, SQL injections and directory traversals
+ */
+\define('PARAM_FILE', 'file');
+/**
+ * PARAM_FLOAT - a real/floating point number.
+ *
+ * Note that you should not use PARAM_FLOAT for numbers typed in by the user.
+ * It does not work for languages that use , as a decimal separator.
+ * Use PARAM_LOCALISEDFLOAT instead.
+ */
+\define('PARAM_FLOAT', 'float');
+/**
+ * PARAM_LOCALISEDFLOAT - a localised real/floating point number.
+ * This is preferred over PARAM_FLOAT for numbers typed in by the user.
+ * Cleans localised numbers to computer readable numbers; false for invalid numbers.
+ */
+\define('PARAM_LOCALISEDFLOAT', 'localisedfloat');
+/**
+ * PARAM_HOST - expected fully qualified domain name (FQDN) or an IPv4 dotted quad (IP address)
+ */
+\define('PARAM_HOST', 'host');
+/**
+ * PARAM_INT - integers only, use when expecting only numbers.
+ */
+\define('PARAM_INT', 'int');
+/**
+ * PARAM_LANG - checks to see if the string is a valid installed language in the current site.
+ */
+\define('PARAM_LANG', 'lang');
+/**
+ * PARAM_LOCALURL - expected properly formatted URL as well as one that refers to the local server itself. (NOT orthogonal to the
+ * others! Implies PARAM_URL!)
+ */
+\define('PARAM_LOCALURL', 'localurl');
+/**
+ * PARAM_NOTAGS - all html tags are stripped from the text. Do not abuse this type.
+ */
+\define('PARAM_NOTAGS', 'notags');
+/**
+ * PARAM_PATH - safe relative path name, all dangerous chars are stripped, protects against XSS, SQL injections and directory
+ * traversals note: the leading slash is not removed, window drive letter is not allowed
+ */
+\define('PARAM_PATH', 'path');
+/**
+ * PARAM_PEM - Privacy Enhanced Mail format
+ */
+\define('PARAM_PEM', 'pem');
+/**
+ * PARAM_PERMISSION - A permission, one of CAP_INHERIT, CAP_ALLOW, CAP_PREVENT or CAP_PROHIBIT.
+ */
+\define('PARAM_PERMISSION', 'permission');
+/**
+ * PARAM_RAW specifies a parameter that is not cleaned/processed in any way except the discarding of the invalid utf-8 characters
+ */
+\define('PARAM_RAW', 'raw');
+/**
+ * PARAM_RAW_TRIMMED like PARAM_RAW but leading and trailing whitespace is stripped.
+ */
+\define('PARAM_RAW_TRIMMED', 'raw_trimmed');
+/**
+ * PARAM_SAFEDIR - safe directory name, suitable for include() and require()
+ */
+\define('PARAM_SAFEDIR', 'safedir');
+/**
+ * PARAM_SAFEPATH - several PARAM_SAFEDIR joined by "/", suitable for include() and require(), plugin paths, etc.
+ */
+\define('PARAM_SAFEPATH', 'safepath');
+/**
+ * PARAM_SEQUENCE - expects a sequence of numbers like 8 to 1,5,6,4,6,8,9.  Numbers and comma only.
+ */
+\define('PARAM_SEQUENCE', 'sequence');
+/**
+ * PARAM_TAG - one tag (interests, blogs, etc.) - mostly international characters and space, <> not supported
+ */
+\define('PARAM_TAG', 'tag');
+/**
+ * PARAM_TAGLIST - list of tags separated by commas (interests, blogs, etc.)
+ */
+\define('PARAM_TAGLIST', 'taglist');
+/**
+ * PARAM_TEXT - general plain text compatible with multilang filter, no other html tags. Please note '<', or '>' are allowed here.
+ */
+\define('PARAM_TEXT', 'text');
+/**
+ * PARAM_THEME - Checks to see if the string is a valid theme name in the current site
+ */
+\define('PARAM_THEME', 'theme');
+/**
+ * PARAM_URL - expected properly formatted URL. Please note that domain part is required, http://localhost/ is not accepted but
+ * http://localhost.localdomain/ is ok.
+ */
+\define('PARAM_URL', 'url');
+/**
+ * PARAM_USERNAME - Clean username to only contains allowed characters. This is to be used ONLY when manually creating user
+ * accounts, do NOT use when syncing with external systems!!
+ */
+\define('PARAM_USERNAME', 'username');
+/**
+ * PARAM_STRINGID - used to check if the given string is valid string identifier for get_string()
+ */
+\define('PARAM_STRINGID', 'stringid');
+// DEPRECATED PARAM TYPES OR ALIASES - DO NOT USE FOR NEW CODE.
+/**
+ * PARAM_CLEAN - obsoleted, please use a more specific type of parameter.
+ * It was one of the first types, that is why it is abused so much ;-)
+ * @deprecated since 2.0
+ */
+\define('PARAM_CLEAN', 'clean');
+/**
+ * PARAM_INTEGER - deprecated alias for PARAM_INT
+ * @deprecated since 2.0
+ */
+\define('PARAM_INTEGER', 'int');
+/**
+ * PARAM_NUMBER - deprecated alias of PARAM_FLOAT
+ * @deprecated since 2.0
+ */
+\define('PARAM_NUMBER', 'float');
+/**
+ * PARAM_ACTION - deprecated alias for PARAM_ALPHANUMEXT, use for various actions in forms and urls
+ * NOTE: originally alias for PARAM_APLHA
+ * @deprecated since 2.0
+ */
+\define('PARAM_ACTION', 'alphanumext');
+/**
+ * PARAM_FORMAT - deprecated alias for PARAM_ALPHANUMEXT, use for names of plugins, formats, etc.
+ * NOTE: originally alias for PARAM_APLHA
+ * @deprecated since 2.0
+ */
+\define('PARAM_FORMAT', 'alphanumext');
+/**
+ * PARAM_MULTILANG - deprecated alias of PARAM_TEXT.
+ * @deprecated since 2.0
+ */
+\define('PARAM_MULTILANG', 'text');
+/**
+ * PARAM_TIMEZONE - expected timezone. Timezone can be int +-(0-13) or float +-(0.5-12.5) or
+ * string separated by '/' and can have '-' &/ '_' (eg. America/North_Dakota/New_Salem
+ * America/Port-au-Prince)
+ */
+\define('PARAM_TIMEZONE', 'timezone');
+/**
+ * PARAM_CLEANFILE - deprecated alias of PARAM_FILE; originally was removing regional chars too
+ */
+\define('PARAM_CLEANFILE', 'file');
+/**
+ * PARAM_COMPONENT is used for full component names (aka frankenstyle) such as 'mod_forum', 'core_rating', 'auth_ldap'.
+ * Short legacy subsystem names and module names are accepted too ex: 'forum', 'rating', 'user'.
+ * Only lowercase ascii letters, numbers and underscores are allowed, it has to start with a letter.
+ * NOTE: numbers and underscores are strongly discouraged in plugin names!
+ */
+\define('PARAM_COMPONENT', 'component');
+/**
+ * PARAM_AREA is a name of area used when addressing files, comments, ratings, etc.
+ * It is usually used together with context id and component.
+ * Only lowercase ascii letters, numbers and underscores are allowed, it has to start with a letter.
+ */
+\define('PARAM_AREA', 'area');
+/**
+ * PARAM_PLUGIN is used for plugin names such as 'forum', 'glossary', 'ldap', 'paypal', 'completionstatus'.
+ * Only lowercase ascii letters, numbers and underscores are allowed, it has to start with a letter.
+ * NOTE: numbers and underscores are strongly discouraged in plugin names! Underscores are forbidden in module names.
+ */
+\define('PARAM_PLUGIN', 'plugin');
+// Web Services.
+/**
+ * VALUE_REQUIRED - if the parameter is not supplied, there is an error
+ */
+\define('VALUE_REQUIRED', 1);
+/**
+ * VALUE_OPTIONAL - if the parameter is not supplied, then the param has no value
+ */
+\define('VALUE_OPTIONAL', 2);
+/**
+ * VALUE_DEFAULT - if the parameter is not supplied, then the default value is used
+ */
+\define('VALUE_DEFAULT', 0);
+/**
+ * NULL_NOT_ALLOWED - the parameter can not be set to null in the database
+ */
+\define('NULL_NOT_ALLOWED', \false);
+/**
+ * NULL_ALLOWED - the parameter can be set to null in the database
+ */
+\define('NULL_ALLOWED', \true);
+// Page types.
+/**
+ * PAGE_COURSE_VIEW is a definition of a page type. For more information on the page class see moodle/lib/pagelib.php.
+ */
+\define('PAGE_COURSE_VIEW', 'course-view');
+/** Get remote addr constant */
+\define('GETREMOTEADDR_SKIP_HTTP_CLIENT_IP', '1');
+/** Get remote addr constant */
+\define('GETREMOTEADDR_SKIP_HTTP_X_FORWARDED_FOR', '2');
+/**
+ * GETREMOTEADDR_SKIP_DEFAULT defines the default behavior remote IP address validation.
+ */
+\define('GETREMOTEADDR_SKIP_DEFAULT', \GETREMOTEADDR_SKIP_HTTP_X_FORWARDED_FOR | \GETREMOTEADDR_SKIP_HTTP_CLIENT_IP);
+// Blog access level constant declaration.
+\define('BLOG_USER_LEVEL', 1);
+\define('BLOG_GROUP_LEVEL', 2);
+\define('BLOG_COURSE_LEVEL', 3);
+\define('BLOG_SITE_LEVEL', 4);
+\define('BLOG_GLOBAL_LEVEL', 5);
+// Tag constants.
+/**
+ * To prevent problems with multibytes strings,Flag updating in nav not working on the review page. this should not exceed the
+ * length of "varchar(255) / 3 (bytes / utf-8 character) = 85".
+ * TODO: this is not correct, varchar(255) are 255 unicode chars ;-)
+ *
+ * @todo define(TAG_MAX_LENGTH) this is not correct, varchar(255) are 255 unicode chars ;-)
+ */
+\define('TAG_MAX_LENGTH', 50);
+// Password policy constants.
+\define('PASSWORD_LOWER', 'abcdefghijklmnopqrstuvwxyz');
+\define('PASSWORD_UPPER', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+\define('PASSWORD_DIGITS', '0123456789');
+\define('PASSWORD_NONALPHANUM', '.,;:!?_-+/*@#&$');
+// Feature constants.
+// Used for plugin_supports() to report features that are, or are not, supported by a module.
+/** True if module can provide a grade */
+\define('FEATURE_GRADE_HAS_GRADE', 'grade_has_grade');
+/** True if module supports outcomes */
+\define('FEATURE_GRADE_OUTCOMES', 'outcomes');
+/** True if module supports advanced grading methods */
+\define('FEATURE_ADVANCED_GRADING', 'grade_advanced_grading');
+/** True if module controls the grade visibility over the gradebook */
+\define('FEATURE_CONTROLS_GRADE_VISIBILITY', 'controlsgradevisbility');
+/** True if module supports plagiarism plugins */
+\define('FEATURE_PLAGIARISM', 'plagiarism');
+/** True if module has code to track whether somebody viewed it */
+\define('FEATURE_COMPLETION_TRACKS_VIEWS', 'completion_tracks_views');
+/** True if module has custom completion rules */
+\define('FEATURE_COMPLETION_HAS_RULES', 'completion_has_rules');
+/** True if module has no 'view' page (like label) */
+\define('FEATURE_NO_VIEW_LINK', 'viewlink');
+/** True (which is default) if the module wants support for setting the ID number for grade calculation purposes. */
+\define('FEATURE_IDNUMBER', 'idnumber');
+/** True if module supports groups */
+\define('FEATURE_GROUPS', 'groups');
+/** True if module supports groupings */
+\define('FEATURE_GROUPINGS', 'groupings');
+/**
+ * True if module supports groupmembersonly (which no longer exists)
+ * @deprecated Since Moodle 2.8
+ */
+\define('FEATURE_GROUPMEMBERSONLY', 'groupmembersonly');
+/** Type of module */
+\define('FEATURE_MOD_ARCHETYPE', 'mod_archetype');
+/** True if module supports intro editor */
+\define('FEATURE_MOD_INTRO', 'mod_intro');
+/** True if module has default completion */
+\define('FEATURE_MODEDIT_DEFAULT_COMPLETION', 'modedit_default_completion');
+\define('FEATURE_COMMENT', 'comment');
+\define('FEATURE_RATE', 'rate');
+/** True if module supports backup/restore of moodle2 format */
+\define('FEATURE_BACKUP_MOODLE2', 'backup_moodle2');
+/** True if module can show description on course main page */
+\define('FEATURE_SHOW_DESCRIPTION', 'showdescription');
+/** True if module uses the question bank */
+\define('FEATURE_USES_QUESTIONS', 'usesquestions');
+/**
+ * Maximum filename char size
+ */
+\define('MAX_FILENAME_SIZE', 100);
+/** Unspecified module archetype */
+\define('MOD_ARCHETYPE_OTHER', 0);
+/** Resource-like type module */
+\define('MOD_ARCHETYPE_RESOURCE', 1);
+/** Assignment module archetype */
+\define('MOD_ARCHETYPE_ASSIGNMENT', 2);
+/** System (not user-addable) module archetype */
+\define('MOD_ARCHETYPE_SYSTEM', 3);
+/**
+ * Security token used for allowing access
+ * from external application such as web services.
+ * Scripts do not use any session, performance is relatively
+ * low because we need to load access info in each request.
+ * Scripts are executed in parallel.
+ */
+\define('EXTERNAL_TOKEN_PERMANENT', 0);
+/**
+ * Security token used for allowing access
+ * of embedded applications, the code is executed in the
+ * active user session. Token is invalidated after user logs out.
+ * Scripts are executed serially - normal session locking is used.
+ */
+\define('EXTERNAL_TOKEN_EMBEDDED', 1);
+/**
+ * The home page should be the site home
+ */
+\define('HOMEPAGE_SITE', 0);
+/**
+ * The home page should be the users my page
+ */
+\define('HOMEPAGE_MY', 1);
+/**
+ * The home page can be chosen by the user
+ */
+\define('HOMEPAGE_USER', 2);
+/**
+ * Moodle mobile app service name
+ */
+\define('MOODLE_OFFICIAL_MOBILE_SERVICE', 'moodle_mobile_app');
+/**
+ * Indicates the user has the capabilities required to ignore activity and course file size restrictions
+ */
+\define('USER_CAN_IGNORE_FILE_SIZE_LIMITS', -1);
+/**
+ * Course display settings: display all sections on one page.
+ */
+\define('COURSE_DISPLAY_SINGLEPAGE', 0);
+/**
+ * Course display settings: split pages into a page per section.
+ */
+\define('COURSE_DISPLAY_MULTIPAGE', 1);
+/**
+ * Authentication constant: String used in password field when password is not stored.
+ */
+\define('AUTH_PASSWORD_NOT_CACHED', 'not cached');
+/**
+ * Email from header to never include via information.
+ */
+\define('EMAIL_VIA_NEVER', 0);
+/**
+ * Email from header to always include via information.
+ */
+\define('EMAIL_VIA_ALWAYS', 1);
+/**
+ * Email from header to only include via information if the address is no-reply.
+ */
+\define('EMAIL_VIA_NO_REPLY_ONLY', 2);
 // PARAMETER HANDLING.
 /**
  * Returns a particular value for the named variable, taken from
@@ -33016,6 +33243,19 @@ function fullname($user, $override = \false)
 {
 }
 /**
+ * A centralised location for the all name fields. Returns an array / sql string snippet.
+ *
+ * @param bool $returnsql True for an sql select field snippet.
+ * @param string $tableprefix table query prefix to use in front of each field.
+ * @param string $prefix prefix added to the name fields e.g. authorfirstname.
+ * @param string $fieldprefix sql field prefix e.g. id AS userid.
+ * @param bool $order moves firstname and lastname to the top of the array / start of the string.
+ * @return array|string All name fields.
+ */
+function get_all_user_name_fields($returnsql = \false, $tableprefix = \null, $prefix = \null, $fieldprefix = \null, $order = \false)
+{
+}
+/**
  * Reduces lines of duplicated code for getting user name fields.
  *
  * See also {@link user_picture::unalias()}
@@ -33039,6 +33279,40 @@ function username_load_fields_from_object($addtoobject, $secondobject, $prefix =
  * @return array An array of values in order according to placement in the string format.
  */
 function order_in_string($values, $stringformat)
+{
+}
+/**
+ * Checks if current user is shown any extra fields when listing users.
+ *
+ * @param object $context Context
+ * @param array $already Array of fields that we're going to show anyway
+ *   so don't bother listing them
+ * @return array Array of field names from user table, not including anything
+ *   listed in $already
+ */
+function get_extra_user_fields($context, $already = array())
+{
+}
+/**
+ * If the current user is to be shown extra user fields when listing or
+ * selecting users, returns a string suitable for including in an SQL select
+ * clause to retrieve those fields.
+ *
+ * @param context $context Context
+ * @param string $alias Alias of user table, e.g. 'u' (default none)
+ * @param string $prefix Prefix for field names using AS, e.g. 'u_' (default none)
+ * @param array $already Array of fields that we're going to include anyway so don't list them (default none)
+ * @return string Partial SQL select clause, beginning with comma, for example ',u.idnumber,u.department' unless it is blank
+ */
+function get_extra_user_fields_sql($context, $alias = '', $prefix = '', $already = array())
+{
+}
+/**
+ * Returns the display name of a field in the user table. Works for most fields that are commonly displayed to users.
+ * @param string $field Field name, e.g. 'phone1'
+ * @return string Text description taken from language file, e.g. 'Phone number'
+ */
+function get_user_field_name($field)
 {
 }
 /**
@@ -33104,14 +33378,6 @@ function is_restored_user($username)
  * @return array User field/column names
  */
 function get_user_fieldnames()
-{
-}
-/**
- * Returns the string of the language for the new user.
- *
- * @return string language for the new user
- */
-function get_newuser_language()
 {
 }
 /**
@@ -34415,19 +34681,6 @@ function get_performance_info()
 {
 }
 /**
- * Renames a file or directory to a unique name within the same directory.
- *
- * This function is designed to avoid any potential race conditions, and select an unused name.
- *
- * @param string $filepath Original filepath
- * @param string $prefix Prefix to use for the temporary name
- * @return string|bool New file path or false if failed
- * @since Moodle 3.10
- */
-function rename_to_unused_name(string $filepath, string $prefix = '_temp_')
-{
-}
-/**
  * Delete directory or only its content
  *
  * @param string $dir directory path
@@ -34678,6 +34931,11 @@ function site_is_public()
 {
 }
 /**
+ * The name that will be used to separate the navigation cache within SESSION
+ */
+\define('NAVIGATION_CACHE_NAME', 'navigation');
+\define('NAVIGATION_SITE_ADMIN_CACHE_NAME', 'navigationsiteadmin');
+/**
  * Invalidate all server and client side template caches.
  */
 function template_reset_all_caches()
@@ -34689,6 +34947,28 @@ function template_reset_all_caches()
 function js_reset_all_caches()
 {
 }
+// Debug levels - always keep the values in ascending order!
+/** No warnings and errors at all */
+\define('DEBUG_NONE', 0);
+/** Fatal errors only */
+\define('DEBUG_MINIMAL', \E_ERROR | \E_PARSE);
+/** Errors, warnings and notices */
+\define('DEBUG_NORMAL', \E_ERROR | \E_PARSE | \E_WARNING | \E_NOTICE);
+/** All problems except strict PHP warnings */
+\define('DEBUG_ALL', \E_ALL & ~\E_STRICT);
+/** DEBUG_ALL with all debug messages and strict warnings */
+\define('DEBUG_DEVELOPER', \E_ALL | \E_STRICT);
+/** Remove any memory limits */
+\define('MEMORY_UNLIMITED', -1);
+/** Standard memory limit for given platform */
+\define('MEMORY_STANDARD', -2);
+/**
+ * Large memory limit for given platform - used in cron, upgrade, and other places that need a lot of memory.
+ * Can be overridden with $CFG->extramemorylimit setting.
+ */
+\define('MEMORY_EXTRA', -3);
+/** Extremely large memory limit - not recommended for standard scripts */
+\define('MEMORY_HUGE', -4);
 /**
  * Default exception handler.
  *
@@ -34704,9 +34984,10 @@ function default_exception_handler($ex)
  * @param string $errstr
  * @param string $errfile
  * @param int $errline
+ * @param array $errcontext
  * @return bool false means use default error handler
  */
-function default_error_handler($errno, $errstr, $errfile, $errline)
+function default_error_handler($errno, $errstr, $errfile, $errline, $errcontext)
 {
 }
 /**
@@ -35159,6 +35440,12 @@ function make_localcache_directory($directory, $exceptiononerror = \true)
 function set_access_log_user()
 {
 }
+/** UPGRADE_LOG_NORMAL = 0 */
+\define('UPGRADE_LOG_NORMAL', 0);
+/** UPGRADE_LOG_NOTICE = 1 */
+\define('UPGRADE_LOG_NOTICE', 1);
+/** UPGRADE_LOG_ERROR = 2 */
+\define('UPGRADE_LOG_ERROR', 2);
 /**
  * Sets maximum expected time needed for upgrade task.
  * Please always make sure that upgrade will not run longer!
@@ -35554,6 +35841,28 @@ function check_sixtyfour_bits(\environment_results $result)
 {
 }
 /**
+ * Check if the igbinary extension installed is buggy one
+ *
+ * There are a few php-igbinary versions that are buggy and
+ * return any unserialised array with wrong index. This defeats
+ * key() and next() operations on them.
+ *
+ * This library is used by MUC and also by memcached and redis
+ * when available.
+ *
+ * Let's inform if there is some problem when:
+ *   - php 7.2 is being used (php 7.3 and up are immune).
+ *   - the igbinary extension is installed.
+ *   - the version of the extension is between 3.2.2 and 3.2.4.
+ *   - the buggy behaviour is reproduced.
+ *
+ * @param environment_results $result object to update, if relevant.
+ * @return environment_results|null updated results or null.
+ */
+function check_igbinary322_version(\environment_results $result)
+{
+}
+/**
  * Assert the upgrade key is provided, if it is defined.
  *
  * The upgrade key can be defined in the main config.php as $CFG->upgradekey. If
@@ -35617,6 +35926,43 @@ function check_libcurl_version(\environment_results $result)
 function check_max_input_vars(\environment_results $result)
 {
 }
+// Constants.
+// Define text formatting types ... eventually we can add Wiki, BBcode etc.
+/**
+ * Does all sorts of transformations and filtering.
+ */
+\define('FORMAT_MOODLE', '0');
+/**
+ * Plain HTML (with some tags stripped).
+ */
+\define('FORMAT_HTML', '1');
+/**
+ * Plain text (even tags are printed in full).
+ */
+\define('FORMAT_PLAIN', '2');
+/**
+ * Wiki-formatted text.
+ * Deprecated: left here just to note that '3' is not used (at the moment)
+ * and to catch any latent wiki-like text (which generates an error)
+ * @deprecated since 2005!
+ */
+\define('FORMAT_WIKI', '3');
+/**
+ * Markdown-formatted text http://daringfireball.net/projects/markdown/
+ */
+\define('FORMAT_MARKDOWN', '4');
+/**
+ * A moodle_url comparison using this flag will return true if the base URLs match, params are ignored.
+ */
+\define('URL_MATCH_BASE', 0);
+/**
+ * A moodle_url comparison using this flag will return true if the base URLs match and the params of url1 are part of url2.
+ */
+\define('URL_MATCH_PARAMS', 1);
+/**
+ * A moodle_url comparison using this flag will return true if the two URLs are identical, except for the order of the params.
+ */
+\define('URL_MATCH_EXACT', 2);
 // Functions.
 /**
  * Add quotes to HTML characters.
@@ -36551,3 +36897,94 @@ function print_password_policy()
 function get_formatted_help_string($identifier, $component, $ajax = \false, $a = \null)
 {
 }
+/** SQL_PARAMS_NAMED - Bitmask, indicates :name type parameters are supported by db backend. */
+\define('SQL_PARAMS_NAMED', 1);
+/** SQL_PARAMS_QM - Bitmask, indicates ? type parameters are supported by db backend. */
+\define('SQL_PARAMS_QM', 2);
+/** SQL_PARAMS_DOLLAR - Bitmask, indicates $1, $2, ... type parameters are supported by db backend. */
+\define('SQL_PARAMS_DOLLAR', 4);
+/** SQL_QUERY_SELECT - Normal select query, reading only. */
+\define('SQL_QUERY_SELECT', 1);
+/** SQL_QUERY_INSERT - Insert select query, writing. */
+\define('SQL_QUERY_INSERT', 2);
+/** SQL_QUERY_UPDATE - Update select query, writing. */
+\define('SQL_QUERY_UPDATE', 3);
+/** SQL_QUERY_STRUCTURE - Query changing db structure, writing. */
+\define('SQL_QUERY_STRUCTURE', 4);
+/** SQL_QUERY_AUX - Auxiliary query done by driver, setting connection config, getting table info, etc. */
+\define('SQL_QUERY_AUX', 5);
+// {{{ error codes
+/*
+ * Error codes for the QuickForm interface, which will be mapped to textual messages
+ * in the QuickForm::errorMessage() function.  If you are to add a new error code, be
+ * sure to add the textual messages to the QuickForm::errorMessage() function as well
+ */
+\define('QUICKFORM_OK', 1);
+\define('QUICKFORM_ERROR', -1);
+\define('QUICKFORM_INVALID_RULE', -2);
+\define('QUICKFORM_NONEXIST_ELEMENT', -3);
+\define('QUICKFORM_INVALID_FILTER', -4);
+\define('QUICKFORM_UNREGISTERED_ELEMENT', -5);
+\define('QUICKFORM_INVALID_ELEMENT_NAME', -6);
+\define('QUICKFORM_INVALID_PROCESS', -7);
+\define('QUICKFORM_DEPRECATED', -8);
+\define('QUICKFORM_INVALID_DATASOURCE', -9);
+// ==== First, some constants to be used by actions ====
+/** Default flags for class */
+\define('ACTION_NONE', 0);
+/** The invoke function will return HTML */
+\define('ACTION_GENERATE_HTML', 1);
+/** The invoke function will return HTML */
+\define('ACTION_GENERATE_XML', 2);
+/** The class can have subaction */
+\define('ACTION_HAVE_SUBACTIONS', 1);
+// ==== Now the allowed DB Field Types ====
+/** Wrong DB Type */
+\define('XMLDB_TYPE_INCORRECT', 0);
+/** Integer */
+\define('XMLDB_TYPE_INTEGER', 1);
+/** Decimal number */
+\define('XMLDB_TYPE_NUMBER', 2);
+/** Floating Point number */
+\define('XMLDB_TYPE_FLOAT', 3);
+/** String */
+\define('XMLDB_TYPE_CHAR', 4);
+/** Text */
+\define('XMLDB_TYPE_TEXT', 5);
+/** Binary */
+\define('XMLDB_TYPE_BINARY', 6);
+/** Datetime */
+\define('XMLDB_TYPE_DATETIME', 7);
+/** Timestamp */
+\define('XMLDB_TYPE_TIMESTAMP', 8);
+// ==== Now the allowed DB Keys ====
+/** Wrong DB Key */
+\define('XMLDB_KEY_INCORRECT', 0);
+/** Primary Keys */
+\define('XMLDB_KEY_PRIMARY', 1);
+/** Unique Keys */
+\define('XMLDB_KEY_UNIQUE', 2);
+/** Foreign Keys */
+\define('XMLDB_KEY_FOREIGN', 3);
+/** Check Constraints - NOT USED! */
+\define('XMLDB_KEY_CHECK', 4);
+/** Foreign Key + Unique Key */
+\define('XMLDB_KEY_FOREIGN_UNIQUE', 5);
+// ==== Some other useful Constants ====
+/** If the field is going to be unsigned @deprecated since 2.3 */
+\define('XMLDB_UNSIGNED', \true);
+/** If the field is going to be not null */
+\define('XMLDB_NOTNULL', \true);
+/** If the field is going to be a sequence */
+\define('XMLDB_SEQUENCE', \true);
+/** If the index is going to be unique */
+\define('XMLDB_INDEX_UNIQUE', \true);
+/**  If the index is NOT going to be unique */
+\define('XMLDB_INDEX_NOTUNIQUE', \false);
+// ==== Some strings used widely ====
+/** New line in xmldb generated files */
+\define('XMLDB_LINEFEED', "\n");
+/** Upgrade start in upgrade.php */
+\define('XMLDB_PHP_HEADER', '    if ($oldversion < XXXXXXXXXX) {' . \XMLDB_LINEFEED);
+/** Upgrade end in upgrade.php */
+\define('XMLDB_PHP_FOOTER', '    }' . \XMLDB_LINEFEED);
