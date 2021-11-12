@@ -60,4 +60,4 @@ That's it! Commit the changes, make a PR, and we would all be happy!
 
 ## License
 
-Licensed under [Apache License 2.0](./LICENSE.md).
+Licensed under [GPL 3.0](./LICENSE.md).
