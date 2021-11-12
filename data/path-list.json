@@ -1,6 +1,7 @@
 [
     "/lib/accesslib.php",
     "/lib/adminlib.php",
+    "/lib/dmllib.php",
     "/lib/formslib.php",
     "/lib/modinfolib.php",
     "/lib/moodlelib.php",
