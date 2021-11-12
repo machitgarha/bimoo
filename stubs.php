@@ -24,6 +24,8 @@
  */
 abstract class context extends \stdClass implements \IteratorAggregate
 {
+    /** @var string Default sorting of capabilities in {@see get_capabilities} */
+    protected const DEFAULT_CAPABILITY_SORT = 'contextlevel, component, name';
     /**
      * The context id
      * Can be accessed publicly through $context->id
@@ -313,9 +315,10 @@ abstract class context extends \stdClass implements \IteratorAggregate
     /**
      * Returns array of relevant context capability records.
      *
+     * @param string $sort SQL order by snippet for sorting returned capabilities sensibly for display
      * @return array
      */
-    public abstract function get_capabilities();
+    public abstract function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT);
     /**
      * Recursive function which, given a context, find all its children context ids.
      *
@@ -622,8 +625,10 @@ class context_helper extends \context
     }
     /**
      * not used
+     *
+     * @param string $sort
      */
-    public function get_capabilities()
+    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
     {
     }
 }
@@ -677,9 +682,10 @@ class context_system extends \context
     /**
      * Returns array of relevant context capability records.
      *
+     * @param string $sort
      * @return array
      */
-    public function get_capabilities()
+    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
     {
     }
     /**
@@ -790,9 +796,10 @@ class context_user extends \context
     /**
      * Returns array of relevant context capability records.
      *
+     * @param string $sort
      * @return array
      */
-    public function get_capabilities()
+    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
     {
     }
     /**
@@ -883,9 +890,10 @@ class context_coursecat extends \context
     /**
      * Returns array of relevant context capability records.
      *
+     * @param string $sort
      * @return array
      */
-    public function get_capabilities()
+    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
     {
     }
     /**
@@ -985,9 +993,10 @@ class context_course extends \context
     /**
      * Returns array of relevant context capability records.
      *
+     * @param string $sort
      * @return array
      */
-    public function get_capabilities()
+    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
     {
     }
     /**
@@ -1088,9 +1097,10 @@ class context_module extends \context
     /**
      * Returns array of relevant context capability records.
      *
+     * @param string $sort
      * @return array
      */
-    public function get_capabilities()
+    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
     {
     }
     /**
@@ -1190,9 +1200,10 @@ class context_block extends \context
     /**
      * Returns array of relevant context capability records.
      *
+     * @param string $sort
      * @return array
      */
-    public function get_capabilities()
+    public function get_capabilities(string $sort = self::DEFAULT_CAPABILITY_SORT)
     {
     }
     /**
@@ -1384,6 +1395,14 @@ class admin_category implements \parentable_part_of_admin_tree
      * @param bool $hidden hide category in admin tree block, defaults to false
      */
     public function __construct($name, $visiblename, $hidden = \false)
+    {
+    }
+    /**
+     * Get the URL to view this page.
+     *
+     * @return moodle_url
+     */
+    public function get_settings_page_url() : \moodle_url
     {
     }
     /**
@@ -2518,6 +2537,34 @@ class admin_setting_configpasswordunmask_with_advanced extends \admin_setting_co
     }
 }
 /**
+ * Admin setting class for encrypted values using secure encryption.
+ *
+ * @copyright 2019 The Open University
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class admin_setting_encryptedpassword extends \admin_setting
+{
+    /**
+     * Constructor. Same as parent except that the default value is always an empty string.
+     *
+     * @param string $name Internal name used in config table
+     * @param string $visiblename Name shown on form
+     * @param string $description Description that appears below field
+     */
+    public function __construct(string $name, string $visiblename, string $description)
+    {
+    }
+    public function get_setting()
+    {
+    }
+    public function write_setting($data)
+    {
+    }
+    public function output_html($data, $query = '')
+    {
+    }
+}
+/**
  * Empty setting used to allow flags (advanced) on settings that can have no sensible default.
  * Note: Only advanced makes sense right now - locked does not.
  *
@@ -2680,22 +2727,30 @@ class admin_setting_configmulticheckbox extends \admin_setting
 {
     /** @var array Array of choices value=>label */
     public $choices;
+    /** @var callable|null Loader function for choices */
+    protected $choiceloader = \null;
     /**
      * Constructor: uses parent::__construct
+     *
+     * The $choices parameter may be either an array of $value => $label format,
+     * e.g. [1 => get_string('yes')], or a callback function which takes no parameters and
+     * returns an array in that format.
      *
      * @param string $name unique ascii name, either 'mysetting' for settings that in config, or 'myplugin/mysetting' for ones in config_plugins.
      * @param string $visiblename localised
      * @param string $description long localised info
      * @param array $defaultsetting array of selected
-     * @param array $choices array of $value=>$label for each checkbox
+     * @param array|callable $choices array of $value => $label for each checkbox, or a callback
      */
     public function __construct($name, $visiblename, $description, $defaultsetting, $choices)
     {
     }
     /**
-     * This public function may be used in ancestors for lazy loading of choices
+     * This function may be used in ancestors for lazy loading of choices
      *
-     * @todo Check if this function is still required content commented out only returns true
+     * Override this method if loading of choices is expensive, such
+     * as when it requires multiple db requests.
+     *
      * @return bool true if loaded, false if error
      */
     public function load_choices()
@@ -2780,15 +2835,35 @@ class admin_setting_configselect extends \admin_setting
     public $choices;
     /** @var array Array of choices grouped using optgroups */
     public $optgroups;
+    /** @var callable|null Loader function for choices */
+    protected $choiceloader = \null;
+    /** @var callable|null Validation function */
+    protected $validatefunction = \null;
     /**
-     * Constructor
+     * Constructor.
+     *
+     * If you want to lazy-load the choices, pass a callback function that returns a choice
+     * array for the $choices parameter.
+     *
      * @param string $name unique ascii name, either 'mysetting' for settings that in config, or 'myplugin/mysetting' for ones in config_plugins.
      * @param string $visiblename localised
      * @param string $description long localised info
      * @param string|int $defaultsetting
-     * @param array $choices array of $value=>$label for each selection
+     * @param array|callable|null $choices array of $value=>$label for each selection, or callback
      */
     public function __construct($name, $visiblename, $description, $defaultsetting, $choices)
+    {
+    }
+    /**
+     * Sets a validate function.
+     *
+     * The callback will be passed one parameter, the new setting value, and should return either
+     * an empty string '' if the value is OK, or an error message if not.
+     *
+     * @param callable|null $validatefunction Validate function or null to clear
+     * @since Moodle 3.10
+     */
+    public function set_validate_function(?callable $validatefunction = \null)
     {
     }
     /**
@@ -2826,6 +2901,17 @@ class admin_setting_configselect extends \admin_setting
      * @return string empty of error string
      */
     public function write_setting($data)
+    {
+    }
+    /**
+     * Validate the setting. This uses the callback function if provided; subclasses could override
+     * to carry out validation directly in the class.
+     *
+     * @param string $data New value being set
+     * @return string Empty string if valid, or error message text
+     * @since Moodle 3.10
+     */
+    protected function validate_setting(string $data) : string
     {
     }
     /**
@@ -2976,6 +3062,8 @@ class admin_setting_configduration extends \admin_setting
 {
     /** @var int default duration unit */
     protected $defaultunit;
+    /** @var callable|null Validation function */
+    protected $validatefunction = \null;
     /**
      * Constructor
      * @param string $name unique ascii name, either 'mysetting' for settings that in config,
@@ -2986,6 +3074,29 @@ class admin_setting_configduration extends \admin_setting
      * @param int $defaultunit - day, week, etc. (in seconds)
      */
     public function __construct($name, $visiblename, $description, $defaultsetting, $defaultunit = 86400)
+    {
+    }
+    /**
+     * Sets a validate function.
+     *
+     * The callback will be passed one parameter, the new setting value, and should return either
+     * an empty string '' if the value is OK, or an error message if not.
+     *
+     * @param callable|null $validatefunction Validate function or null to clear
+     * @since Moodle 3.10
+     */
+    public function set_validate_function(?callable $validatefunction = \null)
+    {
+    }
+    /**
+     * Validate the setting. This uses the callback function if provided; subclasses could override
+     * to carry out validation directly in the class.
+     *
+     * @param int $data New value being set
+     * @return string Empty string if valid, or error message text
+     * @since Moodle 3.10
+     */
+    protected function validate_setting(int $data) : string
     {
     }
     /**
@@ -3642,16 +3753,48 @@ class admin_settings_num_course_sections extends \admin_setting_configselect
     }
 }
 /**
+ * Autocomplete as you type form element.
+ *
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class admin_setting_configselect_autocomplete extends \admin_setting_configselect
+{
+    /** @var boolean $tags Should we allow typing new entries to the field? */
+    protected $tags = \false;
+    /** @var string $ajax Name of an AMD module to send/process ajax requests. */
+    protected $ajax = '';
+    /** @var string $placeholder Placeholder text for an empty list. */
+    protected $placeholder = '';
+    /** @var bool $casesensitive Whether the search has to be case-sensitive. */
+    protected $casesensitive = \false;
+    /** @var bool $showsuggestions Show suggestions by default - but this can be turned off. */
+    protected $showsuggestions = \true;
+    /** @var string $noselectionstring String that is shown when there are no selections. */
+    protected $noselectionstring = '';
+    /**
+     * Returns XHTML select field and wrapping div(s)
+     *
+     * @see output_select_html()
+     *
+     * @param string $data the option to show as selected
+     * @param string $query
+     * @return string XHTML field and wrapping div
+     */
+    public function output_html($data, $query = '')
+    {
+    }
+}
+/**
  * Course category selection
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class admin_settings_coursecat_select extends \admin_setting_configselect
+class admin_settings_coursecat_select extends \admin_setting_configselect_autocomplete
 {
     /**
      * Calls parent::__construct with specific arguments
      */
-    public function __construct($name, $visiblename, $description, $defaultsetting)
+    public function __construct($name, $visiblename, $description, $defaultsetting = 1)
     {
     }
     /**
@@ -4428,26 +4571,6 @@ class admin_page_managemessageoutputs extends \admin_externalpage
     }
 }
 /**
- * Default message outputs configuration
- *
- * @deprecated since Moodle 3.7 MDL-64495. Please use admin_page_managemessageoutputs instead.
- * @todo       MDL-64866 This will be deleted in Moodle 4.1.
- *
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class admin_page_defaultmessageoutputs extends \admin_page_managemessageoutputs
-{
-    /**
-     * Calls parent::__construct with specific arguments
-     *
-     * @deprecated since Moodle 3.7 MDL-64495. Please use admin_page_managemessageoutputs instead.
-     * @todo       MDL-64866 This will be deleted in Moodle 4.1.
-     */
-    public function __construct()
-    {
-    }
-}
-/**
  * Manage question behaviours page
  *
  * @copyright  2011 The Open University
@@ -4706,13 +4829,13 @@ class admin_setting_manageantiviruses extends \admin_setting
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @deprecated since Moodle 3.9 MDL-45184. Please use \tool_licensemanager\manager instead.
- * @todo MDL-45184 This class will be deleted in Moodle 4.3.
+ * @todo MDL-45184 This class will be deleted in Moodle 4.1.
  */
 class admin_setting_managelicenses extends \admin_setting
 {
     /**
      * @deprecated since Moodle 3.9 MDL-45184. Please use \tool_licensemanager\manager instead.
-     * @todo MDL-45184 This class will be deleted in Moodle 4.3
+     * @todo MDL-45184 This class will be deleted in Moodle 4.1
      */
     public function __construct()
     {
@@ -4721,7 +4844,7 @@ class admin_setting_managelicenses extends \admin_setting
      * Always returns true, does nothing
      *
      * @deprecated since Moodle 3.9 MDL-45184.
-     * @todo MDL-45184 This method will be deleted in Moodle 4.3
+     * @todo MDL-45184 This method will be deleted in Moodle 4.1
      *
      * @return true
      */
@@ -4732,7 +4855,7 @@ class admin_setting_managelicenses extends \admin_setting
      * Always returns true, does nothing
      *
      * @deprecated since Moodle 3.9 MDL-45184.
-     * @todo MDL-45184 This method will be deleted in Moodle 4.3
+     * @todo MDL-45184 This method will be deleted in Moodle 4.1
      *
      * @return true
      */
@@ -4743,7 +4866,7 @@ class admin_setting_managelicenses extends \admin_setting
      * Always returns '', does not write anything
      *
      * @deprecated since Moodle 3.9 MDL-45184.
-     * @todo MDL-45184 This method will be deleted in Moodle 4.3
+     * @todo MDL-45184 This method will be deleted in Moodle 4.1
      *
      * @return string Always returns ''
      */
@@ -4754,7 +4877,7 @@ class admin_setting_managelicenses extends \admin_setting
      * Builds the XHTML to display the control
      *
      * @deprecated since Moodle 3.9 MDL-45184. Please use \tool_licensemanager\manager instead.
-     * @todo MDL-45184 This method will be deleted in Moodle 4.3
+     * @todo MDL-45184 This method will be deleted in Moodle 4.1
      *
      * @param string $data Unused
      * @param string $query
@@ -5500,54 +5623,6 @@ class admin_setting_managewebserviceprotocols extends \admin_setting
     }
 }
 /**
- * Special class for web service token administration.
- *
- * @author Jerome Mouneyrac
- */
-class admin_setting_managewebservicetokens extends \admin_setting
-{
-    /**
-     * Calls parent::__construct with specific arguments
-     */
-    public function __construct()
-    {
-    }
-    /**
-     * Always returns true, does nothing
-     *
-     * @return true
-     */
-    public function get_setting()
-    {
-    }
-    /**
-     * Always returns true, does nothing
-     *
-     * @return true
-     */
-    public function get_defaultsetting()
-    {
-    }
-    /**
-     * Always returns '', does not write anything
-     *
-     * @return string Always returns ''
-     */
-    public function write_setting($data)
-    {
-    }
-    /**
-     * Builds the XHTML to display the control
-     *
-     * @param string $data Unused
-     * @param string $query
-     * @return string
-     */
-    public function output_html($data, $query = '')
-    {
-    }
-}
-/**
  * Colour picker
  *
  * @copyright 2010 Sam Hemelryk
@@ -6126,6 +6201,237 @@ class admin_settings_h5plib_handler_select extends \admin_setting_configselect
     }
 }
 /**
+ * Base Moodle Exception class
+ *
+ * Although this class is defined here, you cannot throw a moodle_exception until
+ * after moodlelib.php has been included (which will happen very soon).
+ *
+ * @package    core
+ * @subpackage lib
+ * @copyright  2008 Petr Skoda  {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class moodle_exception extends \Exception
+{
+    /**
+     * @var string The name of the string from error.php to print
+     */
+    public $errorcode;
+    /**
+     * @var string The name of module
+     */
+    public $module;
+    /**
+     * @var mixed Extra words and phrases that might be required in the error string
+     */
+    public $a;
+    /**
+     * @var string The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
+     */
+    public $link;
+    /**
+     * @var string Optional information to aid the debugging process
+     */
+    public $debuginfo;
+    /**
+     * Constructor
+     * @param string $errorcode The name of the string from error.php to print
+     * @param string $module name of module
+     * @param string $link The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
+     * @param mixed $a Extra words and phrases that might be required in the error string
+     * @param string $debuginfo optional debugging information
+     */
+    function __construct($errorcode, $module = '', $link = '', $a = \NULL, $debuginfo = \null)
+    {
+    }
+}
+/**
+ * DML exception class, use instead of print_error() in dml code.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_exception extends \moodle_exception
+{
+    /**
+     * @param string $errorcode The name of the string from error.php to print.
+     * @param string $a Extra words and phrases that might be required in the error string.
+     * @param string $debuginfo Optional debugging information.
+     */
+    function __construct($errorcode, $a = \NULL, $debuginfo = \null)
+    {
+    }
+}
+/**
+ * DML db connection exception - triggered if database not accessible.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_connection_exception extends \dml_exception
+{
+    /**
+     * Constructor
+     * @param string $error Optional debugging information.
+     */
+    function __construct($error)
+    {
+    }
+}
+/**
+ * DML db session wait exception - triggered when session lock request times out.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_sessionwait_exception extends \dml_exception
+{
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+    }
+}
+/**
+ * DML read exception - triggered by some SQL syntax errors, etc.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_read_exception extends \dml_exception
+{
+    /** @var string The name of the string from error.php to print.*/
+    public $error;
+    /** @var string The SQL that ran just before this read error.*/
+    public $sql;
+    /** @var array The SQL's related parameters.*/
+    public $params;
+    /**
+     * Constructor
+     * @param string $error The name of the string from error.php to print.
+     * @param string $sql The SQL that ran just before this read error.
+     * @param array $params The SQL's related parameters.(optional)
+     */
+    function __construct($error, $sql = \null, array $params = \null)
+    {
+    }
+}
+/**
+ * Caused by multiple records found in get_record() call.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_multiple_records_exception extends \dml_exception
+{
+    /** @var string The SQL that ran just before this read error.*/
+    public $sql;
+    /** @var array The SQL's related parameters.*/
+    public $params;
+    /**
+     * Constructor
+     * @param string $sql The SQL that ran just before this read error.
+     * @param array $params The SQL's related parameters.(optional)
+     */
+    function __construct($sql = '', array $params = \null)
+    {
+    }
+}
+/**
+ * Caused by missing record that is required for normal operation.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_missing_record_exception extends \dml_exception
+{
+    /** @var string A table's name.*/
+    public $table;
+    /** @var string An SQL query.*/
+    public $sql;
+    /** @var array The SQL's parameters.*/
+    public $params;
+    /**
+     * Constructor
+     * @param string $tablename The table name if known, '' if unknown.
+     * @param string $sql Optional SQL query.
+     * @param array $params Optional SQL query's parameters.
+     */
+    function __construct($tablename, $sql = '', array $params = \null)
+    {
+    }
+}
+/**
+ * DML write exception - triggered by some SQL syntax errors, etc.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_write_exception extends \dml_exception
+{
+    /** @var string The name of the string from error.php to print.*/
+    public $error;
+    /** @var string The SQL that ran just before this write error.*/
+    public $sql;
+    /** @var array The SQL's related parameters.*/
+    public $params;
+    /**
+     * Constructor
+     * @param string $error The name of the string from error.php to print.
+     * @param string $sql The SQL that ran just before this write error.
+     * @param array $params The SQL's related parameters.(optional)
+     */
+    function __construct($error, $sql = \null, array $params = \null)
+    {
+    }
+}
+/**
+ * DML transaction exception - triggered by problems related to DB transactions.
+ *
+ * @todo MDL-20625 Use the info from $transaction for debugging purposes.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_transaction_exception extends \dml_exception
+{
+    /** @var moodle_transaction An instance of a transaction.*/
+    public $transaction;
+    /**
+     * Constructor
+     * @param array $debuginfo Optional debugging information.
+     * @param moodle_transaction $transaction The instance of the transaction.(Optional)
+     */
+    function __construct($debuginfo = \null, $transaction = \null)
+    {
+    }
+}
+/**
  * Wrapper that separates quickforms syntax from moodle code
  *
  * Moodle specific wrapper that separates quickforms syntax from moodle code. You won't directly
@@ -6283,9 +6589,25 @@ abstract class moodleform
     {
     }
     /**
+     * Returns an element of multi-dimensional array given the list of keys
+     *
+     * Example:
+     * $array['a']['b']['c'] = 13;
+     * $v = $this->get_array_value_by_keys($array, ['a', 'b', 'c']);
+     *
+     * Will result it $v==13
+     *
+     * @param array $array
+     * @param array $keys
+     * @return mixed returns null if keys not present
+     */
+    protected function get_array_value_by_keys(array $array, array $keys)
+    {
+    }
+    /**
      * Checks if a parameter was passed in the previous form submission
      *
-     * @param string $name the name of the page parameter we want
+     * @param string $name the name of the page parameter we want, for example 'id' or 'element[sub][13]'
      * @param mixed  $default the default value to return if nothing is found
      * @param string $type expected type of parameter
      * @return mixed
@@ -6520,9 +6842,11 @@ abstract class moodleform
      * @param int $addfieldsno how many fields to add at a time
      * @param string $addstring name of button, {no} is replaced by no of blanks that will be added.
      * @param bool $addbuttoninside if true, don't call closeHeaderBefore($addfieldsname). Default false.
+     * @param string $deletebuttonname if specified, treats the no-submit button with this name as a "delete element" button
+     *         in each of the elements
      * @return int no of repeats of element in this page
      */
-    function repeat_elements($elementobjs, $repeats, $options, $repeathiddenname, $addfieldsname, $addfieldsno = 5, $addstring = \null, $addbuttoninside = \false)
+    public function repeat_elements($elementobjs, $repeats, $options, $repeathiddenname, $addfieldsname, $addfieldsno = 5, $addstring = \null, $addbuttoninside = \false, $deletebuttonname = '')
     {
     }
     /**
@@ -6608,6 +6932,26 @@ abstract class moodleform
      *                                              same page.
      */
     public static function mock_submit($simulatedsubmitteddata, $simulatedsubmittedfiles = array(), $method = 'post', $formidentifier = \null)
+    {
+    }
+    /**
+     * Used by tests to simulate submitted form data submission via AJAX.
+     *
+     * For form fields where no data is submitted the default for that field as set by set_data or setDefault will be passed to
+     * get_data.
+     *
+     * This method sets $_POST or $_GET and $_FILES with the data supplied. Our unit test code empties all these
+     * global arrays after each test.
+     *
+     * @param array  $simulatedsubmitteddata       An associative array of form values (same format as $_POST).
+     * @param array  $simulatedsubmittedfiles      An associative array of files uploaded (same format as $_FILES). Can be omitted.
+     * @param string $method                       'post' or 'get', defaults to 'post'.
+     * @param null   $formidentifier               the default is to use the class name for this class but you may need to provide
+     *                                              a different value here for some forms that are used more than once on the
+     *                                              same page.
+     * @return array array to pass to form constructor as $ajaxdata
+     */
+    public static function mock_ajax_submit($simulatedsubmitteddata, $simulatedsubmittedfiles = array(), $method = 'post', $formidentifier = \null)
     {
     }
     /**
@@ -9826,7 +10170,7 @@ class course_modinfo
  * {@link cached_cm_info}
  *
  * <b>Stage 2 - dynamic data.</b>
- * Dynamic data is user-dependend, it is stored in request-level cache. To reset this cache
+ * Dynamic data is user-dependent, it is stored in request-level cache. To reset this cache
  * {@link get_fast_modinfo()} with $reset argument may be called.
  *
  * Dynamic data is obtained when any of the following properties/methods is requested:
@@ -9847,6 +10191,7 @@ class course_modinfo
  * - {@link cm_info::set_user_visible()}
  * - {@link cm_info::set_on_click()}
  * - {@link cm_info::set_icon_url()}
+ * - {@link cm_info::override_customdata()}
  * Any methods affecting view elements can also be set in this callback.
  *
  * <b>Stage 3 (view data).</b>
@@ -10364,9 +10709,14 @@ class cm_info implements \IteratorAggregate
     {
     }
     /**
+     * Getter method for property $customdata, ensures that dynamic data is retrieved.
+     *
+     * This method is normally called by the property ->customdata, but can be called directly if there
+     * is a case when it might be called recursively (you can't call property values recursively).
+     *
      * @return mixed Optional custom data stored in modinfo cache for this activity, or null if none
      */
-    private function get_custom_data()
+    public function get_custom_data()
     {
     }
     /**
@@ -10537,6 +10887,15 @@ class cm_info implements \IteratorAggregate
     {
     }
     /**
+     * Overrides the value of an element in the customdata array.
+     *
+     * @param string $name The key in the customdata array
+     * @param mixed $value The value
+     */
+    public function override_customdata($name, $value)
+    {
+    }
+    /**
      * Sets HTML that displays after link on course view page.
      * @param string $afterlink HTML string (empty string if none)
      * @return void
@@ -10645,7 +11004,8 @@ class cm_info implements \IteratorAggregate
      * the module or not.
      *
      * As part of this function, the module's _cm_info_dynamic function from its lib.php will
-     * be called (if it exists).
+     * be called (if it exists). Make sure that the functions that are called here do not use
+     * any getter magic method from cm_info.
      * @return void
      */
     private function obtain_dynamic_data()
@@ -11021,11 +11381,12 @@ class section_info implements \IteratorAggregate
     /**
      * Finds whether this section is available at the moment for the current user.
      *
-     * The value can be accessed publicly as $sectioninfo->available
+     * The value can be accessed publicly as $sectioninfo->available, but can be called directly if there
+     * is a case when it might be called recursively (you can't call property values recursively).
      *
      * @return bool
      */
-    private function get_available()
+    public function get_available()
     {
     }
     /**
@@ -11293,9 +11654,10 @@ class lang_string
     /**
      * Magic __set_state method used for var_export
      *
-     * @return string
+     * @param array $array
+     * @return self
      */
-    public function __set_state()
+    public static function __set_state(array $array) : self
     {
     }
     /**
@@ -13288,11 +13650,6 @@ class file_picker implements \renderable
 class user_picture implements \renderable
 {
     /**
-     * @var array List of mandatory fields in user record here. (do not include
-     * TEXT columns because it would break SELECT DISTINCT in MSSQL and ORACLE)
-     */
-    protected static $fields = array('id', 'picture', 'firstname', 'lastname', 'firstnamephonetic', 'lastnamephonetic', 'middlename', 'alternatename', 'imagealt', 'email');
-    /**
      * @var stdClass A user object with at least fields all columns specified
      * in $fields array constant set.
      */
@@ -13359,6 +13716,8 @@ class user_picture implements \renderable
      * @param string $idalias alias of id field
      * @param string $fieldprefix prefix to add to all columns in their aliases, does not apply to 'id'
      * @return string
+     * @deprecated since Moodle 3.11 MDL-45242
+     * @see \core_user\fields
      */
     public static function fields($tableprefix = '', array $extrafields = \NULL, $idalias = 'id', $fieldprefix = '')
     {
@@ -14973,6 +15332,14 @@ class block_contents
     public function add_class($class)
     {
     }
+    /**
+     * Check if the block is a fake block.
+     *
+     * @return boolean
+     */
+    public function is_fake()
+    {
+    }
 }
 /**
  * This class represents a target for where a block can go when it is being moved.
@@ -15886,6 +16253,13 @@ class progress_bar implements \renderable, \templatable
     {
     }
     /**
+     * Getter for ID
+     * @return string id
+     */
+    public function get_id() : string
+    {
+    }
+    /**
      * Create a new progress bar, this function will output html.
      *
      * @return void Echo's output
@@ -16309,6 +16683,18 @@ class core_renderer extends \renderer_base
     {
     }
     /**
+     * Returns information about an activity.
+     *
+     * @param cm_info $cminfo The course module information.
+     * @param cm_completion_details $completiondetails The completion details for this activity module.
+     * @param array $activitydates The dates for this activity module.
+     * @return string the activity information HTML.
+     * @throws coding_exception
+     */
+    public function activity_information(\cm_info $cminfo, \core_completion\cm_completion_details $completiondetails, array $activitydates) : string
+    {
+    }
+    /**
      * Returns standard navigation between activities in a course.
      *
      * @return string the navigation HTML.
@@ -16607,9 +16993,10 @@ class core_renderer extends \renderer_base
      * Output all the blocks in a particular region.
      *
      * @param string $region the name of a region on this page.
+     * @param boolean $fakeblocksonly Output fake block only.
      * @return string the HTML to be output.
      */
-    public function blocks_for_region($region)
+    public function blocks_for_region($region, $fakeblocksonly = \false)
     {
     }
     /**
@@ -17067,10 +17454,11 @@ class core_renderer extends \renderer_base
      * Note: \core\notification::add() may be more suitable for your usage.
      *
      * @param string $message The message to print out.
-     * @param string $type    The type of notification. See constants on \core\output\notification.
+     * @param ?string $type   The type of notification. See constants on \core\output\notification.
+     * @param bool $closebutton Whether to show a close icon to remove the notification (default true).
      * @return string the HTML to output.
      */
-    public function notification($message, $type = \null)
+    public function notification($message, $type = \null, $closebutton = \true)
     {
     }
     /**
@@ -17493,9 +17881,12 @@ class core_renderer extends \renderer_base
      *
      * @since Moodle 2.5.1 2.6
      * @param string $region The region to get HTML for.
+     * @param array $classes Wrapping tag classes.
+     * @param string $tag Wrapping tag.
+     * @param boolean $fakeblocksonly Include fake blocks only.
      * @return string HTML.
      */
-    public function blocks($region, $classes = array(), $tag = 'aside')
+    public function blocks($region, $classes = array(), $tag = 'aside', $fakeblocksonly = \false)
     {
     }
     /**
@@ -17801,6 +18192,21 @@ class core_renderer extends \renderer_base
     {
     }
     /**
+     * Renders an update to a progress bar.
+     *
+     * Note: This does not cleanly map to a renderable class and should
+     * never be used directly.
+     *
+     * @param  string $id
+     * @param  float $percent
+     * @param  string $msg Message
+     * @param  string $estimate time remaining message
+     * @return string ascii fragment
+     */
+    public function render_progress_bar_update(string $id, float $percent, string $msg, string $estimate) : string
+    {
+    }
+    /**
      * Renders element for a toggle-all checkbox.
      *
      * @param \core\output\checkbox_toggleall $element
@@ -17823,6 +18229,11 @@ class core_renderer extends \renderer_base
  */
 class core_renderer_cli extends \core_renderer
 {
+    /**
+     * @var array $progressmaximums stores the largest percentage for a progress bar.
+     * @return string ascii fragment
+     */
+    private $progressmaximums = [];
     /**
      * Returns the page header.
      *
@@ -17850,6 +18261,32 @@ class core_renderer_cli extends \core_renderer
      * @return string fragment
      */
     public function check_result(\core\check\result $result)
+    {
+    }
+    /**
+     * Renders a progress bar.
+     *
+     * Do not use $OUTPUT->render($bar), instead use progress_bar::create().
+     *
+     * @param  progress_bar $bar The bar.
+     * @return string ascii fragment
+     */
+    public function render_progress_bar(\progress_bar $bar)
+    {
+    }
+    /**
+     * Renders an update to a progress bar.
+     *
+     * Note: This does not cleanly map to a renderable class and should
+     * never be used directly.
+     *
+     * @param  string $id
+     * @param  float $percent
+     * @param  string $msg Message
+     * @param  string $estimate time remaining message
+     * @return string ascii fragment
+     */
+    public function render_progress_bar_update(string $id, float $percent, string $msg, string $estimate) : string
     {
     }
     /**
@@ -17882,9 +18319,10 @@ class core_renderer_cli extends \core_renderer
      *
      * @param string $message The message to print out.
      * @param string $type    The type of notification. See constants on \core\output\notification.
+     * @param bool $closebutton Whether to show a close icon to remove the notification (default true).
      * @return string A template fragment for a notification
      */
-    public function notification($message, $type = \null)
+    public function notification($message, $type = \null, $closebutton = \true)
     {
     }
     /**
@@ -17938,8 +18376,9 @@ class core_renderer_ajax extends \core_renderer
      *
      * @param string $message The message to print out.
      * @param string $type    The type of notification. See constants on \core\output\notification.
+     * @param bool $closebutton Whether to show a close icon to remove the notification (default true).
      */
-    public function notification($message, $type = \null)
+    public function notification($message, $type = \null, $closebutton = \true)
     {
     }
     /**
@@ -18022,18 +18461,20 @@ class core_renderer_maintenance extends \core_renderer
      * @param string $region
      * @param array $classes
      * @param string $tag
+     * @param boolean $fakeblocksonly
      * @return string
      */
-    public function blocks($region, $classes = array(), $tag = 'aside')
+    public function blocks($region, $classes = array(), $tag = 'aside', $fakeblocksonly = \false)
     {
     }
     /**
      * Does nothing. The maintenance renderer cannot produce blocks.
      *
      * @param string $region
+     * @param boolean $fakeblocksonly Output fake block only.
      * @return string
      */
-    public function blocks_for_region($region)
+    public function blocks_for_region($region, $fakeblocksonly = \false)
     {
     }
     /**
@@ -19891,8 +20332,9 @@ class moodle_page
      * This is normally used as the main heading at the top of the content.
      *
      * @param string $heading the main heading that should be displayed at the top of the <body>.
+     * @param bool $applyformatting apply format_string() - by default true.
      */
-    public function set_heading($heading)
+    public function set_heading($heading, bool $applyformatting = \true)
     {
     }
     /**
@@ -20292,51 +20734,6 @@ class moodle_page
      * @return bool
      */
     public function include_region_main_settings_in_header_actions() : bool
-    {
-    }
-}
-/**
- * Base Moodle Exception class
- *
- * Although this class is defined here, you cannot throw a moodle_exception until
- * after moodlelib.php has been included (which will happen very soon).
- *
- * @package    core
- * @subpackage lib
- * @copyright  2008 Petr Skoda  {@link http://skodak.org}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class moodle_exception extends \Exception
-{
-    /**
-     * @var string The name of the string from error.php to print
-     */
-    public $errorcode;
-    /**
-     * @var string The name of module
-     */
-    public $module;
-    /**
-     * @var mixed Extra words and phrases that might be required in the error string
-     */
-    public $a;
-    /**
-     * @var string The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
-     */
-    public $link;
-    /**
-     * @var string Optional information to aid the debugging process
-     */
-    public $debuginfo;
-    /**
-     * Constructor
-     * @param string $errorcode The name of the string from error.php to print
-     * @param string $module name of module
-     * @param string $link The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
-     * @param mixed $a Extra words and phrases that might be required in the error string
-     * @param string $debuginfo optional debugging information
-     */
-    function __construct($errorcode, $module = '', $link = '', $a = \NULL, $debuginfo = \null)
     {
     }
 }
@@ -21905,7 +22302,7 @@ abstract class moodle_database
     /**
      * @var int internal temporary variable used to guarantee unique parameters in each request. Its used by {@link get_in_or_equal()}.
      */
-    private $inorequaluniqueindex = 1;
+    protected $inorequaluniqueindex = 1;
     /**
      * @var boolean variable use to temporarily disable logging.
      */
@@ -22252,6 +22649,14 @@ abstract class moodle_database
      * @return array (sql, params, type of params)
      */
     public function fix_sql_params($sql, array $params = \null)
+    {
+    }
+    /**
+     * Add an SQL comment to trace all sql calls back to the calling php code
+     * @param string $sql Original sql
+     * @return string Instrumented sql
+     */
+    protected function add_sql_debugging(string $sql) : string
     {
     }
     /**
@@ -22957,7 +23362,7 @@ abstract class moodle_database
      * @param string $subquery Subquery that will return values of the field to delete
      * @param array $params Parameters for subquery
      * @throws dml_exception If there is any error
-     * @since Moodle 3.9.3
+     * @since Moodle 3.10
      */
     public function delete_records_subquery(string $table, string $field, string $alias, string $subquery, array $params = []) : void
     {
@@ -23166,6 +23571,15 @@ abstract class moodle_database
      * @return string The SQL to concatenate the strings.
      */
     public abstract function sql_concat_join($separator = "' '", $elements = array());
+    /**
+     * Return SQL for performing group concatenation on given field/expression
+     *
+     * @param string $field Table field or SQL expression to be concatenated
+     * @param string $separator The separator desired between each concatetated field
+     * @param string $sort Ordering of the concatenated field
+     * @return string
+     */
+    public abstract function sql_group_concat(string $field, string $separator = ', ', string $sort = '') : string;
     /**
      * Returns the proper SQL (for the dbms in use) to concatenate $firstname and $lastname
      *
@@ -24141,6 +24555,17 @@ class mysqli_native_moodle_database extends \moodle_database
      * @return string The concat SQL
      */
     public function sql_concat_join($separator = "' '", $elements = array())
+    {
+    }
+    /**
+     * Return SQL for performing group concatenation on given field/expression
+     *
+     * @param string $field
+     * @param string $separator
+     * @param string $sort
+     * @return string
+     */
+    public function sql_group_concat(string $field, string $separator = ', ', string $sort = '') : string
     {
     }
     /**
@@ -29944,6 +30369,12 @@ abstract class moodleform_mod extends \moodleform
     {
     }
     /**
+     * Plugins can extend the coursemodule settings form after the data is set.
+     */
+    protected function plugin_extend_coursemodule_definition_after_data()
+    {
+    }
+    /**
      * Can be overridden to add custom completion rules if the module wishes
      * them. If overriding this, you should also override completion_rule_enabled.
      * <p>
@@ -31041,9 +31472,11 @@ function get_assignable_roles(\context $context, $rolenamedisplay = \ROLENAME_AL
  * test the moodle/role:switchroles to see if the user is allowed to switch in the first place.
  *
  * @param context $context a context.
+ * @param int $rolenamedisplay the type of role name to display. One of the
+ *      ROLENAME_X constants. Default ROLENAME_ALIAS.
  * @return array an array $roleid => $rolename.
  */
-function get_switchable_roles(\context $context)
+function get_switchable_roles(\context $context, $rolenamedisplay = \ROLENAME_ALIAS)
 {
 }
 /**
@@ -31051,9 +31484,11 @@ function get_switchable_roles(\context $context)
  *
  * @param context $context a context.
  * @param int $userid id of user.
+ * @param int $rolenamedisplay the type of role name to display. One of the
+ *      ROLENAME_X constants. Default ROLENAME_ALIAS.
  * @return array an array $roleid => $rolename.
  */
-function get_viewable_roles(\context $context, $userid = \null)
+function get_viewable_roles(\context $context, $userid = \null, $rolenamedisplay = \ROLENAME_ALIAS)
 {
 }
 /**
@@ -31765,7 +32200,7 @@ function any_new_admin_settings($node)
  * @param string $column name
  * @return bool success or fail
  */
-function db_should_replace($table, $column = '') : bool
+function db_should_replace($table, $column = '', $additionalskiptables = '') : bool
 {
 }
 /**
@@ -31775,7 +32210,25 @@ function db_should_replace($table, $column = '') : bool
  * @param string $replace string to replace
  * @return bool success or fail
  */
-function db_replace($search, $replace)
+function db_replace($search, $replace, $additionalskiptables = '')
+{
+}
+/** Return false if record not found, show debug warning if multiple records found */
+\define('IGNORE_MISSING', 0);
+/** Similar to IGNORE_MISSING but does not show debug warning if multiple records found, not recommended to be used */
+\define('IGNORE_MULTIPLE', 1);
+/** Indicates exactly one record must exist */
+\define('MUST_EXIST', 2);
+/**
+ * Sets up global $DB moodle_database instance
+ *
+ * @global stdClass $CFG The global configuration instance.
+ * @see config.php
+ * @see config-dist.php
+ * @global stdClass $DB The global moodle_database instance.
+ * @return void|bool Returns true when finished setting up $DB. Returns void when $DB has already been set.
+ */
+function setup_DB()
 {
 }
 /**
@@ -33243,19 +33696,6 @@ function fullname($user, $override = \false)
 {
 }
 /**
- * A centralised location for the all name fields. Returns an array / sql string snippet.
- *
- * @param bool $returnsql True for an sql select field snippet.
- * @param string $tableprefix table query prefix to use in front of each field.
- * @param string $prefix prefix added to the name fields e.g. authorfirstname.
- * @param string $fieldprefix sql field prefix e.g. id AS userid.
- * @param bool $order moves firstname and lastname to the top of the array / start of the string.
- * @return array|string All name fields.
- */
-function get_all_user_name_fields($returnsql = \false, $tableprefix = \null, $prefix = \null, $fieldprefix = \null, $order = \false)
-{
-}
-/**
  * Reduces lines of duplicated code for getting user name fields.
  *
  * See also {@link user_picture::unalias()}
@@ -33279,40 +33719,6 @@ function username_load_fields_from_object($addtoobject, $secondobject, $prefix =
  * @return array An array of values in order according to placement in the string format.
  */
 function order_in_string($values, $stringformat)
-{
-}
-/**
- * Checks if current user is shown any extra fields when listing users.
- *
- * @param object $context Context
- * @param array $already Array of fields that we're going to show anyway
- *   so don't bother listing them
- * @return array Array of field names from user table, not including anything
- *   listed in $already
- */
-function get_extra_user_fields($context, $already = array())
-{
-}
-/**
- * If the current user is to be shown extra user fields when listing or
- * selecting users, returns a string suitable for including in an SQL select
- * clause to retrieve those fields.
- *
- * @param context $context Context
- * @param string $alias Alias of user table, e.g. 'u' (default none)
- * @param string $prefix Prefix for field names using AS, e.g. 'u_' (default none)
- * @param array $already Array of fields that we're going to include anyway so don't list them (default none)
- * @return string Partial SQL select clause, beginning with comma, for example ',u.idnumber,u.department' unless it is blank
- */
-function get_extra_user_fields_sql($context, $alias = '', $prefix = '', $already = array())
-{
-}
-/**
- * Returns the display name of a field in the user table. Works for most fields that are commonly displayed to users.
- * @param string $field Field name, e.g. 'phone1'
- * @return string Text description taken from language file, e.g. 'Phone number'
- */
-function get_user_field_name($field)
 {
 }
 /**
@@ -33378,6 +33784,14 @@ function is_restored_user($username)
  * @return array User field/column names
  */
 function get_user_fieldnames()
+{
+}
+/**
+ * Returns the string of the language for the new user.
+ *
+ * @return string language for the new user
+ */
+function get_newuser_language()
 {
 }
 /**
@@ -34681,6 +35095,19 @@ function get_performance_info()
 {
 }
 /**
+ * Renames a file or directory to a unique name within the same directory.
+ *
+ * This function is designed to avoid any potential race conditions, and select an unused name.
+ *
+ * @param string $filepath Original filepath
+ * @param string $prefix Prefix to use for the temporary name
+ * @return string|bool New file path or false if failed
+ * @since Moodle 3.10
+ */
+function rename_to_unused_name(string $filepath, string $prefix = '_temp_')
+{
+}
+/**
  * Delete directory or only its content
  *
  * @param string $dir directory path
@@ -34984,10 +35411,9 @@ function default_exception_handler($ex)
  * @param string $errstr
  * @param string $errfile
  * @param int $errline
- * @param array $errcontext
  * @return bool false means use default error handler
  */
-function default_error_handler($errno, $errstr, $errfile, $errline, $errcontext)
+function default_error_handler($errno, $errstr, $errfile, $errline)
 {
 }
 /**
