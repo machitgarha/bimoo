@@ -2,7 +2,7 @@
     "name": "machitgarha/bimoo",
     "description": "Moodle declaration stubs, helping IDEs and static analyzers",
     "type": "library",
-    "license": "Apache-2.0",
+    "license": "GPL-3.0",
     "authors": [
         {
             "name": "Mohammad Amin Chitgarha",
