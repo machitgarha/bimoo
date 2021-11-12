@@ -6126,6 +6126,237 @@ class admin_settings_h5plib_handler_select extends \admin_setting_configselect
     }
 }
 /**
+ * Base Moodle Exception class
+ *
+ * Although this class is defined here, you cannot throw a moodle_exception until
+ * after moodlelib.php has been included (which will happen very soon).
+ *
+ * @package    core
+ * @subpackage lib
+ * @copyright  2008 Petr Skoda  {@link http://skodak.org}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class moodle_exception extends \Exception
+{
+    /**
+     * @var string The name of the string from error.php to print
+     */
+    public $errorcode;
+    /**
+     * @var string The name of module
+     */
+    public $module;
+    /**
+     * @var mixed Extra words and phrases that might be required in the error string
+     */
+    public $a;
+    /**
+     * @var string The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
+     */
+    public $link;
+    /**
+     * @var string Optional information to aid the debugging process
+     */
+    public $debuginfo;
+    /**
+     * Constructor
+     * @param string $errorcode The name of the string from error.php to print
+     * @param string $module name of module
+     * @param string $link The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
+     * @param mixed $a Extra words and phrases that might be required in the error string
+     * @param string $debuginfo optional debugging information
+     */
+    function __construct($errorcode, $module = '', $link = '', $a = \NULL, $debuginfo = \null)
+    {
+    }
+}
+/**
+ * DML exception class, use instead of print_error() in dml code.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_exception extends \moodle_exception
+{
+    /**
+     * @param string $errorcode The name of the string from error.php to print.
+     * @param string $a Extra words and phrases that might be required in the error string.
+     * @param string $debuginfo Optional debugging information.
+     */
+    function __construct($errorcode, $a = \NULL, $debuginfo = \null)
+    {
+    }
+}
+/**
+ * DML db connection exception - triggered if database not accessible.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_connection_exception extends \dml_exception
+{
+    /**
+     * Constructor
+     * @param string $error Optional debugging information.
+     */
+    function __construct($error)
+    {
+    }
+}
+/**
+ * DML db session wait exception - triggered when session lock request times out.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_sessionwait_exception extends \dml_exception
+{
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+    }
+}
+/**
+ * DML read exception - triggered by some SQL syntax errors, etc.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_read_exception extends \dml_exception
+{
+    /** @var string The name of the string from error.php to print.*/
+    public $error;
+    /** @var string The SQL that ran just before this read error.*/
+    public $sql;
+    /** @var array The SQL's related parameters.*/
+    public $params;
+    /**
+     * Constructor
+     * @param string $error The name of the string from error.php to print.
+     * @param string $sql The SQL that ran just before this read error.
+     * @param array $params The SQL's related parameters.(optional)
+     */
+    function __construct($error, $sql = \null, array $params = \null)
+    {
+    }
+}
+/**
+ * Caused by multiple records found in get_record() call.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_multiple_records_exception extends \dml_exception
+{
+    /** @var string The SQL that ran just before this read error.*/
+    public $sql;
+    /** @var array The SQL's related parameters.*/
+    public $params;
+    /**
+     * Constructor
+     * @param string $sql The SQL that ran just before this read error.
+     * @param array $params The SQL's related parameters.(optional)
+     */
+    function __construct($sql = '', array $params = \null)
+    {
+    }
+}
+/**
+ * Caused by missing record that is required for normal operation.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_missing_record_exception extends \dml_exception
+{
+    /** @var string A table's name.*/
+    public $table;
+    /** @var string An SQL query.*/
+    public $sql;
+    /** @var array The SQL's parameters.*/
+    public $params;
+    /**
+     * Constructor
+     * @param string $tablename The table name if known, '' if unknown.
+     * @param string $sql Optional SQL query.
+     * @param array $params Optional SQL query's parameters.
+     */
+    function __construct($tablename, $sql = '', array $params = \null)
+    {
+    }
+}
+/**
+ * DML write exception - triggered by some SQL syntax errors, etc.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_write_exception extends \dml_exception
+{
+    /** @var string The name of the string from error.php to print.*/
+    public $error;
+    /** @var string The SQL that ran just before this write error.*/
+    public $sql;
+    /** @var array The SQL's related parameters.*/
+    public $params;
+    /**
+     * Constructor
+     * @param string $error The name of the string from error.php to print.
+     * @param string $sql The SQL that ran just before this write error.
+     * @param array $params The SQL's related parameters.(optional)
+     */
+    function __construct($error, $sql = \null, array $params = \null)
+    {
+    }
+}
+/**
+ * DML transaction exception - triggered by problems related to DB transactions.
+ *
+ * @todo MDL-20625 Use the info from $transaction for debugging purposes.
+ *
+ * @package    core
+ * @category   dml
+ * @subpackage dml
+ * @copyright  2008 Petr Skoda (http://skodak.org)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class dml_transaction_exception extends \dml_exception
+{
+    /** @var moodle_transaction An instance of a transaction.*/
+    public $transaction;
+    /**
+     * Constructor
+     * @param array $debuginfo Optional debugging information.
+     * @param moodle_transaction $transaction The instance of the transaction.(Optional)
+     */
+    function __construct($debuginfo = \null, $transaction = \null)
+    {
+    }
+}
+/**
  * Wrapper that separates quickforms syntax from moodle code
  *
  * Moodle specific wrapper that separates quickforms syntax from moodle code. You won't directly
@@ -20296,51 +20527,6 @@ class moodle_page
     }
 }
 /**
- * Base Moodle Exception class
- *
- * Although this class is defined here, you cannot throw a moodle_exception until
- * after moodlelib.php has been included (which will happen very soon).
- *
- * @package    core
- * @subpackage lib
- * @copyright  2008 Petr Skoda  {@link http://skodak.org}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-class moodle_exception extends \Exception
-{
-    /**
-     * @var string The name of the string from error.php to print
-     */
-    public $errorcode;
-    /**
-     * @var string The name of module
-     */
-    public $module;
-    /**
-     * @var mixed Extra words and phrases that might be required in the error string
-     */
-    public $a;
-    /**
-     * @var string The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
-     */
-    public $link;
-    /**
-     * @var string Optional information to aid the debugging process
-     */
-    public $debuginfo;
-    /**
-     * Constructor
-     * @param string $errorcode The name of the string from error.php to print
-     * @param string $module name of module
-     * @param string $link The url where the user will be prompted to continue. If no url is provided the user will be directed to the site index page.
-     * @param mixed $a Extra words and phrases that might be required in the error string
-     * @param string $debuginfo optional debugging information
-     */
-    function __construct($errorcode, $module = '', $link = '', $a = \NULL, $debuginfo = \null)
-    {
-    }
-}
-/**
  * Course/activity access exception.
  *
  * This exception is thrown from require_login()
@@ -31776,6 +31962,24 @@ function db_should_replace($table, $column = '') : bool
  * @return bool success or fail
  */
 function db_replace($search, $replace)
+{
+}
+/** Return false if record not found, show debug warning if multiple records found */
+\define('IGNORE_MISSING', 0);
+/** Similar to IGNORE_MISSING but does not show debug warning if multiple records found, not recommended to be used */
+\define('IGNORE_MULTIPLE', 1);
+/** Indicates exactly one record must exist */
+\define('MUST_EXIST', 2);
+/**
+ * Sets up global $DB moodle_database instance
+ *
+ * @global stdClass $CFG The global configuration instance.
+ * @see config.php
+ * @see config-dist.php
+ * @global stdClass $DB The global moodle_database instance.
+ * @return void|bool Returns true when finished setting up $DB. Returns void when $DB has already been set.
+ */
+function setup_DB()
 {
 }
 /**
